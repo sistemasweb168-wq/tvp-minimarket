@@ -10,8 +10,8 @@ class EmpresaSeeder extends Seeder
     public function run(): void
     {
         Empresa::create([
-            'razon_social' => 'TPV Minimarket Demo S.A.C.',
-            'nombre_comercial' => 'Mi Minimarket',
+            'razon_social' => 'MINIMARKET VALEZKA E.I.R.L.',
+            'nombre_comercial' => 'Minimarket VALEZKA',
             'ruc_nit' => '20100100100',
             'direccion' => 'Av. Principal 123',
             'ciudad' => 'Lima',

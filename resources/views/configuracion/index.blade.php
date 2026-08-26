@@ -25,18 +25,35 @@
             <h2 class="text-xl font-bold mb-5"><i class="fas fa-building mr-2 text-emerald-500"></i>Datos de la Empresa</h2>
             <form method="POST" action="{{ route('configuracion.empresa') }}" enctype="multipart/form-data">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2 flex items-center gap-4 mb-4">
-                        @if($empresa->logo)
-                            <img src="{{ $empresa->logo_url }}" class="w-20 h-20 rounded-xl object-contain bg-slate-100 p-2">
-                        @else
-                            <div class="w-20 h-20 rounded-xl gradient-primary flex items-center justify-center">
-                                <i class="fas fa-store text-white text-3xl"></i>
+                    <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                        <!-- Logo -->
+                        <div class="flex items-center gap-4">
+                            @if($empresa->logo)
+                                <img src="{{ $empresa->logo_url }}" class="w-16 h-16 rounded-xl object-contain bg-white p-2 border border-slate-200 shadow-xs">
+                            @else
+                                <div class="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center shadow-xs">
+                                    <i class="fas fa-store text-white text-2xl"></i>
+                                </div>
+                            @endif
+                            <div class="flex-1 min-w-0">
+                                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Logo de la Empresa</label>
+                                <input type="file" name="logo" accept="image/*" class="block w-full text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-100 file:text-emerald-800 file:font-semibold">
                             </div>
-                        @endif
-                        <div class="flex-1">
-                            <label class="block text-sm font-semibold mb-1">Logo de la Empresa</label>
-                            <input type="file" name="logo" accept="image/*" class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:text-emerald-700">
+                        </div>
+
+                        <!-- Imagen Portada Login -->
+                        <div class="flex items-center gap-4">
+                            @if($empresa->login_imagen)
+                                <img src="{{ $empresa->login_imagen_url }}" class="w-16 h-16 rounded-xl object-cover bg-white border border-slate-200 shadow-xs">
+                            @else
+                                <div class="w-16 h-16 rounded-xl bg-emerald-800 flex items-center justify-center shadow-xs">
+                                    <i class="fas fa-image text-emerald-200 text-2xl"></i>
+                                </div>
+                            @endif
+                            <div class="flex-1 min-w-0">
+                                <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Imagen de Portada Login (Mitad Pantalla)</label>
+                                <input type="file" name="login_imagen" accept="image/*" class="block w-full text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-100 file:text-emerald-800 file:font-semibold">
+                            </div>
                         </div>
                     </div>
 

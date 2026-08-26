@@ -48,13 +48,23 @@ class ConfiguracionController extends Controller
             $data['logo'] = $nombreLogo;
         }
 
+        if ($request->hasFile('login_imagen')) {
+            if ($empresa && $empresa->login_imagen && file_exists(public_path('uploads/empresa/' . $empresa->login_imagen))) {
+                @unlink(public_path('uploads/empresa/' . $empresa->login_imagen));
+            }
+            $loginImg = $request->file('login_imagen');
+            $nombreLoginImg = 'login_' . time() . '.' . $loginImg->getClientOriginalExtension();
+            $loginImg->move(public_path('uploads/empresa'), $nombreLoginImg);
+            $data['login_imagen'] = $nombreLoginImg;
+        }
+
         if ($empresa) {
             $empresa->update($data);
         } else {
             Empresa::create($data);
         }
 
-        return back()->with('success', 'Datos de empresa actualizados correctamente');
+        return back()->with('success', 'Datos de empresa e imagen de login actualizados correctamente');
     }
 
     public function actualizarConfig(Request $request)

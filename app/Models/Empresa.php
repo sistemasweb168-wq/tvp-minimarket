@@ -13,7 +13,7 @@ class Empresa extends Model
 
     protected $fillable = [
         'razon_social', 'nombre_comercial', 'ruc_nit', 'direccion', 'ciudad',
-        'telefono', 'email', 'sitio_web', 'logo', 'moneda', 'codigo_moneda',
+        'telefono', 'email', 'sitio_web', 'logo', 'login_imagen', 'moneda', 'codigo_moneda',
         'impuesto', 'impuesto_incluido', 'mensaje_ticket', 'terminos_condiciones',
         // SUNAT
         'ubigeo', 'departamento', 'provincia', 'distrito', 'codigo_pais',
@@ -34,6 +34,14 @@ class Empresa extends Model
     {
         if ($this->logo && file_exists(public_path('uploads/empresa/' . $this->logo))) {
             return asset('uploads/empresa/' . $this->logo);
+        }
+        return null;
+    }
+
+    public function getLoginImagenUrlAttribute()
+    {
+        if ($this->login_imagen && file_exists(public_path('uploads/empresa/' . $this->login_imagen))) {
+            return asset('uploads/empresa/' . $this->login_imagen);
         }
         return null;
     }
