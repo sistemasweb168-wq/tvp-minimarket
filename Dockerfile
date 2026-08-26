@@ -4,21 +4,20 @@ FROM php:8.3-apache
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    unzip \
+    dos2unix \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libonig-dev \
     libxml2-dev \
     libzip-dev \
     libpq-dev \
-    zip \
-    unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar Composer
-COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Configurar Apache DocumentRoot a /public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -39,9 +38,10 @@ RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/fra
 # Instalar dependencias de Composer optimizadas para producción
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs
 
-# Permisos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod +x /var/www/html/entrypoint.sh
+# Convertir entrypoint a formato Unix y dar permisos
+RUN dos2unix /var/www/html/entrypoint.sh \
+    && chmod +x /var/www/html/entrypoint.sh \
+    && chown -R www-data:www-data /var/www/html
 
 # Puerto expuesto
 EXPOSE 80
