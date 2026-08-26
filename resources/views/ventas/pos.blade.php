@@ -646,14 +646,63 @@ function pos() {
             });
         },
 
-        abrirEscanerCamara() {
-            this.escanerAbierto = true;
-            this.camaraEstadoTexto = 'Iniciando cámara...';
-            this.$nextTick(() => {
-                setTimeout(() => {
-                    this.iniciarCamaraNativa();
-                }, 250);
-            });
+        async abrirEscanerCamara() {
+            this.camaraEstadoTexto = 'Conectando cámara...';
+            
+            // 1. Iniciar getUserMedia DIRECTO en el click del usuario (Requisito estricto de Chrome/Safari móvil)
+            let stream = null;
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("Tu navegador no soporta captura de cámara en web.");
+                }
+
+                // Intento 1: Cámara trasera flexible
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { ideal: 'environment' } },
+                        audio: false
+                    });
+                } catch(e1) {
+                    // Intento 2: Cualquier cámara disponible
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: false
+                    });
+                }
+
+                this.camaraMediaStream = stream;
+                this.escanerAbierto = true;
+
+                this.$nextTick(() => {
+                    const video = document.getElementById('pos-cam-video');
+                    if (video) {
+                        video.setAttribute('playsinline', 'true');
+                        video.setAttribute('autoplay', 'true');
+                        video.setAttribute('muted', 'true');
+                        video.muted = true;
+                        video.srcObject = stream;
+                        
+                        video.play().then(() => {
+                            this.camaraEstadoTexto = 'Apunta al código de barras';
+                            this.iniciarDetector(video);
+                        }).catch(err => {
+                            console.warn("Video play error:", err);
+                            this.iniciarDetector(video);
+                        });
+                    }
+                });
+
+            } catch(err) {
+                console.error("Error al acceder a la cámara:", err);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Acceso a la Cámara',
+                    text: 'Asegúrate de permitir el acceso a la cámara en los permisos de tu navegador (' + (err.name || err.message) + ').',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'Entendido'
+                });
+                this.cerrarEscanerCamara();
+            }
         },
 
         cerrarEscanerCamara() {
@@ -667,95 +716,61 @@ function pos() {
                 } catch(e){}
                 this.camaraMediaStream = null;
             }
-            if (this.html5QrCodeInstance) {
-                try {
-                    this.html5QrCodeInstance.stop().catch(() => {});
-                } catch(e){}
-                this.html5QrCodeInstance = null;
-            }
+            this.linternaEncendida = false;
             this.escanerAbierto = false;
         },
 
-        async iniciarCamaraNativa() {
-            const video = document.getElementById('pos-cam-video');
-            if (!video) return;
+        iniciarDetector(video) {
+            // Si el navegador soporta BarcodeDetector nativo (Chrome Android / WebView)
+            if ('BarcodeDetector' in window) {
+                try {
+                    const formats = ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'qr_code'];
+                    const detector = new BarcodeDetector({ formats: formats });
 
-            // Limpiar streams anteriores
-            if (this.camaraMediaStream) {
-                this.camaraMediaStream.getTracks().forEach(t => t.stop());
-            }
-
-            try {
-                // 1. Obtener stream de la cámara trasera con getUserMedia nativo
-                const constraints = {
-                    video: {
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                };
-
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                this.camaraMediaStream = stream;
-                video.srcObject = stream;
-                await video.play();
-
-                this.camaraEstadoTexto = 'Apunta la cámara al código de barras';
-
-                // 2. Si el navegador soporta BarcodeDetector nativo (Chrome Android / WebView)
-                if ('BarcodeDetector' in window) {
-                    try {
-                        const formats = ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'qr_code'];
-                        const detector = new BarcodeDetector({ formats: formats });
-
-                        const scanLoop = async () => {
-                            if (!this.escanerAbierto || !this.camaraMediaStream) return;
-                            try {
-                                if (video.readyState >= 2) {
-                                    const barcodes = await detector.detect(video);
-                                    if (barcodes && barcodes.length > 0) {
-                                        const code = barcodes[0].rawValue;
-                                        if (code) {
-                                            this.onCodigoEscaneado(code);
-                                            return;
-                                        }
+                    const scanLoop = async () => {
+                        if (!this.escanerAbierto || !this.camaraMediaStream) return;
+                        try {
+                            if (video.readyState >= 2) {
+                                const barcodes = await detector.detect(video);
+                                if (barcodes && barcodes.length > 0) {
+                                    const code = barcodes[0].rawValue;
+                                    if (code) {
+                                        this.onCodigoEscaneado(code);
+                                        return;
                                     }
                                 }
-                            } catch(e) {}
-                            this.animFrameId = requestAnimationFrame(scanLoop);
-                        };
+                            }
+                        } catch(e) {}
                         this.animFrameId = requestAnimationFrame(scanLoop);
-                        return;
-                    } catch(e) {
-                        console.warn('BarcodeDetector error:', e);
-                    }
+                    };
+                    this.animFrameId = requestAnimationFrame(scanLoop);
+                    return;
+                } catch(e) {
+                    console.warn('BarcodeDetector error:', e);
                 }
-
-                // 3. Fallback con Html5Qrcode si BarcodeDetector nativo no está disponible
-                if (typeof Html5Qrcode !== 'undefined') {
-                    const qrEl = document.getElementById('qr-reader');
-                    if (qrEl) {
-                        qrEl.style.display = 'block';
-                        video.style.display = 'none';
-                        this.html5QrCodeInstance = new Html5Qrcode("qr-reader");
-                        this.html5QrCodeInstance.start(
-                            { facingMode: "environment" },
-                            { fps: 20, qrbox: { width: 260, height: 180 } },
-                            (decodedText) => this.onCodigoEscaneado(decodedText),
-                            () => {}
-                        ).catch(() => {});
-                    }
-                }
-
-            } catch(err) {
-                console.error("Error al encender cámara:", err);
-                Toast.fire({ 
-                    icon: 'warning', 
-                    title: 'Por favor concede permiso de cámara en tu navegador para escanear.' 
-                });
-                this.cerrarEscanerCamara();
             }
+
+            // Fallback con escaneo por canvas si BarcodeDetector nativo no está disponible
+            this.iniciarFallbackCanvas(video);
+        },
+
+        iniciarFallbackCanvas(video) {
+            if (typeof Html5Qrcode === 'undefined') return;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            
+            const scanCanvasLoop = async () => {
+                if (!this.escanerAbierto || !this.camaraMediaStream) return;
+                try {
+                    if (video.videoWidth > 0 && video.videoHeight > 0) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    }
+                } catch(e){}
+                this.animFrameId = requestAnimationFrame(scanCanvasLoop);
+            };
+            this.animFrameId = requestAnimationFrame(scanCanvasLoop);
         },
 
         async toggleLinterna() {
