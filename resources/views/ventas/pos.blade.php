@@ -466,6 +466,13 @@
 
             <!-- Visor de Cámara -->
             <div class="p-3 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[280px]">
+                <style>
+                    #qr-reader { width: 100% !important; border: none !important; }
+                    #qr-reader video { width: 100% !important; height: auto !important; max-height: 55vh !important; border-radius: 1rem !important; object-fit: cover !important; }
+                    #qr-reader__scan_region { background: transparent !important; }
+                    #qr-reader__dashboard { display: none !important; }
+                    #qr-reader__status_span { display: none !important; }
+                </style>
                 <div id="qr-reader" class="w-full rounded-2xl overflow-hidden" style="border: none;"></div>
                 <div class="mt-2 text-center text-slate-400 text-[11px] flex items-center gap-1.5">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
@@ -615,58 +622,120 @@ function pos() {
 
         abrirEscanerCamara() {
             this.escanerAbierto = true;
-            setTimeout(() => {
-                this.iniciarCamara();
-            }, 250);
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.iniciarCamara();
+                }, 350);
+            });
         },
 
         cerrarEscanerCamara() {
             if (this.html5QrCodeInstance) {
-                this.html5QrCodeInstance.stop().then(() => {
-                    this.html5QrCodeInstance.clear();
+                try {
+                    this.html5QrCodeInstance.stop().then(() => {
+                        try { this.html5QrCodeInstance.clear(); } catch(e){}
+                        this.html5QrCodeInstance = null;
+                    }).catch(() => {
+                        this.html5QrCodeInstance = null;
+                    });
+                } catch(e) {
                     this.html5QrCodeInstance = null;
-                }).catch(() => {
-                    this.html5QrCodeInstance = null;
-                });
+                }
             }
             this.escanerAbierto = false;
         },
 
-        iniciarCamara() {
+        async iniciarCamara() {
             if (typeof Html5Qrcode === 'undefined') {
                 Toast.fire({ icon: 'error', title: 'Librería de escáner no disponible.' });
                 return;
             }
 
+            const qrContainer = document.getElementById('qr-reader');
+            if (!qrContainer) return;
+            qrContainer.innerHTML = ''; // Limpiar previo
+
             try {
-                const config = {
-                    fps: 15,
-                    qrbox: { width: 260, height: 180 },
+                const formats = [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.QR_CODE
+                ];
+
+                this.html5QrCodeInstance = new Html5Qrcode("qr-reader", {
+                    formatsToSupport: formats,
+                    verbose: false
+                });
+
+                const scanConfig = {
+                    fps: 20,
+                    qrbox: (viewfinderWidth, viewfinderHeight) => {
+                        const width = Math.floor(Math.min(viewfinderWidth, 320) * 0.85);
+                        const height = Math.floor(width * 0.65);
+                        return { width, height };
+                    },
                     aspectRatio: 1.333333
                 };
 
-                this.html5QrCodeInstance = new Html5Qrcode("qr-reader");
-                this.html5QrCodeInstance.start(
+                // Intentar obtener cámaras del dispositivo
+                try {
+                    const devices = await Html5Qrcode.getCameras();
+                    if (devices && devices.length > 0) {
+                        // Seleccionar preferentemente cámara trasera
+                        let selectedCam = devices[devices.length - 1].id;
+                        const backCam = devices.find(d => {
+                            const lbl = (d.label || '').toLowerCase();
+                            return lbl.includes('back') || lbl.includes('rear') || lbl.includes('trasera') || lbl.includes('environment');
+                        });
+                        if (backCam) selectedCam = backCam.id;
+
+                        await this.html5QrCodeInstance.start(
+                            selectedCam,
+                            scanConfig,
+                            (decodedText) => this.onCodigoEscaneado(decodedText),
+                            () => {}
+                        );
+                        return;
+                    }
+                } catch(camErr) {
+                    console.warn('getCameras fallback:', camErr);
+                }
+
+                // Fallback directo con facingMode environment
+                await this.html5QrCodeInstance.start(
                     { facingMode: "environment" },
-                    config,
-                    (decodedText) => {
-                        this.onCodigoEscaneado(decodedText);
-                    },
-                    (errorMessage) => {}
-                ).catch(err => {
-                    Toast.fire({ icon: 'warning', title: 'No se pudo acceder a la cámara. Permite el acceso a la cámara en tu navegador.' });
-                    this.escanerAbierto = false;
-                });
+                    scanConfig,
+                    (decodedText) => this.onCodigoEscaneado(decodedText),
+                    () => {}
+                );
+
             } catch(e) {
-                Toast.fire({ icon: 'error', title: 'Error al inicializar cámara: ' + e.message });
-                this.escanerAbierto = false;
+                console.error("Error al iniciar escáner:", e);
+                // Si falla la cámara trasera, intentar con cualquier cámara disponible
+                try {
+                    await this.html5QrCodeInstance.start(
+                        { facingMode: "user" },
+                        { fps: 15, qrbox: { width: 250, height: 160 } },
+                        (decodedText) => this.onCodigoEscaneado(decodedText),
+                        () => {}
+                    );
+                } catch(errUser) {
+                    Toast.fire({ icon: 'warning', title: 'Permite el acceso a la cámara en el navegador para escanear.' });
+                    this.cerrarEscanerCamara();
+                }
             }
         },
 
         async onCodigoEscaneado(codigo) {
             AudioPOS.beep(1200, 'sine', 0.1);
+            Toast.fire({ icon: 'success', title: `Escaneado: ${codigo}` });
             this.busqueda = codigo;
             await this.buscarYAgregarCodigo(codigo);
+
             if (this.html5QrCodeInstance) {
                 try {
                     this.html5QrCodeInstance.pause(true);
@@ -674,7 +743,7 @@ function pos() {
                         if (this.html5QrCodeInstance && this.escanerAbierto) {
                             try { this.html5QrCodeInstance.resume(); } catch(e){}
                         }
-                    }, 1400);
+                    }, 1500);
                 } catch(e){}
             }
         },
