@@ -19,11 +19,23 @@ class VentaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Venta::with(['cliente', 'user']);
+        $query = Venta::with(['cliente', 'user', 'comprobanteElectronico']);
 
         if ($request->filled('buscar')) {
             $b = $request->buscar;
-            $query->where('numero_ticket', 'LIKE', "%$b%");
+            $query->where(function($q) use ($b) {
+                $q->where('numero_ticket', 'LIKE', "%$b%")
+                  ->orWhereHas('cliente', function($qc) use ($b) {
+                      $qc->where('nombres', 'LIKE', "%$b%")
+                        ->orWhere('documento', 'LIKE', "%$b%");
+                  })
+                  ->orWhereHas('comprobanteElectronico', function($qce) use ($b) {
+                      $qce->where('numero_completo', 'LIKE', "%$b%");
+                  });
+            });
+        }
+        if ($request->filled('tipo_comprobante')) {
+            $query->where('tipo_comprobante', $request->tipo_comprobante);
         }
         if ($request->filled('fecha_desde')) {
             $query->whereDate('fecha_venta', '>=', $request->fecha_desde);
