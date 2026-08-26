@@ -205,7 +205,7 @@
     <!-- ============================================================= -->
     <!-- 🚀 MODAL PROFESIONAL DE CHECKOUT & EMISIÓN (ZERO SCROLL FIT)  -->
     <!-- ============================================================= -->
-    <div x-show="modalPago" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-2 sm:p-4">
+    <div id="modal-pago" x-show="modalPago" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-2 sm:p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[94vh] flex flex-col overflow-hidden border border-slate-100 transform transition-all" @click.outside="modalPago = false">
             
             <!-- Encabezado Compacto Fijo -->
@@ -640,9 +640,6 @@ function pos() {
         impuestoIncluido: {{ $empresaGlobal && $empresaGlobal->impuesto_incluido ? 'true' : 'false' }},
 
         init() {
-            // Registrar referencia a Alpine data para funciones globales del escáner
-            window.POS_SetAlpineData(this);
-
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'F2') { 
                     e.preventDefault(); 
@@ -652,6 +649,13 @@ function pos() {
                     // Escape cierra el escáner primero, luego el modal de pago
                     if (window.POS_EscanerActivo) { window.POS_CerrarCamara(); return; }
                     if (this.modalPago) this.modalPago = false; 
+                }
+            });
+
+            // Escuchar eventos globales del escáner puro JS
+            window.addEventListener('pos-producto-escaneado', (e) => {
+                if (e.detail && e.detail.producto) {
+                    this.agregarAlCarrito(e.detail.producto);
                 }
             });
         },
@@ -1211,18 +1215,15 @@ window.POS_EscanerActivo   = false;
 window.POS_MediaStream     = null;
 window.POS_AnimFrame       = null;
 window.POS_LinternaActiva  = false;
-window._POS_Alpine         = null; // referencia a Alpine data, seteada en init()
-
-// Llamado desde Alpine init() para registrar referencia
-window.POS_SetAlpineData = function(data) {
-    window._POS_Alpine = data;
-};
 
 window.POS_AbrirCamara = async function(event) {
     if (event) { event.preventDefault(); event.stopPropagation(); }
 
-    // No abrir si el modal de pago está activo
-    if (window._POS_Alpine && window._POS_Alpine.modalPago) return;
+    // No abrir si el modal de pago está activo (detectar vía DOM puro)
+    const modalPago = document.getElementById('modal-pago'); 
+    // O si no tiene ID, buscar por atributo Alpine:
+    const modalPagoEl = document.querySelector('[x-show="modalPago"]');
+    if (modalPagoEl && window.getComputedStyle(modalPagoEl).display !== 'none') return;
 
     // Si ya está activo, cerrar
     if (window.POS_EscanerActivo) {
@@ -1347,15 +1348,16 @@ window.POS_OnCodigoDetectado = async function(codigo) {
     try { AudioPOS.beep(1400, 'sine', 0.12); } catch(e) {}
     document.getElementById('pos-cam-status').textContent = `✅ ${codigo}`;
 
-    // Buscar producto y agregar al carrito (vía Alpine data registrada)
+    // Buscar producto y agregar al carrito
     try {
         const res  = await fetch(`/api/productos/buscar?q=${encodeURIComponent(codigo)}`);
         const lista = await res.json();
         if (lista && lista.length > 0) {
-            // Agregar vía Alpine.js data
-            if (window._POS_Alpine) {
-                window._POS_Alpine.agregarProducto(lista[0]);
-            }
+            // Despachar evento para que Alpine lo reciba y actualice el carrito
+            window.dispatchEvent(new CustomEvent('pos-producto-escaneado', { 
+                detail: { producto: lista[0] } 
+            }));
+            
             Toast.fire({ icon: 'success', title: `✅ ${lista[0].nombre}` });
         } else {
             Toast.fire({ icon: 'warning', title: `Código no encontrado: ${codigo}` });
@@ -1392,3 +1394,4 @@ window.POS_ToggleLinterna = async function() {
 };
 </script>
 @endsection
+
