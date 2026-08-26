@@ -447,12 +447,11 @@
 
     <!-- MODAL ESCÁNER CÁMARA FULLSCREEN — Control 100% JS nativo, sin Alpine.js -->
     <div id="pos-escaner-modal"
-         class="fixed inset-0 bg-black flex-col justify-between overflow-hidden" 
-         style="display:none; z-index: 99999;">
+         style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 2147483647; flex-direction: column; justify-content: space-between; overflow: hidden;">
         
         <!-- Stream de Video de la Cámara en Pantalla Completa -->
-        <div class="absolute inset-0 w-full h-full overflow-hidden">
-            <video id="pos-cam-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden;">
+            <video id="pos-cam-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
         </div>
 
         <!-- Máscara con Marco Central Verde Traslúcido (Estilo Escáner Nativo) -->
@@ -512,7 +511,7 @@
         <!-- Botón X esquina superior derecha también -->
         <button type="button" 
                 onclick="POS_CerrarCamara()"
-                class="absolute top-4 right-4 w-11 h-11 rounded-full bg-black/60 text-white border border-white/20 flex items-center justify-center active:scale-95 z-30">
+                style="position: absolute; top: 1rem; right: 1rem; width: 3rem; height: 3rem; border-radius: 9999px; background-color: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; z-index: 30;">
             <i class="fas fa-times text-lg"></i>
         </button>
 
