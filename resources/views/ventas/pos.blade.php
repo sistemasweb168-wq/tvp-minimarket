@@ -1236,43 +1236,59 @@ window.POS_AbrirCamara = async function(event) {
         return;
     }
 
-    // ABRIR MODAL PRIMERO — para feedback visual inmediato al usuario
+    // ABRIR MODAL PRIMERO
     const modal = document.getElementById('pos-escaner-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-        document.getElementById('pos-cam-status').textContent = 'Iniciando cámara...';
+    if (!modal) {
+        alert("DEBUG: Modal NO encontrado en el DOM");
+        return;
     }
+    
+    modal.style.display = 'flex';
+    document.getElementById('pos-cam-status').textContent = 'Iniciando cámara...';
     window.POS_EscanerActivo = true;
 
-    // Solicitar cámara — getUserMedia es el primer await, Chrome acepta esto en user gesture
     try {
         let stream;
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+                video: { facingMode: { ideal: 'environment' } },
                 audio: false
             });
         } catch(e1) {
-            // Fallback: cualquier cámara disponible
             stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         }
 
         window.POS_MediaStream = stream;
 
-        // Vincular stream al <video>
         const video = document.getElementById('pos-cam-video');
-        if (!video) { window.POS_CerrarCamara(); return; }
-        video.muted    = true;
+        if (!video) { 
+            alert("DEBUG: Video NO encontrado");
+            window.POS_CerrarCamara(); 
+            return; 
+        }
+
+        video.muted = true;
         video.srcObject = stream;
+        video.setAttribute('playsinline', 'true'); // Forzar playsinline por si acaso
 
         video.onloadedmetadata = function() {
             video.play().then(() => {
                 document.getElementById('pos-cam-status').textContent = 'Apunta al código de barras';
                 window.POS_IniciarDetector(video);
-            }).catch(() => {
+            }).catch((err) => {
+                alert("DEBUG: play() falló - " + err.message);
                 window.POS_IniciarDetector(video);
             });
         };
+
+        // Si onloadedmetadata nunca dispara (bug de algunos Androids), forzamos play después de 1s
+        setTimeout(() => {
+            if (video.readyState === 0) {
+                alert("DEBUG: onloadedmetadata nunca disparó, forzando play()");
+                video.play().catch(e => console.log(e));
+                window.POS_IniciarDetector(video);
+            }
+        }, 1000);
 
     } catch(err) {
         window.POS_CerrarCamara();
