@@ -447,8 +447,8 @@
 
     <!-- MODAL ESCÁNER CÁMARA FULLSCREEN — Control 100% JS nativo, sin Alpine.js -->
     <div id="pos-escaner-modal"
-         class="fixed inset-0 bg-black z-[200] flex-col justify-between overflow-hidden" 
-         style="display:none;">
+         class="fixed inset-0 bg-black flex-col justify-between overflow-hidden" 
+         style="display:none; z-index: 99999;">
         
         <!-- Stream de Video de la Cámara en Pantalla Completa -->
         <div class="absolute inset-0 w-full h-full overflow-hidden">
@@ -1221,9 +1221,9 @@ window.POS_AbrirCamara = async function(event) {
 
     // No abrir si el modal de pago está activo (detectar vía DOM puro)
     const modalPago = document.getElementById('modal-pago'); 
-    // O si no tiene ID, buscar por atributo Alpine:
-    const modalPagoEl = document.querySelector('[x-show="modalPago"]');
-    if (modalPagoEl && window.getComputedStyle(modalPagoEl).display !== 'none') return;
+    if (modalPago && window.getComputedStyle(modalPago).display !== 'none') {
+        return;
+    }
 
     // Si ya está activo, cerrar
     if (window.POS_EscanerActivo) {
