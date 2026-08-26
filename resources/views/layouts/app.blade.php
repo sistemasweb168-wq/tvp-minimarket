@@ -226,10 +226,56 @@
             </div>
         </header>
 
-        <!-- Content -->
-        <main class="p-3 sm:p-4 lg:p-6">
+        <!-- Contenido principal -->
+        <main class="p-3 sm:p-6 pb-24 lg:pb-6 min-w-0">
+            @if(session('success'))
+                <div class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm text-sm">
+                    <i class="fas fa-check-circle text-emerald-500 text-base flex-shrink-0"></i>
+                    <span class="flex-1">{{ session('success') }}</span>
+                    <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700 text-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm text-sm">
+                    <i class="fas fa-exclamation-circle text-red-500 text-base flex-shrink-0"></i>
+                    <span class="flex-1">{{ session('error') }}</span>
+                    <button onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 text-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            @endif
+
             @yield('content')
         </main>
+
+        <!-- Barra de Navegación Móvil Inferior (Bottom Bar) -->
+        <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 px-2 py-1.5 shadow-lg flex items-center justify-around">
+            <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-semibold transition {{ request()->routeIs('dashboard') ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-800' }}">
+                <i class="fas fa-tachometer-alt text-lg mb-0.5"></i>
+                <span>Inicio</span>
+            </a>
+            <a href="{{ route('ventas.pos') }}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-bold transition {{ request()->routeIs('ventas.pos') ? 'text-emerald-600 bg-emerald-50' : 'text-emerald-700 hover:text-emerald-900' }}">
+                <div class="w-8 h-8 gradient-primary text-white rounded-full flex items-center justify-center shadow-md mb-0.5">
+                    <i class="fas fa-cash-register text-sm"></i>
+                </div>
+                <span>POS</span>
+            </a>
+            <a href="{{ route('ventas.index') }}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-semibold transition {{ request()->routeIs('ventas.index') ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-800' }}">
+                <i class="fas fa-receipt text-lg mb-0.5"></i>
+                <span>Ventas</span>
+            </a>
+            <a href="{{ route('productos.index') }}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-semibold transition {{ request()->routeIs('productos.*') ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-800' }}">
+                <i class="fas fa-box text-lg mb-0.5"></i>
+                <span>Stock</span>
+            </a>
+            <button type="button" @click="sidebarOpen = true" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800">
+                <i class="fas fa-bars text-lg mb-0.5"></i>
+                <span>Menú</span>
+            </button>
+        </nav>
     </div>
 </div>
 

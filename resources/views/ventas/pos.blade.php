@@ -6,26 +6,43 @@
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
 <div x-data="pos()" x-init="init()">
+    <!-- Selector Móvil: Catálogo vs Carrito -->
+    <div class="lg:hidden flex bg-slate-200/80 p-1 rounded-2xl mb-3 shadow-inner">
+        <button type="button" @click="vistaMovil = 'productos'" 
+                :class="vistaMovil === 'productos' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'text-slate-600 font-semibold'" 
+                class="flex-1 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+            <i class="fas fa-boxes"></i>
+            <span>Catálogo</span>
+        </button>
+        <button type="button" @click="vistaMovil = 'carrito'" 
+                :class="vistaMovil === 'carrito' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'text-slate-600 font-semibold'" 
+                class="flex-1 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 relative">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Carrito</span>
+            <span x-show="carrito.length > 0" class="bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold ml-1" x-text="carrito.length"></span>
+        </button>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        <!-- Panel Productos -->
-        <div class="lg:col-span-2 space-y-5">
+        <!-- Panel Productos (Visible siempre en Desktop, o si vistaMovil === 'productos' en móvil) -->
+        <div class="lg:col-span-2 space-y-4" :class="vistaMovil === 'productos' ? 'block' : 'hidden lg:block'">
             <!-- Búsqueda -->
-            <div class="bg-white rounded-2xl shadow-md p-4">
-                <div class="flex gap-3 items-center">
+            <div class="bg-white rounded-2xl shadow-md p-3 sm:p-4">
+                <div class="flex gap-2 sm:gap-3 items-center">
                     <div class="flex-1 relative">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <i class="fas fa-search absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input type="text" x-model="busqueda" @input.debounce.300ms="buscarProductos()"
                                @keydown.enter.prevent="agregarPrimero()"
-                               class="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-slate-700 font-medium"
-                               placeholder="Buscar producto por nombre, código o código de barras (Enter para agregar)" autofocus>
+                               class="w-full pl-10 sm:pl-12 pr-3 py-2.5 sm:py-3 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-slate-700 font-medium text-xs sm:text-sm"
+                               placeholder="Buscar producto o código de barras (Enter para agregar)" autofocus>
                     </div>
-                    <button type="button" @click="busqueda = ''; productosFiltrados = productosDestacados" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-600">
+                    <button type="button" @click="busqueda = ''; productosFiltrados = productosDestacados" class="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-600 text-xs sm:text-sm">
                         <i class="fas fa-times"></i>
                     </button>
                     <!-- Toggle Sonido -->
                     <button type="button" @click="toggleSonido()" :title="sonidoSilenciado ? 'Activar Sonidos POS' : 'Silenciar Sonidos POS'"
-                            class="px-3.5 py-3 rounded-xl transition text-sm font-bold flex items-center gap-1.5"
+                            class="px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5"
                             :class="sonidoSilenciado ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'">
                         <i :class="sonidoSilenciado ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
                     </button>
@@ -33,52 +50,67 @@
             </div>
 
             <!-- Categorías rápidas -->
-            <div class="flex gap-2 overflow-x-auto pb-2">
+            <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
                 <button type="button" @click="filtrarCategoria(null)" :class="categoriaActiva === null ? 'bg-emerald-500 text-white shadow-emerald-200' : 'bg-white text-slate-700 hover:bg-slate-50'"
-                        class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap shadow-sm transition">
+                        class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm transition">
                     <i class="fas fa-th-large mr-1.5"></i>Todos
                 </button>
                 @foreach($categorias as $cat)
                     <button type="button" @click="filtrarCategoria({{ $cat->id }})"
                             :class="categoriaActiva === {{ $cat->id }} ? 'text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-50'"
                             :style="categoriaActiva === {{ $cat->id }} ? 'background: {{ $cat->color }}' : ''"
-                            class="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap shadow-sm transition">
+                            class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm transition">
                         <i class="fas fa-{{ $cat->icono }} mr-1.5"></i>{{ $cat->nombre }}
                     </button>
                 @endforeach
             </div>
 
-            <!-- Grid Productos -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <!-- Grid Productos (2 columnas en celular, 3 en tablet, 4 en desktop) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                 <template x-for="p in productosFiltrados" :key="p.id">
                     <button type="button" @click="agregarProducto(p)"
-                            class="bg-white rounded-2xl shadow-sm hover:shadow-md transition transform hover:-translate-y-1 p-3 text-left border border-slate-100 flex flex-col justify-between">
+                            class="bg-white rounded-2xl shadow-sm hover:shadow-md transition active:scale-95 p-2.5 sm:p-3 text-left border border-slate-100 flex flex-col justify-between">
                         <div>
                             <div class="aspect-square bg-slate-100 rounded-xl mb-2 flex items-center justify-center overflow-hidden">
                                 <template x-if="p.imagen">
                                     <img :src="`/uploads/productos/${p.imagen}`" class="w-full h-full object-cover">
                                 </template>
                                 <template x-if="!p.imagen">
-                                    <i class="fas fa-box text-3xl text-slate-300"></i>
+                                    <i class="fas fa-box text-2xl sm:text-3xl text-slate-300"></i>
                                 </template>
                             </div>
-                            <p class="text-xs font-bold text-slate-800 line-clamp-2 mb-1" x-text="p.nombre"></p>
+                            <p class="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 mb-1" x-text="p.nombre"></p>
                         </div>
-                        <div class="flex justify-between items-end mt-2 pt-2 border-t border-slate-50">
-                            <span class="text-[11px] font-medium text-slate-400" x-text="`Stock: ${parseFloat(p.stock).toFixed(0)}`"></span>
-                            <span class="text-emerald-600 font-extrabold text-sm" x-text="`{{ $moneda }} ${parseFloat(p.precio_venta).toFixed(2)}`"></span>
+                        <div class="flex justify-between items-end mt-1 pt-1.5 border-t border-slate-50">
+                            <span class="text-[10px] sm:text-[11px] font-medium text-slate-400" x-text="`Stk: ${parseFloat(p.stock).toFixed(0)}`"></span>
+                            <span class="text-emerald-600 font-extrabold text-xs sm:text-sm" x-text="`{{ $moneda }} ${parseFloat(p.precio_venta).toFixed(2)}`"></span>
                         </div>
                     </button>
                 </template>
-                <div x-show="productosFiltrados.length === 0" class="col-span-full text-center py-16 text-slate-400 bg-white rounded-2xl">
-                    <i class="fas fa-search text-5xl mb-3 text-slate-300"></i>
-                    <p class="font-medium">No se encontraron productos coincidentes</p>
+                <div x-show="productosFiltrados.length === 0" class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl">
+                    <i class="fas fa-search text-4xl mb-2 text-slate-300"></i>
+                    <p class="font-medium text-xs sm:text-sm">No se encontraron productos coincidentes</p>
                 </div>
+            </div>
+
+            <!-- Botón flotante para ir al Carrito en móvil si hay productos -->
+            <div x-show="vistaMovil === 'productos' && carrito.length > 0" class="lg:hidden fixed bottom-20 left-4 right-4 z-30">
+                <button type="button" @click="vistaMovil = 'carrito'" 
+                        class="w-full gradient-primary text-white py-3.5 px-4 rounded-2xl shadow-xl shadow-emerald-600/30 flex items-center justify-between font-bold text-sm active:scale-95 transition">
+                    <span class="flex items-center gap-2">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span x-text="`Ver Carrito (${carrito.length} ítems)`"></span>
+                    </span>
+                    <span class="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-xl">
+                        <span x-text="`{{ $moneda }} ${total.toFixed(2)}`"></span>
+                        <i class="fas fa-arrow-right text-xs"></i>
+                    </span>
+                </button>
             </div>
         </div>
 
-        <!-- Panel Carrito (Limpio y 100% enfocado en productos) -->
-        <div class="bg-white rounded-2xl shadow-md flex flex-col" style="max-height: calc(100vh - 120px);">
+        <!-- Panel Carrito (Visible siempre en Desktop, o si vistaMovil === 'carrito' en móvil) -->
+        <div class="bg-white rounded-2xl shadow-md flex flex-col" :class="vistaMovil === 'carrito' ? 'flex' : 'hidden lg:flex'" style="max-height: calc(100vh - 120px);">
             <div class="p-4 border-b border-slate-100 flex justify-between items-center gradient-primary text-white rounded-t-2xl">
                 <div>
                     <h3 class="font-bold flex items-center gap-2 text-base"><i class="fas fa-shopping-cart"></i>Carrito de Venta</h3>
@@ -484,6 +516,7 @@ const AudioPOS = {
 
 function pos() {
     return {
+        vistaMovil: 'productos', // 'productos' o 'carrito'
         productosDestacados: @json($productos),
         productosFiltrados: @json($productos),
         busqueda: '',
