@@ -40,8 +40,11 @@
                                placeholder="Buscar producto o código de barras (Enter para agregar)" autofocus>
                     </div>
 
-                    <!-- Botón Escáner Cámara Celular / PC -->
-                    <button type="button" @click="abrirEscanerCamara()" title="Escanear con la Cámara del Celular / PC"
+                    <!-- Botón Escáner Cámara - onclick NATIVO para preservar gesto del usuario en Chrome Android -->
+                    <button type="button" 
+                            id="btn-abrir-escaner"
+                            onclick="POS_AbrirCamara(event)"
+                            title="Escanear con la Cámara del Celular / PC"
                             class="px-3.5 py-2.5 sm:py-3 gradient-primary hover:brightness-105 text-white rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm flex-shrink-0">
                         <i class="fas fa-camera text-sm sm:text-base"></i>
                         <span class="hidden sm:inline">Cámara</span>
@@ -486,13 +489,8 @@
         <div class="relative z-10 p-4 pt-6 flex items-center justify-between text-white">
             <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                <span class="text-xs font-bold tracking-wide" x-text="camaraEstadoTexto"></span>
+                <span id="pos-cam-status" class="text-xs font-bold tracking-wide">Iniciando cámara...</span>
             </div>
-            
-            <button type="button" @click="cerrarEscanerCamara()" 
-                    class="w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md text-white border border-white/20 flex items-center justify-center transition active:scale-95 shadow-lg">
-                <i class="fas fa-times text-lg"></i>
-            </button>
         </div>
 
         <!-- Barra Inferior con Botón de Linterna / Flash -->
@@ -503,12 +501,20 @@
             </div>
 
             <!-- Botón Circular de Linterna / Flash -->
-            <button type="button" @click="toggleLinterna()" 
-                    :class="linternaEncendida ? 'bg-amber-400 text-slate-950 shadow-amber-400/50' : 'bg-white text-slate-900 shadow-white/30'"
-                    class="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition active:scale-90 border-2 border-white/40">
+            <button type="button" 
+                    onclick="POS_ToggleLinterna()" 
+                    id="btn-linterna"
+                    class="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition active:scale-90 border-2 border-white/40 bg-white text-slate-900">
                 <i class="fas fa-lightbulb text-xl"></i>
             </button>
         </div>
+
+        <!-- Botón Cerrar Escáner (nativo, no Alpine) -->
+        <button type="button" 
+                onclick="POS_CerrarCamara()"
+                class="absolute top-6 right-4 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md text-white border border-white/20 flex items-center justify-center transition active:scale-95 shadow-lg z-20">
+            <i class="fas fa-times text-lg"></i>
+        </button>
 
     </div>
 </div>
@@ -1190,5 +1196,176 @@ function pos() {
         }
     }
 }
+
+// ================================================================
+// 📷 ESCÁNER DE CÁMARA - FUNCIÓN GLOBAL NATIVA
+// Chrome Android / Safari iOS requieren que getUserMedia se llame
+// DIRECTAMENTE en el handler onclick sincrónico del usuario.
+// Alpine.js async handlers pierden el contexto de gesto del usuario.
+// ================================================================
+window.POS_EscanerActivo = false;
+window.POS_MediaStream = null;
+window.POS_AnimFrame = null;
+window.POS_LinternaEncendida = false;
+
+window.POS_AbrirCamara = async function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // No abrir si el modal de pago está visible
+    const modalPago = document.querySelector('[x-show="modalPago"]');
+    if (modalPago && modalPago.style.display !== 'none' && modalPago.offsetParent !== null) return;
+
+    // Si ya está activa, cerrar
+    if (window.POS_EscanerActivo) {
+        window.POS_CerrarCamara();
+        return;
+    }
+
+    // Solicitar cámara INMEDIATAMENTE en el click (Chrome Android requiere esto)
+    try {
+        let stream;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            });
+        } catch(e) {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        }
+
+        window.POS_MediaStream = stream;
+        window.POS_EscanerActivo = true;
+
+        // Mostrar modal del escáner (vía Alpine)
+        const posEl = document.querySelector('[x-data]');
+        if (posEl && posEl.__x) {
+            posEl.__x.$data.escanerAbierto = true;
+        } else {
+            const modal = document.getElementById('pos-cam-video')?.closest('.fixed');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        // Actualizar texto de estado
+        const statusEl = document.getElementById('pos-cam-status');
+        if (statusEl) statusEl.textContent = 'Apunta al código de barras';
+
+        // Vincular stream al video - con pequeño rAF para que el DOM se actualice
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const video = document.getElementById('pos-cam-video');
+                if (!video) { window.POS_CerrarCamara(); return; }
+                video.muted = true;
+                video.srcObject = stream;
+                video.play()
+                    .then(() => window.POS_IniciarDetector(video))
+                    .catch(() => window.POS_IniciarDetector(video));
+            });
+        });
+
+    } catch(err) {
+        window.POS_EscanerActivo = false;
+        const msg = err.name === 'NotAllowedError'
+            ? 'Permiso de cámara denegado.\n\nVe a: Configuración → Chrome → Permisos de sitio → Cámara → bodegavalezka.alwaysdata.net → Permitir'
+            : 'No se pudo activar la cámara: ' + (err.message || err.name);
+        Swal.fire({ icon: 'warning', title: 'Cámara no disponible', text: msg, confirmButtonColor: '#10b981' });
+    }
+};
+
+window.POS_CerrarCamara = function() {
+    window.POS_EscanerActivo = false;
+    window.POS_LinternaEncendida = false;
+
+    if (window.POS_AnimFrame) {
+        cancelAnimationFrame(window.POS_AnimFrame);
+        window.POS_AnimFrame = null;
+    }
+    if (window.POS_MediaStream) {
+        window.POS_MediaStream.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
+        window.POS_MediaStream = null;
+    }
+    const video = document.getElementById('pos-cam-video');
+    if (video) { video.srcObject = null; }
+
+    // Cerrar modal vía Alpine
+    const posEl = document.querySelector('[x-data]');
+    if (posEl && posEl.__x) {
+        posEl.__x.$data.escanerAbierto = false;
+        posEl.__x.$data.linternaEncendida = false;
+    }
+};
+
+window.POS_IniciarDetector = function(video) {
+    if ('BarcodeDetector' in window) {
+        try {
+            const formats = ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','qr_code'];
+            const detector = new BarcodeDetector({ formats });
+            const loop = async () => {
+                if (!window.POS_EscanerActivo) return;
+                try {
+                    if (video.readyState >= 2) {
+                        const codes = await detector.detect(video);
+                        if (codes && codes.length > 0 && codes[0].rawValue) {
+                            window.POS_OnCodigoDetectado(codes[0].rawValue);
+                            return;
+                        }
+                    }
+                } catch(e){}
+                window.POS_AnimFrame = requestAnimationFrame(loop);
+            };
+            window.POS_AnimFrame = requestAnimationFrame(loop);
+            return;
+        } catch(e) { console.warn('BarcodeDetector no disponible'); }
+    }
+    // Sin BarcodeDetector: el video igual se muestra, el usuario puede leer el código manualmente
+};
+
+window.POS_OnCodigoDetectado = async function(codigo) {
+    if (!window.POS_EscanerActivo) return;
+
+    // Detener bucle de detección momentáneamente
+    if (window.POS_AnimFrame) { cancelAnimationFrame(window.POS_AnimFrame); window.POS_AnimFrame = null; }
+
+    // Vibración y sonido
+    if (navigator.vibrate) navigator.vibrate([80, 30, 80]);
+    try { AudioPOS.beep(1400, 'sine', 0.12); } catch(e){}
+
+    // Colocar código en el buscador del POS vía Alpine
+    const posEl = document.querySelector('[x-data]');
+    if (posEl && posEl.__x) {
+        posEl.__x.$data.busqueda = codigo;
+    }
+
+    // Buscar y agregar el producto en el carrito
+    try {
+        const res = await fetch(`/api/productos/buscar?q=${encodeURIComponent(codigo)}`);
+        const lista = await res.json();
+        if (lista && lista.length > 0) {
+            if (posEl && posEl.__x) posEl.__x.$data.agregarAlCarrito(lista[0]);
+            window.Toast.fire({ icon: 'success', title: `✅ ${lista[0].nombre} agregado` });
+        } else {
+            window.Toast.fire({ icon: 'warning', title: `Código ${codigo} no encontrado en el catálogo` });
+        }
+    } catch(e) {
+        window.Toast.fire({ icon: 'warning', title: `Error buscando: ${codigo}` });
+    }
+
+    // Reanudar detección tras 1.5 segundos
+    setTimeout(() => {
+        if (window.POS_EscanerActivo) window.POS_IniciarDetector(document.getElementById('pos-cam-video'));
+    }, 1500);
+};
+
+window.POS_ToggleLinterna = async function() {
+    if (!window.POS_MediaStream) return;
+    const track = window.POS_MediaStream.getVideoTracks()[0];
+    if (!track) return;
+    try {
+        window.POS_LinternaEncendida = !window.POS_LinternaEncendida;
+        await track.applyConstraints({ advanced: [{ torch: window.POS_LinternaEncendida }] });
+    } catch(e) {
+        window.Toast.fire({ icon: 'info', title: 'Linterna no disponible en este dispositivo' });
+    }
+};
 </script>
 @endsection
