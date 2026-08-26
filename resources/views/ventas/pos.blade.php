@@ -442,7 +442,7 @@
                 </button>
             </div>
 
-    <!-- MODAL ESCÁNER CÁMARA (HTML5 QR/BARCODE SCANNER) -->
+    <!-- MODAL ESCÁNER CÁMARA (NATIVE BARCODE DETECTOR + HTML5 QR) -->
     <div x-show="escanerAbierto" x-cloak 
          class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4" 
          style="display:none;">
@@ -465,18 +465,22 @@
             </div>
 
             <!-- Visor de Cámara -->
-            <div class="p-3 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[280px]">
-                <style>
-                    #qr-reader { width: 100% !important; border: none !important; }
-                    #qr-reader video { width: 100% !important; height: auto !important; max-height: 55vh !important; border-radius: 1rem !important; object-fit: cover !important; }
-                    #qr-reader__scan_region { background: transparent !important; }
-                    #qr-reader__dashboard { display: none !important; }
-                    #qr-reader__status_span { display: none !important; }
-                </style>
-                <div id="qr-reader" class="w-full rounded-2xl overflow-hidden" style="border: none;"></div>
-                <div class="mt-2 text-center text-slate-400 text-[11px] flex items-center gap-1.5">
+            <div class="p-3 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[300px]">
+                <div class="relative w-full h-64 bg-black rounded-2xl overflow-hidden flex items-center justify-center">
+                    <video id="pos-cam-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                    
+                    <!-- Fallback container para html5-qrcode si se necesita -->
+                    <div id="qr-reader" class="absolute inset-0 w-full h-full" style="display: none;"></div>
+
+                    <!-- Guía visual de escaneo con láser rojo -->
+                    <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 h-36 border-2 border-emerald-400/80 rounded-2xl shadow-lg pointer-events-none flex flex-col justify-between p-2">
+                        <div class="w-full h-0.5 bg-gradient-to-r from-red-500 via-emerald-400 to-red-500 animate-pulse my-auto shadow-sm shadow-emerald-400"></div>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-center text-slate-300 text-[11px] flex items-center gap-1.5 font-medium">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    <span>Buscando código en tiempo real...</span>
+                    <span x-text="camaraEstadoTexto || 'Cámara activa buscando código de barras...'"></span>
                 </div>
             </div>
 
@@ -622,130 +626,130 @@ function pos() {
 
         abrirEscanerCamara() {
             this.escanerAbierto = true;
+            this.camaraEstadoTexto = 'Iniciando cámara...';
             this.$nextTick(() => {
                 setTimeout(() => {
-                    this.iniciarCamara();
-                }, 350);
+                    this.iniciarCamaraNativa();
+                }, 250);
             });
         },
 
         cerrarEscanerCamara() {
+            if (this.animFrameId) {
+                cancelAnimationFrame(this.animFrameId);
+                this.animFrameId = null;
+            }
+            if (this.camaraMediaStream) {
+                try {
+                    this.camaraMediaStream.getTracks().forEach(track => track.stop());
+                } catch(e){}
+                this.camaraMediaStream = null;
+            }
             if (this.html5QrCodeInstance) {
                 try {
-                    this.html5QrCodeInstance.stop().then(() => {
-                        try { this.html5QrCodeInstance.clear(); } catch(e){}
-                        this.html5QrCodeInstance = null;
-                    }).catch(() => {
-                        this.html5QrCodeInstance = null;
-                    });
-                } catch(e) {
-                    this.html5QrCodeInstance = null;
-                }
+                    this.html5QrCodeInstance.stop().catch(() => {});
+                } catch(e){}
+                this.html5QrCodeInstance = null;
             }
             this.escanerAbierto = false;
         },
 
-        async iniciarCamara() {
-            if (typeof Html5Qrcode === 'undefined') {
-                Toast.fire({ icon: 'error', title: 'Librería de escáner no disponible.' });
-                return;
+        async iniciarCamaraNativa() {
+            const video = document.getElementById('pos-cam-video');
+            if (!video) return;
+
+            // Limpiar streams anteriores
+            if (this.camaraMediaStream) {
+                this.camaraMediaStream.getTracks().forEach(t => t.stop());
             }
 
-            const qrContainer = document.getElementById('qr-reader');
-            if (!qrContainer) return;
-            qrContainer.innerHTML = ''; // Limpiar previo
-
             try {
-                const formats = [
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.QR_CODE
-                ];
-
-                this.html5QrCodeInstance = new Html5Qrcode("qr-reader", {
-                    formatsToSupport: formats,
-                    verbose: false
-                });
-
-                const scanConfig = {
-                    fps: 20,
-                    qrbox: (viewfinderWidth, viewfinderHeight) => {
-                        const width = Math.floor(Math.min(viewfinderWidth, 320) * 0.85);
-                        const height = Math.floor(width * 0.65);
-                        return { width, height };
+                // 1. Obtener stream de la cámara trasera con getUserMedia nativo
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     },
-                    aspectRatio: 1.333333
+                    audio: false
                 };
 
-                // Intentar obtener cámaras del dispositivo
-                try {
-                    const devices = await Html5Qrcode.getCameras();
-                    if (devices && devices.length > 0) {
-                        // Seleccionar preferentemente cámara trasera
-                        let selectedCam = devices[devices.length - 1].id;
-                        const backCam = devices.find(d => {
-                            const lbl = (d.label || '').toLowerCase();
-                            return lbl.includes('back') || lbl.includes('rear') || lbl.includes('trasera') || lbl.includes('environment');
-                        });
-                        if (backCam) selectedCam = backCam.id;
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                this.camaraMediaStream = stream;
+                video.srcObject = stream;
+                await video.play();
 
-                        await this.html5QrCodeInstance.start(
-                            selectedCam,
-                            scanConfig,
+                this.camaraEstadoTexto = 'Apunta la cámara al código de barras';
+
+                // 2. Si el navegador soporta BarcodeDetector nativo (Chrome Android / WebView)
+                if ('BarcodeDetector' in window) {
+                    try {
+                        const formats = ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'qr_code'];
+                        const detector = new BarcodeDetector({ formats: formats });
+
+                        const scanLoop = async () => {
+                            if (!this.escanerAbierto || !this.camaraMediaStream) return;
+                            try {
+                                if (video.readyState >= 2) {
+                                    const barcodes = await detector.detect(video);
+                                    if (barcodes && barcodes.length > 0) {
+                                        const code = barcodes[0].rawValue;
+                                        if (code) {
+                                            this.onCodigoEscaneado(code);
+                                            return;
+                                        }
+                                    }
+                                }
+                            } catch(e) {}
+                            this.animFrameId = requestAnimationFrame(scanLoop);
+                        };
+                        this.animFrameId = requestAnimationFrame(scanLoop);
+                        return;
+                    } catch(e) {
+                        console.warn('BarcodeDetector error:', e);
+                    }
+                }
+
+                // 3. Fallback con Html5Qrcode si BarcodeDetector nativo no está disponible
+                if (typeof Html5Qrcode !== 'undefined') {
+                    const qrEl = document.getElementById('qr-reader');
+                    if (qrEl) {
+                        qrEl.style.display = 'block';
+                        video.style.display = 'none';
+                        this.html5QrCodeInstance = new Html5Qrcode("qr-reader");
+                        this.html5QrCodeInstance.start(
+                            { facingMode: "environment" },
+                            { fps: 20, qrbox: { width: 260, height: 180 } },
                             (decodedText) => this.onCodigoEscaneado(decodedText),
                             () => {}
-                        );
-                        return;
+                        ).catch(() => {});
                     }
-                } catch(camErr) {
-                    console.warn('getCameras fallback:', camErr);
                 }
 
-                // Fallback directo con facingMode environment
-                await this.html5QrCodeInstance.start(
-                    { facingMode: "environment" },
-                    scanConfig,
-                    (decodedText) => this.onCodigoEscaneado(decodedText),
-                    () => {}
-                );
-
-            } catch(e) {
-                console.error("Error al iniciar escáner:", e);
-                // Si falla la cámara trasera, intentar con cualquier cámara disponible
-                try {
-                    await this.html5QrCodeInstance.start(
-                        { facingMode: "user" },
-                        { fps: 15, qrbox: { width: 250, height: 160 } },
-                        (decodedText) => this.onCodigoEscaneado(decodedText),
-                        () => {}
-                    );
-                } catch(errUser) {
-                    Toast.fire({ icon: 'warning', title: 'Permite el acceso a la cámara en el navegador para escanear.' });
-                    this.cerrarEscanerCamara();
-                }
+            } catch(err) {
+                console.error("Error al encender cámara:", err);
+                Toast.fire({ 
+                    icon: 'warning', 
+                    title: 'Por favor concede permiso de cámara en tu navegador para escanear.' 
+                });
+                this.cerrarEscanerCamara();
             }
         },
 
         async onCodigoEscaneado(codigo) {
             AudioPOS.beep(1200, 'sine', 0.1);
-            Toast.fire({ icon: 'success', title: `Escaneado: ${codigo}` });
+            Toast.fire({ icon: 'success', title: `Detectado: ${codigo}` });
             this.busqueda = codigo;
             await this.buscarYAgregarCodigo(codigo);
-
-            if (this.html5QrCodeInstance) {
-                try {
-                    this.html5QrCodeInstance.pause(true);
-                    setTimeout(() => {
-                        if (this.html5QrCodeInstance && this.escanerAbierto) {
-                            try { this.html5QrCodeInstance.resume(); } catch(e){}
-                        }
-                    }, 1500);
-                } catch(e){}
-            }
+            
+            // Pausar y reanudar tras 1.5s
+            setTimeout(() => {
+                if (this.escanerAbierto && this.camaraMediaStream) {
+                    if ('BarcodeDetector' in window && !this.animFrameId) {
+                        this.iniciarCamaraNativa();
+                    }
+                }
+            }, 1500);
         },
 
         async buscarYAgregarCodigo(codigo) {
