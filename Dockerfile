@@ -1,12 +1,17 @@
 FROM php:8.3-apache
 
-# Instalar dependencias mínimas indispensables
+# Instalar dependencias del sistema requeridas por Greenter, Excel e Intervention Image
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libpq-dev \
     libzip-dev \
-    && docker-php-ext-install pdo_pgsql pdo_mysql zip \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libxml2-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pdo_mysql gd zip soap fileinfo bcmath \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar Composer
