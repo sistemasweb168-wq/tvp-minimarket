@@ -5,6 +5,8 @@
 @section('content')
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <div x-data="pos()" x-init="init()">
     <!-- Selector Móvil: Catálogo vs Carrito -->
     <div class="lg:hidden flex bg-slate-200/80 p-1 rounded-2xl mb-3 shadow-inner">
@@ -27,9 +29,9 @@
 
         <!-- Panel Productos (Visible siempre en Desktop, o si vistaMovil === 'productos' en móvil) -->
         <div class="lg:col-span-2 space-y-4" :class="vistaMovil === 'productos' ? 'block' : 'hidden lg:block'">
-            <!-- Búsqueda -->
+            <!-- Búsqueda + Botón Escáner Cámara -->
             <div class="bg-white rounded-2xl shadow-md p-3 sm:p-4">
-                <div class="flex gap-2 sm:gap-3 items-center">
+                <div class="flex gap-2 sm:gap-2.5 items-center">
                     <div class="flex-1 relative">
                         <i class="fas fa-search absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input type="text" x-model="busqueda" @input.debounce.300ms="buscarProductos()"
@@ -37,12 +39,21 @@
                                class="w-full pl-10 sm:pl-12 pr-3 py-2.5 sm:py-3 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-slate-700 font-medium text-xs sm:text-sm"
                                placeholder="Buscar producto o código de barras (Enter para agregar)" autofocus>
                     </div>
-                    <button type="button" @click="busqueda = ''; productosFiltrados = productosDestacados" class="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-600 text-xs sm:text-sm">
+
+                    <!-- Botón Escáner Cámara Celular / PC -->
+                    <button type="button" @click="abrirEscanerCamara()" title="Escanear con la Cámara del Celular / PC"
+                            class="px-3.5 py-2.5 sm:py-3 gradient-primary hover:brightness-105 text-white rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm flex-shrink-0">
+                        <i class="fas fa-camera text-sm sm:text-base"></i>
+                        <span class="hidden sm:inline">Cámara</span>
+                    </button>
+
+                    <button type="button" @click="busqueda = ''; productosFiltrados = productosDestacados" class="px-3 py-2.5 sm:py-3 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-600 text-xs sm:text-sm flex-shrink-0">
                         <i class="fas fa-times"></i>
                     </button>
+
                     <!-- Toggle Sonido -->
                     <button type="button" @click="toggleSonido()" :title="sonidoSilenciado ? 'Activar Sonidos POS' : 'Silenciar Sonidos POS'"
-                            class="px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5"
+                            class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0"
                             :class="sonidoSilenciado ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'">
                         <i :class="sonidoSilenciado ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
                     </button>
@@ -431,6 +442,44 @@
                 </button>
             </div>
 
+    <!-- MODAL ESCÁNER CÁMARA (HTML5 QR/BARCODE SCANNER) -->
+    <div x-show="escanerAbierto" x-cloak 
+         class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4" 
+         style="display:none;">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[92vh]" 
+             @click.outside="cerrarEscanerCamara()">
+            
+            <div class="p-3.5 sm:p-4 bg-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-xs sm:text-sm">Escáner de Código de Barras</h4>
+                        <p class="text-[10px] text-slate-400">Apunta la cámara al código de barras del producto</p>
+                    </div>
+                </div>
+                <button type="button" @click="cerrarEscanerCamara()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Visor de Cámara -->
+            <div class="p-3 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[280px]">
+                <div id="qr-reader" class="w-full rounded-2xl overflow-hidden" style="border: none;"></div>
+                <div class="mt-2 text-center text-slate-400 text-[11px] flex items-center gap-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Buscando código en tiempo real...</span>
+                </div>
+            </div>
+
+            <!-- Pie del Modal -->
+            <div class="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                <span class="text-xs text-slate-500 font-medium">Detecta EAN-13, Code 128 y QR</span>
+                <button type="button" @click="cerrarEscanerCamara()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 transition">
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -524,6 +573,10 @@ function pos() {
         categoriaActiva: null,
         carrito: [],
         
+        // Escáner Cámara
+        escanerAbierto: false,
+        html5QrCodeInstance: null,
+
         // Modal de Checkout y Datos del Cliente
         modalPago: false,
         procesando: false,
@@ -554,9 +607,89 @@ function pos() {
                     if (this.carrito.length > 0) this.abrirPago(); 
                 }
                 if (e.key === 'Escape') { 
+                    if (this.escanerAbierto) this.cerrarEscanerCamara();
                     if (this.modalPago) this.modalPago = false; 
                 }
             });
+        },
+
+        abrirEscanerCamara() {
+            this.escanerAbierto = true;
+            setTimeout(() => {
+                this.iniciarCamara();
+            }, 250);
+        },
+
+        cerrarEscanerCamara() {
+            if (this.html5QrCodeInstance) {
+                this.html5QrCodeInstance.stop().then(() => {
+                    this.html5QrCodeInstance.clear();
+                    this.html5QrCodeInstance = null;
+                }).catch(() => {
+                    this.html5QrCodeInstance = null;
+                });
+            }
+            this.escanerAbierto = false;
+        },
+
+        iniciarCamara() {
+            if (typeof Html5Qrcode === 'undefined') {
+                Toast.fire({ icon: 'error', title: 'Librería de escáner no disponible.' });
+                return;
+            }
+
+            try {
+                const config = {
+                    fps: 15,
+                    qrbox: { width: 260, height: 180 },
+                    aspectRatio: 1.333333
+                };
+
+                this.html5QrCodeInstance = new Html5Qrcode("qr-reader");
+                this.html5QrCodeInstance.start(
+                    { facingMode: "environment" },
+                    config,
+                    (decodedText) => {
+                        this.onCodigoEscaneado(decodedText);
+                    },
+                    (errorMessage) => {}
+                ).catch(err => {
+                    Toast.fire({ icon: 'warning', title: 'No se pudo acceder a la cámara. Permite el acceso a la cámara en tu navegador.' });
+                    this.escanerAbierto = false;
+                });
+            } catch(e) {
+                Toast.fire({ icon: 'error', title: 'Error al inicializar cámara: ' + e.message });
+                this.escanerAbierto = false;
+            }
+        },
+
+        async onCodigoEscaneado(codigo) {
+            AudioPOS.beep(1200, 'sine', 0.1);
+            this.busqueda = codigo;
+            await this.buscarYAgregarCodigo(codigo);
+            if (this.html5QrCodeInstance) {
+                try {
+                    this.html5QrCodeInstance.pause(true);
+                    setTimeout(() => {
+                        if (this.html5QrCodeInstance && this.escanerAbierto) {
+                            try { this.html5QrCodeInstance.resume(); } catch(e){}
+                        }
+                    }, 1400);
+                } catch(e){}
+            }
+        },
+
+        async buscarYAgregarCodigo(codigo) {
+            try {
+                const res = await fetch(`/api/productos/buscar?q=${encodeURIComponent(codigo)}`);
+                const productos = await res.json();
+                if (productos && productos.length > 0) {
+                    this.agregarAlCarrito(productos[0]);
+                    Toast.fire({ icon: 'success', title: `+ ${productos[0].nombre}` });
+                } else {
+                    Toast.fire({ icon: 'warning', title: `Producto no encontrado: ${codigo}` });
+                }
+            } catch(e) {}
         },
 
         playBeep() { AudioPOS.beep(880, 'sine', 0.06); },

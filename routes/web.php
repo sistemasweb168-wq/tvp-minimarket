@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::post('caja/abrir', [CajaController::class, 'abrirTurno'])->name('caja.abrir');
     Route::post('caja/turno/{turno}/cerrar', [CajaController::class, 'cerrarTurno'])->name('caja.cerrar');
     Route::get('caja/turno/{turno}/cierre', [CajaController::class, 'cierre'])->name('caja.cierre');
+    Route::get('caja/turno/{turno}/ticket', [CajaController::class, 'ticket'])->name('caja.ticket');
     Route::post('caja/turno/{turno}/movimiento', [CajaController::class, 'movimiento'])->name('caja.movimiento');
     Route::post('caja/store', [CajaController::class, 'storeCaja'])->name('caja.store');
 

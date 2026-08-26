@@ -52,9 +52,14 @@
         </div>
     @endif
 
-    <div class="flex gap-3 mt-6">
-        <a href="{{ route('caja.index') }}" class="flex-1 text-center py-3 bg-slate-200 rounded-lg">Volver</a>
-        <button onclick="window.print()" class="flex-1 gradient-primary text-white py-3 rounded-lg font-semibold"><i class="fas fa-print mr-2"></i>Imprimir</button>
+    <div class="flex flex-col sm:flex-row gap-3 mt-6">
+        <a href="{{ route('caja.index') }}" class="flex-1 text-center py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition">Volver</a>
+        <a href="{{ route('caja.ticket', $turno->id) }}" target="_blank" class="flex-1 text-center py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition flex items-center justify-center gap-2">
+            <i class="fas fa-receipt"></i><span>Ticket 80mm</span>
+        </a>
+        <button onclick="window.print()" class="flex-1 gradient-primary text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-sm">
+            <i class="fas fa-print"></i><span>Imprimir A4</span>
+        </button>
     </div>
 </div>
 @endsection

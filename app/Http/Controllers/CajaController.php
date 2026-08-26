@@ -83,6 +83,12 @@ class CajaController extends Controller
         return view('caja.cierre', compact('turno'));
     }
 
+    public function ticket(TurnoCaja $turno)
+    {
+        $turno->load(['caja', 'user', 'movimientos.user', 'ventas']);
+        return view('caja.ticket', compact('turno'));
+    }
+
     public function movimiento(Request $request, TurnoCaja $turno)
     {
         $data = $request->validate([

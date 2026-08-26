@@ -234,9 +234,12 @@
                 </div>
 
                 @if($t->estado != 'abierto')
-                    <div class="pt-2 border-t border-slate-100 flex justify-end">
-                        <a href="{{ route('caja.cierre', $t->id) }}" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1">
-                            <i class="fas fa-file-invoice text-[10px]"></i><span>Ver Resumen de Cierre</span>
+                    <div class="pt-2 border-t border-slate-100 flex gap-1.5 justify-end">
+                        <a href="{{ route('caja.ticket', $t->id) }}" target="_blank" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                            <i class="fas fa-print text-xs"></i><span>Ticket Cierre</span>
+                        </a>
+                        <a href="{{ route('caja.cierre', $t->id) }}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                            <i class="fas fa-file-invoice text-xs"></i><span>Resumen</span>
                         </a>
                     </div>
                 @endif
@@ -261,6 +264,7 @@
                     <th class="py-3 px-4 text-right">Ventas</th>
                     <th class="py-3 px-4 text-right">Diferencia</th>
                     <th class="py-3 px-4 text-center">Estado</th>
+                    <th class="py-3 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -278,7 +282,13 @@
                         @if($t->estado == 'abierto')
                             <span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold">Abierto</span>
                         @else
-                            <a href="{{ route('caja.cierre', $t->id) }}" class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-xs font-bold hover:bg-slate-200 transition">Ver Cierre</a>
+                            <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-xs font-bold">Cerrado</span>
+                        @endif
+                    </td>
+                    <td class="py-3 px-4 text-right whitespace-nowrap">
+                        @if($t->estado != 'abierto')
+                            <a href="{{ route('caja.ticket', $t->id) }}" target="_blank" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg inline-block text-xs font-bold" title="Imprimir Ticket de Cierre"><i class="fas fa-print"></i></a>
+                            <a href="{{ route('caja.cierre', $t->id) }}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg inline-block text-xs font-bold" title="Ver Resumen Completo"><i class="fas fa-eye"></i></a>
                         @endif
                     </td>
                 </tr>

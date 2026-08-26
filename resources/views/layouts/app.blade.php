@@ -6,9 +6,24 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'TPV Minimarket') | {{ $empresaGlobal->nombre_comercial ?? 'TPV Minimarket' }}</title>
 
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bodega Valezka">
+    <link rel="manifest" href="/manifest.json">
+
     @if($empresaGlobal && $empresaGlobal->logo_url)
         <link rel="icon" href="{{ $empresaGlobal->logo_url }}">
+        <link rel="apple-touch-icon" href="{{ $empresaGlobal->logo_url }}">
     @endif
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+    </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
