@@ -1,0 +1,1 @@
+Coloca aquí una imagen llamada producto-default.png que se usará como placeholder cuando un producto no tenga imagen.
