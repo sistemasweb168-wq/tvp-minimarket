@@ -23,12 +23,15 @@ WORKDIR /var/www/html
 # Copiar archivos del proyecto
 COPY . /var/www/html
 
-# Instalar dependencias de Composer optimizadas para producción
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Crear directorios requeridos por Laravel
+RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && chmod -R 777 storage bootstrap/cache
+
+# Instalar dependencias de Composer sin ejecutar scripts durante el build
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Permisos
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+RUN chown -R www-data:www-data /var/www/html \
     && chmod +x /var/www/html/entrypoint.sh
 
 # Puerto expuesto
