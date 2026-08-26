@@ -191,75 +191,75 @@
     <!-- ============================================================= -->
     <!-- 🚀 MODAL PROFESIONAL DE CHECKOUT & EMISIÓN (ZERO SCROLL FIT)  -->
     <!-- ============================================================= -->
-    <div x-show="modalPago" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-2 sm:p-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-100 transform transition-all" @click.outside="modalPago = false">
+    <div x-show="modalPago" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-2 sm:p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[94vh] flex flex-col overflow-hidden border border-slate-100 transform transition-all" @click.outside="modalPago = false">
             
-            <!-- Encabezado Compacto -->
-            <div class="gradient-primary text-white px-5 py-3 flex justify-between items-center">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-base">
+            <!-- Encabezado Compacto Fijo -->
+            <div class="gradient-primary text-white px-4 sm:px-5 py-2.5 sm:py-3 flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/20 flex items-center justify-center text-sm sm:text-base">
                         <i class="fas fa-cash-register"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-extrabold leading-tight">Procesar Venta y Comprobante</h3>
-                        <p class="text-[11px] text-emerald-100 font-medium">Turno #{{ $turnoActivo->id }} • {{ $turnoActivo->caja->nombre }}</p>
+                        <h3 class="text-sm sm:text-base font-extrabold leading-tight">Procesar Venta y Cobro</h3>
+                        <p class="text-[10px] sm:text-[11px] text-emerald-100 font-medium">Turno #{{ $turnoActivo->id }} • {{ $turnoActivo->caja->nombre }}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 sm:gap-3">
                     <button type="button" @click="toggleSonido()" :title="sonidoSilenciado ? 'Activar Sonidos' : 'Silenciar Sonidos'"
-                            class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition text-sm">
+                            class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition text-xs sm:text-sm">
                         <i :class="sonidoSilenciado ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
                     </button>
-                    <button type="button" @click="modalPago = false" class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition">
-                        <i class="fas fa-times text-base"></i>
+                    <button type="button" @click="modalPago = false" class="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+                        <i class="fas fa-times text-sm sm:text-base"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Contenido en Grid 2 Columnas (Cero Scroll) -->
-            <div class="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Contenido con Scroll Interno Suave (Grid 2 Columnas) -->
+            <div class="p-3 sm:p-5 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 
-                <!-- COLUMNA IZQUIERDA: Comprobante & Cliente -->
-                <div class="space-y-3 flex flex-col justify-between">
+                <!-- COLUMNA IZQUIERDA: Comprobante & Cliente & Total -->
+                <div class="space-y-2.5 sm:space-y-3 flex flex-col justify-between">
                     
                     <!-- Selector de Comprobante -->
                     <div>
-                        <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">1. Tipo de Comprobante</label>
+                        <label class="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">1. Tipo de Comprobante</label>
                         <div class="grid grid-cols-3 gap-1.5">
                             <button type="button" @click="cambiarTipoComprobante('TICKET')"
                                     :class="tipoComprobante === 'TICKET' ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20 font-bold' : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100'"
-                                    class="border-2 py-2 px-1.5 rounded-xl text-center text-xs transition flex flex-col items-center justify-center">
-                                <span class="font-extrabold flex items-center gap-1"><i class="fas fa-receipt text-xs text-emerald-600"></i>Ticket</span>
+                                    class="border-2 py-1.5 sm:py-2 px-1 rounded-xl text-center text-xs transition flex flex-col items-center justify-center">
+                                <span class="font-extrabold flex items-center gap-1 text-[11px] sm:text-xs"><i class="fas fa-receipt text-xs text-emerald-600"></i>Ticket</span>
                                 <span class="text-[9px] text-slate-400">Nota Venta</span>
                             </button>
 
                             <button type="button" @click="cambiarTipoComprobante('BOLETA')"
                                     :class="tipoComprobante === 'BOLETA' ? 'border-blue-500 bg-blue-50 text-blue-800 ring-2 ring-blue-500/20 font-bold' : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100'"
-                                    class="border-2 py-2 px-1.5 rounded-xl text-center text-xs transition flex flex-col items-center justify-center">
-                                <span class="font-extrabold flex items-center gap-1"><i class="fas fa-file-invoice text-xs text-blue-600"></i>Boleta</span>
+                                    class="border-2 py-1.5 sm:py-2 px-1 rounded-xl text-center text-xs transition flex flex-col items-center justify-center">
+                                <span class="font-extrabold flex items-center gap-1 text-[11px] sm:text-xs"><i class="fas fa-file-invoice text-xs text-blue-600"></i>Boleta</span>
                                 <span class="text-[9px] text-slate-400">DNI / Varios</span>
                             </button>
 
                             <button type="button" @click="cambiarTipoComprobante('FACTURA')"
                                     :class="tipoComprobante === 'FACTURA' ? 'border-purple-500 bg-purple-50 text-purple-800 ring-2 ring-purple-500/20 font-bold' : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100'"
-                                    class="border-2 py-2 px-1.5 rounded-xl text-center text-xs transition flex flex-col items-center justify-center">
-                                <span class="font-extrabold flex items-center gap-1"><i class="fas fa-building text-xs text-purple-600"></i>Factura</span>
+                                    class="border-2 py-1.5 sm:py-2 px-1 rounded-xl text-center text-xs transition flex flex-col items-center justify-center">
+                                <span class="font-extrabold flex items-center gap-1 text-[11px] sm:text-xs"><i class="fas fa-building text-xs text-purple-600"></i>Factura</span>
                                 <span class="text-[9px] text-slate-400">RUC 11 Díg.</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- Panel de Cliente -->
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2.5 flex-1">
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 sm:p-3 space-y-2 flex-1">
                         <div class="flex justify-between items-center">
-                            <label class="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                            <label class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1">
                                 <i class="fas fa-user-tag text-emerald-500 text-xs"></i>
                                 <span>2. Identificación del Cliente</span>
                             </label>
                             
                             <template x-if="tipoComprobante !== 'FACTURA'">
                                 <button type="button" @click="toggleClienteGenerico()" 
-                                        class="text-[11px] font-bold px-2 py-0.5 rounded-lg transition"
+                                        class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg transition"
                                         :class="clienteModo === 'generico' ? 'bg-slate-200 text-slate-700' : 'text-emerald-600 hover:underline'">
                                     <span x-text="clienteModo === 'generico' ? '✓ Modo Varios' : '+ DNI'"></span>
                                 </button>
@@ -268,23 +268,23 @@
 
                         <!-- Si está en modo Clientes Varios -->
                         <div x-show="clienteModo === 'generico' && tipoComprobante !== 'FACTURA'" 
-                             class="bg-white p-2.5 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
+                             class="bg-white p-2 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 text-xs">
-                                    <i class="fas fa-users"></i>
+                                <div class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 text-xs">
+                                    <i class="fas fa-users text-[10px]"></i>
                                 </div>
                                 <div>
                                     <p class="font-bold text-slate-800 text-xs leading-tight">CLIENTES VARIOS</p>
-                                    <p class="text-[10px] text-slate-400">Venta rápida al público</p>
+                                    <p class="text-[9px] text-slate-400">Venta rápida al público</p>
                                 </div>
                             </div>
-                            <button type="button" @click="clienteModo = 'documento'" class="text-[11px] font-bold text-emerald-600 hover:underline">
+                            <button type="button" @click="clienteModo = 'documento'" class="text-[10px] sm:text-[11px] font-bold text-emerald-600 hover:underline">
                                 Cambiar a DNI
                             </button>
                         </div>
 
                         <!-- Si está en modo Documento / Factura -->
-                        <div x-show="clienteModo === 'documento' || tipoComprobante === 'FACTURA'" class="space-y-2">
+                        <div x-show="clienteModo === 'documento' || tipoComprobante === 'FACTURA'" class="space-y-1.5">
                             <div class="flex gap-1.5">
                                 <div class="relative flex-1">
                                     <input type="text" x-model="clienteDocumento" id="inputDocumentoPos"
@@ -298,7 +298,7 @@
                                     </span>
                                 </div>
                                 <button type="button" @click="consultarApiDocumento()" :disabled="consultandoApi || !clienteDocumento"
-                                        class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs transition disabled:opacity-50 flex items-center gap-1">
+                                        class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs transition disabled:opacity-50 flex items-center gap-1">
                                     <i class="fas fa-search text-[10px]"></i>
                                     <span x-text="tipoComprobante === 'FACTURA' ? 'SUNAT' : 'RENIEC'"></span>
                                 </button>
@@ -306,9 +306,9 @@
 
                             <!-- Feedback de Consulta -->
                             <template x-if="apiFeedback">
-                                <div class="text-[11px] px-2 py-1 rounded-lg flex items-center gap-1.5 leading-tight"
+                                <div class="text-[10px] px-2 py-0.5 rounded-lg flex items-center gap-1 leading-tight"
                                      :class="apiFeedback.tipo === 'success' ? 'bg-emerald-100/80 text-emerald-800' : 'bg-amber-100/80 text-amber-800'">
-                                    <i :class="apiFeedback.tipo === 'success' ? 'fas fa-check-circle' : 'fas fa-info-circle'" class="text-[10px]"></i>
+                                    <i :class="apiFeedback.tipo === 'success' ? 'fas fa-check-circle' : 'fas fa-info-circle'" class="text-[9px]"></i>
                                     <span class="truncate" x-text="apiFeedback.mensaje"></span>
                                 </div>
                             </template>
@@ -319,117 +319,118 @@
 
                             <div x-show="tipoComprobante === 'FACTURA' || clienteDireccion">
                                 <input type="text" x-model="clienteDireccion" placeholder="Dirección Fiscal (opcional)"
-                                       class="w-full px-2.5 py-1 bg-white border border-slate-300 rounded-xl text-[11px] text-slate-600 focus:outline-none focus:border-emerald-500">
+                                       class="w-full px-2.5 py-1 bg-white border border-slate-300 rounded-xl text-[10px] text-slate-600 focus:outline-none focus:border-emerald-500">
                             </div>
                         </div>
                     </div>
 
                     <!-- Resumen de Totales Compacto -->
-                    <div class="bg-slate-900 text-white rounded-2xl p-3 flex justify-between items-center shadow-md">
+                    <div class="bg-slate-900 text-white rounded-2xl p-2.5 sm:p-3 flex justify-between items-center shadow-md">
                         <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total a Cobrar</span>
-                            <p class="text-2xl sm:text-3xl font-black text-emerald-400 leading-none mt-0.5" x-text="`{{ $moneda }} ${total.toFixed(2)}`"></p>
+                            <span class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total a Cobrar</span>
+                            <p class="text-xl sm:text-2xl font-black text-emerald-400 leading-none mt-0.5" x-text="`{{ $moneda }} ${total.toFixed(2)}`"></p>
                         </div>
                         <div class="text-right">
-                            <span class="text-[11px] bg-white/10 px-2.5 py-1 rounded-full text-slate-300 font-bold" x-text="`${carrito.length} productos`"></span>
+                            <span class="text-[10px] sm:text-[11px] bg-white/10 px-2 py-0.5 rounded-full text-slate-300 font-bold" x-text="`${carrito.length} productos`"></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: Forma de Pago & Monto & Confirmación -->
-                <div class="space-y-3 flex flex-col justify-between">
+                <!-- COLUMNA DERECHA: Forma de Pago & Monto -->
+                <div class="space-y-2.5 sm:space-y-3 flex flex-col justify-between">
                     
                     <!-- Selector de Forma de Pago -->
                     <div>
-                        <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1.5">3. Forma de Pago</label>
+                        <label class="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">3. Forma de Pago</label>
                         <div class="grid grid-cols-4 gap-1.5">
                             <button type="button" @click="formaPago = 'efectivo'"
                                     :class="formaPago === 'efectivo' ? 'bg-emerald-600 text-white shadow-md font-bold' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
-                                    class="py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
-                                <i class="fas fa-money-bill-wave text-sm"></i>
-                                <span>Efectivo</span>
+                                    class="py-1.5 sm:py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
+                                <i class="fas fa-money-bill-wave text-xs sm:text-sm"></i>
+                                <span class="text-[10px] sm:text-xs">Efectivo</span>
                             </button>
                             <button type="button" @click="formaPago = 'yape'"
                                     :class="formaPago === 'yape' ? 'bg-purple-600 text-white shadow-md font-bold' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
-                                    class="py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
-                                <i class="fas fa-mobile-alt text-sm"></i>
-                                <span>Yape/Plin</span>
+                                    class="py-1.5 sm:py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
+                                <i class="fas fa-mobile-alt text-xs sm:text-sm"></i>
+                                <span class="text-[10px] sm:text-xs">Yape/Plin</span>
                             </button>
                             <button type="button" @click="formaPago = 'tarjeta'"
                                     :class="formaPago === 'tarjeta' ? 'bg-blue-600 text-white shadow-md font-bold' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
-                                    class="py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
-                                <i class="fas fa-credit-card text-sm"></i>
-                                <span>Tarjeta</span>
+                                    class="py-1.5 sm:py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
+                                <i class="fas fa-credit-card text-xs sm:text-sm"></i>
+                                <span class="text-[10px] sm:text-xs">Tarjeta</span>
                             </button>
                             <button type="button" @click="formaPago = 'transferencia'"
                                     :class="formaPago === 'transferencia' ? 'bg-slate-800 text-white shadow-md font-bold' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
-                                    class="py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
-                                <i class="fas fa-university text-sm"></i>
-                                <span>Transfer.</span>
+                                    class="py-1.5 sm:py-2 px-1 rounded-xl text-xs transition flex flex-col items-center justify-center gap-0.5">
+                                <i class="fas fa-university text-xs sm:text-sm"></i>
+                                <span class="text-[10px] sm:text-xs">Transfer.</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- Detalle de Pago en Efectivo (Billetes rápidos y vuelto) -->
-                    <div x-show="formaPago === 'efectivo'" class="bg-slate-50 border border-slate-200 p-3 rounded-2xl space-y-2 flex-1">
+                    <div x-show="formaPago === 'efectivo'" class="bg-slate-50 border border-slate-200 p-2.5 sm:p-3 rounded-2xl space-y-1.5 sm:space-y-2 flex-1">
                         <div class="flex justify-between items-center">
-                            <label class="text-[11px] font-extrabold text-slate-700 uppercase">Monto Recibido</label>
-                            <button type="button" @click="montoRecibido = total; playBeep()" class="text-[11px] font-bold text-emerald-600 hover:underline">
+                            <label class="text-[10px] sm:text-[11px] font-extrabold text-slate-700 uppercase">Monto Recibido</label>
+                            <button type="button" @click="montoRecibido = total; playBeep()" class="text-[10px] sm:text-[11px] font-bold text-emerald-600 hover:underline">
                                 Monto Exacto
                             </button>
                         </div>
                         <input type="number" step="0.01" x-model.number="montoRecibido" id="inputMontoRecibido"
                                @keydown.enter.prevent="procesarVenta()"
-                               class="w-full px-3 py-1.5 text-2xl font-black text-center text-slate-800 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500">
+                               class="w-full px-2.5 py-1 text-xl sm:text-2xl font-black text-center text-slate-800 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500">
 
                         <!-- Billetes Rápidos -->
                         <div class="grid grid-cols-5 gap-1">
                             <template x-for="m in [10, 20, 50, 100, 200]" :key="m">
                                 <button type="button" @click="montoRecibido = m; playBeep()" 
-                                        class="py-1 bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 rounded-lg text-xs font-black text-slate-700 transition"
+                                        class="py-1 bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 rounded-lg text-[11px] sm:text-xs font-black text-slate-700 transition"
                                         x-text="`S/${m}`"></button>
                             </template>
                         </div>
 
                         <!-- Recuadro Vuelto / Cambio -->
-                        <div class="bg-emerald-100 border border-emerald-300 rounded-xl px-3 py-2 flex justify-between items-center shadow-inner">
-                            <span class="text-emerald-900 font-extrabold text-xs uppercase">Vuelto / Cambio:</span>
-                            <span class="text-2xl font-black text-emerald-700" x-text="`{{ $moneda }} ${cambio.toFixed(2)}`"></span>
+                        <div class="bg-emerald-100 border border-emerald-300 rounded-xl px-2.5 py-1.5 flex justify-between items-center shadow-inner">
+                            <span class="text-emerald-900 font-extrabold text-[11px] sm:text-xs uppercase">Vuelto / Cambio:</span>
+                            <span class="text-xl sm:text-2xl font-black text-emerald-700" x-text="`{{ $moneda }} ${cambio.toFixed(2)}`"></span>
                         </div>
                     </div>
 
                     <!-- Detalle Referencia para Medios Digitales -->
-                    <div x-show="formaPago !== 'efectivo'" class="bg-slate-50 border border-slate-200 p-3 rounded-2xl space-y-2 flex-1">
-                        <label class="block text-[11px] font-extrabold text-slate-700 uppercase">N° de Operación / Referencia (Opcional)</label>
+                    <div x-show="formaPago !== 'efectivo'" class="bg-slate-50 border border-slate-200 p-2.5 sm:p-3 rounded-2xl space-y-1.5 flex-1">
+                        <label class="block text-[10px] sm:text-[11px] font-extrabold text-slate-700 uppercase">N° Operación / Referencia</label>
                         <input type="text" x-model="referenciaPago" placeholder="Ej: 984521 o N° Voucher"
                                @keydown.enter.prevent="procesarVenta()"
-                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-emerald-500">
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-2.5 text-[11px] text-blue-700 flex items-center gap-2">
+                               class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-emerald-500">
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-2 text-[10px] text-blue-700 flex items-center gap-1.5">
                             <i class="fas fa-info-circle text-xs"></i>
-                            <span>El monto total se cobrará exactamente sin cálculo de vuelto.</span>
+                            <span>Cobro exacto sin cálculo de vuelto.</span>
                         </div>
-                    </div>
-
-                    <!-- Botones de Acción Final -->
-                    <div class="flex gap-2 pt-1">
-                        <button type="button" @click="modalPago = false" 
-                                class="w-1/3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition">
-                            Cancelar (Esc)
-                        </button>
-                        <button type="button" @click="procesarVenta()" :disabled="procesando || (formaPago === 'efectivo' && montoRecibido < total)"
-                                class="w-2/3 py-3 gradient-primary text-white rounded-xl font-extrabold text-sm shadow-lg shadow-emerald-500/25 hover:brightness-105 transition disabled:opacity-50 flex items-center justify-center gap-2">
-                            <span x-show="!procesando" class="flex items-center gap-1.5">
-                                <i class="fas fa-check-circle text-base"></i>
-                                <span>Emitir y Cobrar (Enter)</span>
-                            </span>
-                            <span x-show="procesando" class="flex items-center gap-1.5">
-                                <i class="fas fa-spinner fa-spin text-base"></i>
-                                <span>Procesando...</span>
-                            </span>
-                        </button>
                     </div>
                 </div>
             </div>
+
+            <!-- PIE DE ACCIONES FIJO (STICKY FOOTER - SIEMPRE VISIBLE EN CELULAR) -->
+            <div class="p-2.5 sm:p-4 bg-slate-50 border-t border-slate-200 flex gap-2 flex-shrink-0">
+                <button type="button" @click="modalPago = false" 
+                        class="w-1/3 py-2.5 sm:py-3 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-2xl font-bold text-xs sm:text-sm transition shadow-xs">
+                    Cancelar (Esc)
+                </button>
+                <button type="button" @click="procesarVenta()" :disabled="procesando || (formaPago === 'efectivo' && montoRecibido < total)"
+                        class="w-2/3 py-2.5 sm:py-3 gradient-primary text-white rounded-2xl font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/25 hover:brightness-105 transition active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2">
+                    <span x-show="!procesando" class="flex items-center gap-1.5">
+                        <i class="fas fa-check-circle text-sm sm:text-base"></i>
+                        <span>Emitir y Cobrar (Enter)</span>
+                    </span>
+                    <span x-show="procesando" class="flex items-center gap-1.5">
+                        <i class="fas fa-spinner fa-spin text-sm sm:text-base"></i>
+                        <span>Procesando...</span>
+                    </span>
+                </button>
+            </div>
+
         </div>
     </div>
 </div>
