@@ -442,56 +442,74 @@
                 </button>
             </div>
 
-    <!-- MODAL ESCÁNER CÁMARA (NATIVE BARCODE DETECTOR + HTML5 QR) -->
+    <!-- MODAL ESCÁNER CÁMARA FULLSCREEN (IDÉNTICO A LA IMAGEN DE REFERENCIA) -->
     <div x-show="escanerAbierto" x-cloak 
-         class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4" 
+         class="fixed inset-0 bg-black z-50 flex flex-col justify-between overflow-hidden" 
          style="display:none;">
-        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[92vh]" 
-             @click.outside="cerrarEscanerCamara()">
-            
-            <div class="p-3.5 sm:p-4 bg-slate-900 text-white flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                        <i class="fas fa-camera"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-extrabold text-xs sm:text-sm">Escáner de Código de Barras</h4>
-                        <p class="text-[10px] text-slate-400">Apunta la cámara al código de barras del producto</p>
-                    </div>
-                </div>
-                <button type="button" @click="cerrarEscanerCamara()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <!-- Visor de Cámara -->
-            <div class="p-3 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[300px]">
-                <div class="relative w-full h-64 bg-black rounded-2xl overflow-hidden flex items-center justify-center">
-                    <video id="pos-cam-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
-                    
-                    <!-- Fallback container para html5-qrcode si se necesita -->
-                    <div id="qr-reader" class="absolute inset-0 w-full h-full" style="display: none;"></div>
-
-                    <!-- Guía visual de escaneo con láser rojo -->
-                    <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 h-36 border-2 border-emerald-400/80 rounded-2xl shadow-lg pointer-events-none flex flex-col justify-between p-2">
-                        <div class="w-full h-0.5 bg-gradient-to-r from-red-500 via-emerald-400 to-red-500 animate-pulse my-auto shadow-sm shadow-emerald-400"></div>
-                    </div>
-                </div>
-
-                <div class="mt-2 text-center text-slate-300 text-[11px] flex items-center gap-1.5 font-medium">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    <span x-text="camaraEstadoTexto || 'Cámara activa buscando código de barras...'"></span>
-                </div>
-            </div>
-
-            <!-- Pie del Modal -->
-            <div class="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                <span class="text-xs text-slate-500 font-medium">Detecta EAN-13, Code 128 y QR</span>
-                <button type="button" @click="cerrarEscanerCamara()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 transition">
-                    Cerrar
-                </button>
-            </div>
+        
+        <!-- Stream de Video de la Cámara en Pantalla Completa -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden">
+            <video id="pos-cam-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+            <div id="qr-reader" class="absolute inset-0 w-full h-full" style="display:none;"></div>
         </div>
+
+        <!-- Máscara con Marco Central Verde Traslúcido (Estilo Escáner Nativo) -->
+        <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+            <!-- Fondo Oscurecido Superior -->
+            <div class="w-full flex-1 bg-black/60 backdrop-blur-[1px]"></div>
+            
+            <div class="w-full flex items-center justify-center">
+                <!-- Fondo Izquierda -->
+                <div class="flex-1 h-56 bg-black/60 backdrop-blur-[1px]"></div>
+                
+                <!-- Marco Central de Escaneo -->
+                <div class="w-72 h-56 border-2 border-emerald-400/90 rounded-3xl relative shadow-[0_0_20px_rgba(52,211,153,0.4)] flex items-center justify-center">
+                    <!-- Esquinas estilizadas -->
+                    <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-white rounded-tl-lg"></div>
+                    <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-white rounded-tr-lg"></div>
+                    <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-white rounded-bl-lg"></div>
+                    <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-white rounded-br-lg"></div>
+                    
+                    <!-- Línea láser de escaneo animada -->
+                    <div class="w-[90%] h-0.5 bg-gradient-to-r from-emerald-400/20 via-emerald-400 to-emerald-400/20 animate-pulse shadow-md shadow-emerald-400"></div>
+                </div>
+
+                <!-- Fondo Derecha -->
+                <div class="flex-1 h-56 bg-black/60 backdrop-blur-[1px]"></div>
+            </div>
+
+            <!-- Fondo Oscurecido Inferior -->
+            <div class="w-full flex-1 bg-black/60 backdrop-blur-[1px]"></div>
+        </div>
+
+        <!-- Barra Superior de Controles -->
+        <div class="relative z-10 p-4 pt-6 flex items-center justify-between text-white">
+            <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="text-xs font-bold tracking-wide" x-text="camaraEstadoTexto"></span>
+            </div>
+            
+            <button type="button" @click="cerrarEscanerCamara()" 
+                    class="w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 backdrop-blur-md text-white border border-white/20 flex items-center justify-center transition active:scale-95 shadow-lg">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Barra Inferior con Botón de Linterna / Flash -->
+        <div class="relative z-10 p-6 pb-10 flex items-center justify-between">
+            <div class="bg-black/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 text-white text-xs">
+                <p class="font-extrabold text-emerald-400">Enfoca el código de barras</p>
+                <p class="text-[10px] text-slate-300">EAN-13, UPC, Code 128 o QR</p>
+            </div>
+
+            <!-- Botón Circular de Linterna / Flash -->
+            <button type="button" @click="toggleLinterna()" 
+                    :class="linternaEncendida ? 'bg-amber-400 text-slate-950 shadow-amber-400/50' : 'bg-white text-slate-900 shadow-white/30'"
+                    class="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition active:scale-90 border-2 border-white/40">
+                <i class="fas fa-lightbulb text-xl"></i>
+            </button>
+        </div>
+
     </div>
 </div>
 @endsection
@@ -586,6 +604,10 @@ function pos() {
         
         // Escáner Cámara
         escanerAbierto: false,
+        camaraMediaStream: null,
+        camaraEstadoTexto: 'Iniciando cámara...',
+        linternaEncendida: false,
+        animFrameId: null,
         html5QrCodeInstance: null,
 
         // Modal de Checkout y Datos del Cliente
@@ -736,8 +758,23 @@ function pos() {
             }
         },
 
+        async toggleLinterna() {
+            if (!this.camaraMediaStream) return;
+            const track = this.camaraMediaStream.getVideoTracks()[0];
+            if (!track) return;
+            try {
+                this.linternaEncendida = !this.linternaEncendida;
+                await track.applyConstraints({
+                    advanced: [{ torch: this.linternaEncendida }]
+                });
+            } catch(e) {
+                Toast.fire({ icon: 'info', title: 'Linterna no compatible con este dispositivo' });
+            }
+        },
+
         async onCodigoEscaneado(codigo) {
             AudioPOS.beep(1200, 'sine', 0.1);
+            if (navigator.vibrate) navigator.vibrate(100);
             Toast.fire({ icon: 'success', title: `Detectado: ${codigo}` });
             this.busqueda = codigo;
             await this.buscarYAgregarCodigo(codigo);
