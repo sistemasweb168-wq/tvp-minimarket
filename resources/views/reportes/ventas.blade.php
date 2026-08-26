@@ -74,31 +74,62 @@
     </div>
 </div>
 
-<div class="bg-white rounded-2xl shadow-md p-6">
-    <h3 class="font-bold mb-4">Detalle de Ventas ({{ $ventas->count() }} tickets)</h3>
-    <table class="w-full text-sm">
-        <thead class="text-xs uppercase text-slate-500 border-b">
-            <tr>
-                <th class="text-left py-2">Ticket</th>
-                <th class="text-left py-2">Fecha</th>
-                <th class="text-left py-2">Cliente</th>
-                <th class="text-left py-2">Cajero</th>
-                <th class="text-left py-2">Pago</th>
-                <th class="text-right py-2">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach($ventas as $v)
-            <tr class="border-b hover:bg-slate-50">
-                <td class="py-2 font-mono text-xs">{{ $v->numero_ticket }}</td>
-                <td class="py-2">{{ $v->fecha_venta->format('d/m/Y H:i') }}</td>
-                <td class="py-2">{{ $v->cliente?->nombre_completo ?? 'Genérico' }}</td>
-                <td class="py-2">{{ $v->user->name }}</td>
-                <td class="py-2">{{ ucfirst($v->forma_pago) }}</td>
-                <td class="py-2 text-right font-bold text-emerald-600">{{ $moneda }}{{ number_format($v->total, 2) }}</td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
+<div class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
+    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="font-extrabold text-sm sm:text-base text-slate-800">
+            Detalle de Ventas ({{ $ventas->count() }} tickets)
+        </h3>
+    </div>
+
+    <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
+    <div class="md:hidden divide-y divide-slate-100">
+        @forelse($ventas as $v)
+            <div class="p-3.5 hover:bg-slate-50 transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="font-mono text-xs font-black text-slate-800">{{ $v->numero_ticket }}</span>
+                    <span class="font-black text-emerald-600 text-sm">{{ $moneda }}{{ number_format($v->total, 2) }}</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                    <span class="font-medium text-slate-700 truncate"><i class="fas fa-user text-[10px] text-slate-400 mr-1"></i>{{ $v->cliente?->nombre_completo ?? 'Genérico' }}</span>
+                    <span class="bg-slate-100 text-slate-700 px-2 py-0.2 rounded font-bold">{{ ucfirst($v->forma_pago) }}</span>
+                </div>
+                <div class="text-[10px] text-slate-400">
+                    <i class="far fa-clock mr-1"></i>{{ $v->fecha_venta->format('d/m/Y H:i') }} • Cajero: {{ $v->user->name }}
+                </div>
+            </div>
+        @empty
+            <div class="text-center py-10 text-slate-400 text-xs">Sin ventas registradas</div>
+        @endforelse
+    </div>
+
+    <!-- 💻 VISTA ESCRITORIO (TABLA >= md) -->
+    <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left text-sm border-collapse">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-100">
+                <tr>
+                    <th class="py-3 px-4">Ticket</th>
+                    <th class="py-3 px-4">Fecha</th>
+                    <th class="py-3 px-4">Cliente</th>
+                    <th class="py-3 px-4">Cajero</th>
+                    <th class="py-3 px-4">Pago</th>
+                    <th class="py-3 px-4 text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+            @forelse($ventas as $v)
+                <tr class="hover:bg-slate-50/80 transition">
+                    <td class="py-3 px-4 font-mono text-xs font-bold text-slate-800">{{ $v->numero_ticket }}</td>
+                    <td class="py-3 px-4 text-xs text-slate-500">{{ $v->fecha_venta->format('d/m/Y H:i') }}</td>
+                    <td class="py-3 px-4 font-medium text-slate-800">{{ $v->cliente?->nombre_completo ?? 'Genérico' }}</td>
+                    <td class="py-3 px-4 text-xs text-slate-600">{{ $v->user->name }}</td>
+                    <td class="py-3 px-4"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">{{ ucfirst($v->forma_pago) }}</span></td>
+                    <td class="py-3 px-4 text-right font-black text-emerald-600">{{ $moneda }}{{ number_format($v->total, 2) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="6" class="text-center py-8 text-slate-400 text-sm">Sin ventas en el período</td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

@@ -30,26 +30,30 @@
                     Para emitir comprobantes electrónicos primero debes tener un RUC habilitado por SUNAT y un certificado digital.</p>
                 </div>
 
-                <h3 class="font-bold text-slate-700 mb-3">Ambiente de emisión</h3>
-                <div class="grid grid-cols-2 gap-3 mb-5">
-                    <label class="cursor-pointer">
+                <h3 class="font-extrabold text-sm text-slate-700 mb-2">Ambiente de emisión</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                    <label class="cursor-pointer block">
                         <input type="radio" name="sunat_modo" value="beta" {{ ($empresa->sunat_modo ?? 'beta') == 'beta' ? 'checked' : '' }} class="peer hidden">
-                        <div class="border-2 border-slate-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 rounded-xl p-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fas fa-flask text-yellow-500 text-xl"></i>
-                                <span class="font-bold">Beta / Homologación</span>
+                        <div class="border-2 border-slate-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50/80 rounded-2xl p-3.5 sm:p-4 transition shadow-xs">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-8 h-8 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center text-base flex-shrink-0">
+                                    <i class="fas fa-flask"></i>
+                                </div>
+                                <span class="font-black text-slate-800 text-xs sm:text-sm">Beta / Homologación</span>
                             </div>
-                            <p class="text-xs text-slate-500">Ambiente de pruebas. Los comprobantes NO son válidos fiscalmente.</p>
+                            <p class="text-[11px] text-slate-500 leading-tight">Ambiente de pruebas. Los comprobantes NO son válidos fiscalmente ante SUNAT.</p>
                         </div>
                     </label>
-                    <label class="cursor-pointer">
+                    <label class="cursor-pointer block">
                         <input type="radio" name="sunat_modo" value="produccion" {{ ($empresa->sunat_modo ?? '') == 'produccion' ? 'checked' : '' }} class="peer hidden">
-                        <div class="border-2 border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 rounded-xl p-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fas fa-rocket text-emerald-500 text-xl"></i>
-                                <span class="font-bold">Producción</span>
+                        <div class="border-2 border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50/80 rounded-2xl p-3.5 sm:p-4 transition shadow-xs">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-base flex-shrink-0">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <span class="font-black text-slate-800 text-xs sm:text-sm">Producción Real</span>
                             </div>
-                            <p class="text-xs text-slate-500">Ambiente oficial. Los comprobantes son válidos fiscalmente.</p>
+                            <p class="text-[11px] text-slate-500 leading-tight">Ambiente oficial. Los comprobantes son válidos y enviados a SUNAT.</p>
                         </div>
                     </label>
                 </div>

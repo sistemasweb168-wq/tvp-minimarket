@@ -4,17 +4,17 @@
 
 @section('content')
 <div x-data="{ open: false, edit: null }">
-<div class="bg-white rounded-2xl shadow-md p-5 mb-5 flex justify-between items-center">
-    <form method="GET" class="flex-1 flex gap-2 max-w-2xl">
+<div class="bg-white rounded-2xl shadow-md p-4 sm:p-5 mb-4 sm:mb-5 border border-slate-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+    <form method="GET" class="flex-1 flex gap-2 w-full max-w-xl">
         <div class="relative flex-1">
-            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input name="buscar" value="{{ request('buscar') }}" placeholder="Buscar usuario..." class="w-full pl-12 pr-4 py-2.5 border border-slate-300 rounded-lg">
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-sm"></i>
+            <input name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por nombre o usuario..." class="w-full pl-10 pr-3 py-2 sm:py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
         </div>
-        <button class="bg-slate-800 text-white px-4 py-2.5 rounded-lg"><i class="fas fa-search"></i></button>
+        <button class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition"><i class="fas fa-search"></i></button>
     </form>
-    <div class="flex gap-2">
-        <a href="{{ route('usuarios.roles') }}" class="bg-blue-100 text-blue-700 px-4 py-2.5 rounded-lg font-semibold flex items-center gap-2"><i class="fas fa-user-tag"></i>Roles</a>
-        <button @click="open=true; edit=null" class="gradient-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2"><i class="fas fa-user-plus"></i>Nuevo Usuario</button>
+    <div class="flex gap-2 w-full sm:w-auto">
+        <a href="{{ route('usuarios.roles') }}" class="flex-1 sm:flex-none bg-blue-50 hover:bg-blue-100 text-blue-700 px-3.5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition"><i class="fas fa-user-tag"></i><span>Roles</span></a>
+        <button @click="open=true; edit=null" class="flex-1 sm:flex-none gradient-primary text-white px-4 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-xs hover:brightness-105 transition"><i class="fas fa-user-plus"></i><span>Nuevo Usuario</span></button>
     </div>
 </div>
 
