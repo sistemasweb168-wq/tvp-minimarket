@@ -270,6 +270,7 @@ class VentaController extends Controller
                         'cpe_numero' => $cpe->numero_completo,
                         'cpe_estado' => ucfirst($cpe->estado_sunat),
                         'cpe_url' => route('facturacion.show', $cpe->id),
+                        'redirect' => route('facturacion.ticket', $cpe->id),
                     ];
                 } catch (\Throwable $cpeError) {
                     // No bloqueamos la venta si falla el CPE
@@ -280,11 +281,13 @@ class VentaController extends Controller
             }
 
             DB::commit();
+            $redirectUrl = (!empty($cpeInfo['redirect'])) ? $cpeInfo['redirect'] : route('ventas.ticket', $venta->id);
+
             return response()->json(array_merge([
                 'success' => true,
                 'venta_id' => $venta->id,
                 'numero_ticket' => $numeroTicket,
-                'redirect' => route('ventas.ticket', $venta->id),
+                'redirect' => $redirectUrl,
             ], $cpeInfo ?? []));
 
         } catch (\Exception $e) {
