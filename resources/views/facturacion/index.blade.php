@@ -81,75 +81,116 @@
     </form>
 </div>
 
-<!-- Tabla -->
-<div class="bg-white rounded-2xl shadow-md overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+<!-- Tabla de Comprobantes (Tarjetas en Móvil / Tabla en Desktop) -->
+<div class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
+    
+    <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
+    <div class="md:hidden divide-y divide-slate-100">
+        @forelse($comprobantes as $c)
+            @php
+                $tipoColor = ['01'=>'purple', '03'=>'blue', '07'=>'amber', '08'=>'indigo'][$c->tipo_documento] ?? 'slate';
+                $estado = $c->estado_sunat;
+            @endphp
+            <div class="p-3.5 hover:bg-slate-50 transition">
+                <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-2 py-0.5 bg-{{ $tipoColor }}-100 text-{{ $tipoColor }}-800 rounded-lg text-[10px] font-black">
+                            {{ $c->tipo_documento_nombre }}
+                        </span>
+                        <span class="font-mono text-xs font-black text-slate-800">{{ $c->numero_completo }}</span>
+                    </div>
+                    <span class="font-black text-emerald-600 text-sm">{{ $moneda }}{{ number_format($c->importe_total, 2) }}</span>
+                </div>
+
+                <div class="text-xs text-slate-600 mb-2">
+                    <p class="font-bold truncate">{{ $c->receptor_razon_social }}</p>
+                    <p class="text-[11px] text-slate-400 font-mono">{{ $c->receptor_tipo_doc_label }}: {{ $c->receptor_numero_doc }} • {{ $c->fecha_emision->format('d/m/Y') }}</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <div>
+                        @if($estado === 'aceptado')
+                            <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-black"><i class="fas fa-check-circle mr-1"></i>Aceptado</span>
+                        @elseif($estado === 'rechazado')
+                            <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-black"><i class="fas fa-times-circle mr-1"></i>Rechazado</span>
+                        @else
+                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[10px] font-black"><i class="fas fa-clock mr-1"></i>{{ ucfirst($estado) }}</span>
+                        @endif
+                    </div>
+                    <div class="flex gap-1.5">
+                        <a href="{{ route('facturacion.ticket', $c->id) }}" target="_blank" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                            <i class="fas fa-qrcode"></i><span>Ticket QR</span>
+                        </a>
+                        <a href="{{ route('facturacion.show', $c->id) }}" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                            <i class="fas fa-eye"></i><span>Detalle</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="text-center py-12 text-slate-400 text-xs">
+                <i class="fas fa-file-invoice text-4xl mb-2 text-slate-300"></i>
+                <p>No hay comprobantes electrónicos emitidos</p>
+            </div>
+        @endforelse
+    </div>
+
+    <!-- 💻 VISTA ESCRITORIO (TABLA >= md) -->
+    <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left text-sm border-collapse">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-100">
                 <tr>
-                    <th class="text-left py-3 px-4">N° Comprobante</th>
-                    <th class="text-left py-3 px-4">Tipo</th>
-                    <th class="text-left py-3 px-4 hide-mobile">Cliente</th>
-                    <th class="text-left py-3 px-4 hide-mobile">Fecha</th>
-                    <th class="text-right py-3 px-4">Total</th>
-                    <th class="text-center py-3 px-4">Estado SUNAT</th>
-                    <th></th>
+                    <th class="py-3.5 px-4">N° Comprobante</th>
+                    <th class="py-3.5 px-4">Tipo</th>
+                    <th class="py-3.5 px-4">Cliente</th>
+                    <th class="py-3.5 px-4">Fecha</th>
+                    <th class="py-3.5 px-4 text-right">Total</th>
+                    <th class="py-3.5 px-4 text-center">Estado SUNAT</th>
+                    <th class="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-slate-100">
             @forelse($comprobantes as $c)
-                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="py-3 px-4 font-mono text-xs font-bold text-slate-700">{{ $c->numero_completo }}</td>
-                    <td class="py-3 px-4">
+                <tr class="hover:bg-slate-50/80 transition">
+                    <td class="py-3.5 px-4 font-mono text-xs font-bold text-slate-800">{{ $c->numero_completo }}</td>
+                    <td class="py-3.5 px-4">
                         @php
-                        $tipoColor = ['01'=>'blue', '03'=>'emerald', '07'=>'orange', '08'=>'purple'][$c->tipo_documento] ?? 'slate';
+                        $tipoColor = ['01'=>'purple', '03'=>'blue', '07'=>'amber', '08'=>'indigo'][$c->tipo_documento] ?? 'slate';
                         @endphp
-                        <span class="px-2 py-1 bg-{{ $tipoColor }}-100 text-{{ $tipoColor }}-700 rounded text-xs font-semibold">
+                        <span class="px-2.5 py-1 bg-{{ $tipoColor }}-100 text-{{ $tipoColor }}-800 rounded-full text-xs font-bold">
                             {{ $c->tipo_documento_nombre }}
                         </span>
                     </td>
-                    <td class="py-3 px-4 hide-mobile">
-                        <p class="text-sm">{{ $c->receptor_razon_social }}</p>
-                        <p class="text-xs text-slate-400">{{ $c->receptor_tipo_doc_label }}: {{ $c->receptor_numero_doc }}</p>
+                    <td class="py-3.5 px-4">
+                        <p class="font-bold text-slate-800 text-xs sm:text-sm">{{ $c->receptor_razon_social }}</p>
+                        <p class="text-xs text-slate-400 font-mono">{{ $c->receptor_tipo_doc_label }}: {{ $c->receptor_numero_doc }}</p>
                     </td>
-                    <td class="py-3 px-4 text-xs hide-mobile">{{ $c->fecha_emision->format('d/m/Y') }}</td>
-                    <td class="py-3 px-4 text-right font-bold text-emerald-600">{{ $moneda }}{{ number_format($c->importe_total, 2) }}</td>
-                    <td class="py-3 px-4 text-center">
+                    <td class="py-3.5 px-4 text-xs text-slate-500">{{ $c->fecha_emision->format('d/m/Y') }}</td>
+                    <td class="py-3.5 px-4 text-right font-black text-emerald-600 whitespace-nowrap">{{ $moneda }}{{ number_format($c->importe_total, 2) }}</td>
+                    <td class="py-3.5 px-4 text-center">
                         @php
                         $estado = $c->estado_sunat;
                         $color = $c->estado_color;
-                        $icons = [
-                            'pendiente' => 'fa-clock',
-                            'enviado' => 'fa-paper-plane',
-                            'aceptado' => 'fa-check-circle',
-                            'rechazado' => 'fa-times-circle',
-                            'observado' => 'fa-exclamation-triangle',
-                            'anulado' => 'fa-ban',
-                            'baja' => 'fa-trash-alt',
-                            'excepcion' => 'fa-bug',
-                        ];
                         @endphp
-                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-{{ $color }}-100 text-{{ $color }}-700 rounded-full text-xs font-semibold">
-                            <i class="fas {{ $icons[$estado] ?? 'fa-question-circle' }}"></i>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-{{ $color }}-100 text-{{ $color }}-800 rounded-full text-xs font-bold">
                             {{ ucfirst($estado) }}
                         </span>
                     </td>
-                    <td class="py-3 px-4 text-right">
-                        <a href="{{ route('facturacion.show', $c->id) }}" class="p-2 text-blue-600 hover:bg-blue-50 rounded" title="Ver">
-                            <i class="fas fa-eye"></i>
-                        </a>
+                    <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                        <a href="{{ route('facturacion.ticket', $c->id) }}" target="_blank" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg inline-block" title="Ticket QR"><i class="fas fa-qrcode"></i></a>
+                        <a href="{{ route('facturacion.show', $c->id) }}" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg inline-block" title="Ver Detalle"><i class="fas fa-eye"></i></a>
                     </td>
                 </tr>
             @empty
                 <tr><td colspan="7" class="text-center py-12 text-slate-400">
-                    <i class="fas fa-file-invoice text-5xl mb-2"></i>
+                    <i class="fas fa-file-invoice text-4xl mb-2 text-slate-300"></i>
                     <p>Aún no hay comprobantes electrónicos emitidos</p>
-                    <p class="text-sm mt-2">Para emitir un comprobante, ve a una venta y haz clic en "Emitir Boleta/Factura"</p>
                 </td></tr>
             @endforelse
             </tbody>
         </table>
     </div>
-    <div class="p-4">{{ $comprobantes->withQueryString()->links() }}</div>
+
+    <div class="p-3 sm:p-4 border-t border-slate-100">{{ $comprobantes->withQueryString()->links() }}</div>
 </div>
 @endsection
