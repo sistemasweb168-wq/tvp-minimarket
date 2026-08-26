@@ -1243,6 +1243,11 @@ window.POS_AbrirCamara = async function(event) {
         return;
     }
     
+    // Mover el modal al final del body para evitar problemas de z-index con otros contenedores
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
     modal.style.display = 'flex';
     document.getElementById('pos-cam-status').textContent = 'Iniciando cámara...';
     window.POS_EscanerActivo = true;
