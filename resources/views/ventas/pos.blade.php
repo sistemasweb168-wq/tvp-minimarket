@@ -444,7 +444,7 @@
 
     <!-- MODAL ESCÁNER CÁMARA FULLSCREEN (IDÉNTICO A LA IMAGEN DE REFERENCIA) -->
     <div x-show="escanerAbierto" x-cloak 
-         class="fixed inset-0 bg-black z-50 flex flex-col justify-between overflow-hidden" 
+         class="fixed inset-0 bg-black z-[100] flex flex-col justify-between overflow-hidden" 
          style="display:none;">
         
         <!-- Stream de Video de la Cámara en Pantalla Completa -->
@@ -647,61 +647,65 @@ function pos() {
         },
 
         async abrirEscanerCamara() {
+            // Si el modal de pago está abierto, cerrarlo primero para no interferir
+            if (this.modalPago) return;
+            
             this.camaraEstadoTexto = 'Conectando cámara...';
             
-            // 1. Iniciar getUserMedia DIRECTO en el click del usuario (Requisito estricto de Chrome/Safari móvil)
-            let stream = null;
+            // Solicitar cámara DIRECTAMENTE en el evento de click del usuario
+            // Chrome/Safari móvil requiere que sea síncrono al gesto del usuario
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    throw new Error("Tu navegador no soporta captura de cámara en web.");
+                    throw new Error("Tu navegador no soporta cámara web.");
                 }
 
-                // Intento 1: Cámara trasera flexible
+                let stream;
                 try {
+                    // Primero intentar cámara trasera (environment)
                     stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: { ideal: 'environment' } },
+                        video: { facingMode: 'environment' },
                         audio: false
                     });
                 } catch(e1) {
-                    // Intento 2: Cualquier cámara disponible
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: true,
-                        audio: false
-                    });
+                    // Si falla, cualquier cámara
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 }
 
                 this.camaraMediaStream = stream;
                 this.escanerAbierto = true;
 
-                this.$nextTick(() => {
+                // Vincular stream al elemento <video> - usar requestAnimationFrame para ser inmediato
+                requestAnimationFrame(() => {
                     const video = document.getElementById('pos-cam-video');
-                    if (video) {
-                        video.setAttribute('playsinline', 'true');
-                        video.setAttribute('autoplay', 'true');
-                        video.setAttribute('muted', 'true');
-                        video.muted = true;
-                        video.srcObject = stream;
-                        
-                        video.play().then(() => {
-                            this.camaraEstadoTexto = 'Apunta al código de barras';
-                            this.iniciarDetector(video);
-                        }).catch(err => {
-                            console.warn("Video play error:", err);
-                            this.iniciarDetector(video);
-                        });
+                    if (!video) return;
+                    video.muted = true;
+                    video.srcObject = stream;
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise
+                            .then(() => {
+                                this.camaraEstadoTexto = 'Apunta al código de barras';
+                                this.iniciarDetector(video);
+                            })
+                            .catch(() => {
+                                // Autoplay bloqueado, intentar igual el detector
+                                this.iniciarDetector(video);
+                            });
                     }
                 });
 
             } catch(err) {
-                console.error("Error al acceder a la cámara:", err);
+                const msg = err.name === 'NotAllowedError' 
+                    ? 'Permiso de cámara denegado. Ve a Configuración > Chrome > Permisos de sitio > Cámara y activa bodegavalezka.alwaysdata.net.'
+                    : 'No se pudo activar la cámara: ' + (err.message || err.name);
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Acceso a la Cámara',
-                    text: 'Asegúrate de permitir el acceso a la cámara en los permisos de tu navegador (' + (err.name || err.message) + ').',
+                    title: 'Cámara no disponible',
+                    text: msg,
                     confirmButtonColor: '#10b981',
                     confirmButtonText: 'Entendido'
                 });
-                this.cerrarEscanerCamara();
+                this.escanerAbierto = false;
             }
         },
 
