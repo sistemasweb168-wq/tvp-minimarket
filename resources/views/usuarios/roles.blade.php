@@ -22,7 +22,16 @@ $permisosDisponibles = [
 ];
 @endphp
 
-<div x-data="{ open: false, edit: null, permisosDisp: @json($permisosDisponibles) }">
+<div x-data="{
+    open: false,
+    edit: null,
+    rolesList: {{ Js::from($roles) }},
+    permisosDisp: {{ Js::from($permisosDisponibles) }},
+    editarRol(id) {
+        this.edit = this.rolesList.find(r => r.id === id);
+        this.open = true;
+    }
+}">
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 mb-5 flex justify-between items-center">
     <h3 class="font-bold">Roles del Sistema</h3>
     <button @click="open=true; edit=null" class="gradient-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2"><i class="fas fa-plus"></i>Nuevo Rol</button>
@@ -35,7 +44,7 @@ $permisosDisponibles = [
                 <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                     <i class="fas fa-user-tag text-purple-600 text-xl"></i>
                 </div>
-                <button @click="edit={{ $r->toJson() }}; open=true" class="p-2 hover:bg-yellow-50 text-yellow-600 rounded-lg"><i class="fas fa-edit"></i></button>
+                <button @click="editarRol({{ $r->id }})" class="p-2 hover:bg-yellow-500/20 text-yellow-500 rounded-lg"><i class="fas fa-edit"></i></button>
             </div>
             <h3 class="font-bold">{{ $r->nombre }}</h3>
             <p class="text-sm text-slate-400 mb-3">{{ $r->descripcion ?? 'Sin descripción' }}</p>

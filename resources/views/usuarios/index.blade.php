@@ -1,9 +1,15 @@
 @extends('layouts.app')
 @section('title', 'Usuarios')
-@section('header', 'Gestión de Usuarios')
-
 @section('content')
-<div x-data="{ open: false, edit: null }">
+<div x-data="{
+    open: false,
+    edit: null,
+    usuariosList: {{ Js::from($usuarios->items()) }},
+    editarUsuario(id) {
+        this.edit = this.usuariosList.find(u => u.id === id);
+        this.open = true;
+    }
+}">
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 mb-4 sm:mb-5 border border-slate-800 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
     <form method="GET" class="flex-1 flex gap-2 w-full max-w-xl">
         <div class="relative flex-1">
@@ -41,7 +47,7 @@
                 </p>
             </div>
             <div class="flex gap-2 mt-3">
-                <button @click="edit={{ $u->toJson() }}; open=true" class="flex-1 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg text-sm"><i class="fas fa-edit mr-1"></i>Editar</button>
+                <button @click="editarUsuario({{ $u->id }})" class="flex-1 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg text-sm font-semibold"><i class="fas fa-edit mr-1"></i>Editar</button>
                 <form method="POST" action="{{ route('usuarios.destroy', $u->id) }}" class="flex-1" onsubmit="return confirm('¿Desactivar?')">
                     @csrf @method('DELETE')
                     <button class="w-full py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm"><i class="fas fa-user-slash mr-1"></i>Desactivar</button>
