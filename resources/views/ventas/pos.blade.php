@@ -454,8 +454,8 @@
                     </span>
                 </button>
             </div>
-
-    
+        </div>
+    </div>
 
     <!-- 🚀 MODAL POST-VENTA PROFESIONAL (COMPROBANTE GENERADO) -->
     <div id="modal-post-venta" x-show="modalPostVenta" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-2 sm:p-4">
