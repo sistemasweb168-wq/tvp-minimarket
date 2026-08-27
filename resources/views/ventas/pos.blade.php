@@ -752,7 +752,17 @@ function pos() {
         },
 
         cambiarCantidad(idx, delta) {
-            const item = this.carrito[idx]; const nuevaCantidad = item.cantidad + delta; if (delta > 0 && item.stock < nuevaCantidad) { AudioPOS.warning(); Toast.fire({ icon: 'error', title: Límite de stock alcanzado () }); return; } item.cantidad = nuevaCantidad;
+            const item = this.carrito[idx]; 
+            const nuevaCantidad = item.cantidad + delta; 
+            
+            if (delta > 0 && item.stock < nuevaCantidad) { 
+                AudioPOS.warning(); 
+                Toast.fire({ icon: 'error', title: `Límite de stock alcanzado (${item.stock})` }); 
+                return; 
+            } 
+            
+            item.cantidad = nuevaCantidad;
+            
             if (this.carrito[idx].cantidad <= 0) {
                 this.quitarItem(idx);
             } else {
