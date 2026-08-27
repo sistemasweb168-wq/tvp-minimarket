@@ -853,11 +853,13 @@ function pos() {
             } else {
                 AudioPOS.beep(800, 'sine', 0.04, 1.0);
             }
+            this.recalcularPrecios();
         },
 
         quitarItem(idx) { 
             this.carrito.splice(idx, 1);
             AudioPOS.beep(600, 'triangle', 0.05);
+            this.recalcularPrecios();
         },
 
         vaciarCarrito() {
@@ -875,12 +877,13 @@ function pos() {
             }).then((result) => {
                 if (result.isConfirmed) {
                     this.carrito = [];
+            this.recalcularPrecios();
                     Toast.fire({ icon: 'info', title: 'Carrito vaciado' });
                 }
             });
         },
 
-        recalcularPrecios() {
+                recalcularPrecios() {
             this.carrito.forEach(item => {
                 if (item.cantidad_mayoreo > 0 && item.cantidad >= item.cantidad_mayoreo && item.precio_mayoreo > 0) {
                     item.precio_unitario = item.precio_mayoreo;
@@ -888,7 +891,7 @@ function pos() {
                     item.precio_unitario = item.precio_normal;
                 }
             });
-            this.recalcularPrecios();
+            this.actualizarTotal();
         },
         actualizarTotal() {
             if (this.modalPago && this.formaPago === 'efectivo') {
@@ -1094,6 +1097,7 @@ function pos() {
                     // La apertura del ticket ahora es controlada por el Modal Post-Venta
                     
                     this.carrito = [];
+            this.recalcularPrecios();
                     this.descuento = 0;
                     this.montoRecibido = 0;
                     this.modalPago = false;
