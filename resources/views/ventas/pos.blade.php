@@ -83,9 +83,17 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                 <template x-for="p in productosFiltrados" :key="p.id">
                     <button type="button" @click="agregarProducto(p)"
-                            class="bg-white rounded-2xl shadow-sm hover:shadow-md transition active:scale-95 p-2.5 sm:p-3 text-left border border-slate-100 flex flex-col justify-between">
+                            :disabled="parseFloat(p.stock) <= 0"
+                            :class="{'opacity-60 grayscale cursor-not-allowed': parseFloat(p.stock) <= 0}"
+                            class="relative bg-white rounded-2xl shadow-sm hover:shadow-md transition active:scale-95 p-2.5 sm:p-3 text-left border border-slate-100 flex flex-col justify-between overflow-hidden">
+                        
+                        <!-- Etiqueta de Agotado -->
+                        <div x-show="parseFloat(p.stock) <= 0" class="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
+                            AGOTADO
+                        </div>
+
                         <div>
-                            <div class="aspect-square bg-slate-100 rounded-xl mb-2 flex items-center justify-center overflow-hidden">
+                            <div class="aspect-square bg-slate-100 rounded-xl mb-2 flex items-center justify-center overflow-hidden relative">
                                 <template x-if="p.imagen">
                                     <img :src="`/uploads/productos/${p.imagen}`" class="w-full h-full object-cover">
                                 </template>
@@ -96,8 +104,10 @@
                             <p class="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 mb-1" x-text="p.nombre"></p>
                         </div>
                         <div class="flex justify-between items-end mt-1 pt-1.5 border-t border-slate-50">
-                            <span class="text-[10px] sm:text-[11px] font-medium text-slate-400" x-text="`Stk: ${parseFloat(p.stock).toFixed(0)}`"></span>
-                            <span class="text-emerald-600 font-extrabold text-xs sm:text-sm" x-text="`{{ $moneda }} ${parseFloat(p.precio_venta).toFixed(2)}`"></span>
+                            <span class="text-[10px] sm:text-[11px] font-bold" 
+                                  :class="parseFloat(p.stock) <= 0 ? 'text-red-500' : (parseFloat(p.stock) <= 5 ? 'text-orange-500' : 'text-slate-400')"
+                                  x-text="`Stk: ${parseFloat(p.stock).toFixed(0)}`"></span>
+                            <span class="text-xs sm:text-sm font-black text-emerald-600" x-text="`{{ $moneda }} ${parseFloat(p.precio_venta).toFixed(2)}`"></span>
                         </div>
                     </button>
                 </template>
@@ -538,7 +548,7 @@ const AudioPOS = {
         localStorage.setItem('pos_muted', this.muted);
         return this.muted;
     },
-    beep(freq = 880, type = 'sine', duration = 0.08) {
+    beep(freq = 880, type = 'sine', duration = 0.08, vol = 1.0) {
         if (this.muted) return;
         try {
             this.init();
@@ -547,8 +557,9 @@ const AudioPOS = {
             const gain = this.ctx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-            gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+            // Hacer el sonido considerablemente más fuerte (1.0 es el máximo sin distorsión severa)
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
             osc.start();
@@ -713,7 +724,16 @@ function pos() {
         },
 
         agregarProducto(p) {
+            const stockActual = parseFloat(p.stock);
             const existing = this.carrito.find(i => i.producto_id === p.id);
+            const cantidadDeseada = existing ? existing.cantidad + 1 : 1;
+
+            if (stockActual < cantidadDeseada) {
+                AudioPOS.warning();
+                Toast.fire({ icon: 'error', title: Sin Stock. Solo quedan  disponibles. });
+                return;
+            }
+
             if (existing) {
                 existing.cantidad++;
             } else {
@@ -723,7 +743,7 @@ function pos() {
                     nombre: p.nombre,
                     cantidad: 1,
                     precio_unitario: parseFloat(p.precio_venta),
-                    stock: parseFloat(p.stock),
+                    stock: stockActual,
                 });
             }
             AudioPOS.beep(950, 'sine', 0.05);
@@ -732,11 +752,11 @@ function pos() {
         },
 
         cambiarCantidad(idx, delta) {
-            this.carrito[idx].cantidad += delta;
+            const item = this.carrito[idx]; const nuevaCantidad = item.cantidad + delta; if (delta > 0 && item.stock < nuevaCantidad) { AudioPOS.warning(); Toast.fire({ icon: 'error', title: Límite de stock alcanzado () }); return; } item.cantidad = nuevaCantidad;
             if (this.carrito[idx].cantidad <= 0) {
                 this.quitarItem(idx);
             } else {
-                AudioPOS.beep(800, 'sine', 0.04);
+                AudioPOS.beep(800, 'sine', 0.04, 1.0);
             }
         },
 
