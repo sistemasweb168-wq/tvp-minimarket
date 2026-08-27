@@ -120,9 +120,13 @@
 <div class="flex min-h-screen" x-data="{ sidebarOpen: window.innerWidth >= 1024 }">
 
     <!-- Sidebar -->
-    <aside class="bg-black border-r border-slate-900 text-white w-64 fixed inset-y-0 left-0 z-30 transition-transform duration-300 lg:translate-x-0"
-           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
-        <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+    <!-- Sidebar -->
+    <aside x-data="{ isHovered: false }" 
+           @mouseenter="isHovered = true" 
+           @mouseleave="isHovered = false" 
+           class="bg-black border-r border-slate-900 text-white fixed inset-y-0 left-0 z-40 transition-all duration-300 lg:translate-x-0 overflow-x-hidden"
+           :class="sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 lg:w-16 ' + (isHovered ? 'lg:w-64 shadow-2xl' : 'lg:w-16')">
+        <div class="px-3 py-5 border-b border-slate-800 flex items-center gap-3">
             @if($empresaGlobal && $empresaGlobal->logo_url)
                 <img src="{{ $empresaGlobal->logo_url }}" class="w-10 h-10 rounded-lg object-contain bg-white p-1" alt="logo">
             @else
@@ -130,84 +134,84 @@
                     <i class="fas fa-store text-white"></i>
                 </div>
             @endif
-            <div class="flex-1 min-w-0">
-                <h1 class="font-bold text-sm truncate">{{ $empresaGlobal->nombre_comercial ?? 'TPV Minimarket' }}</h1>
-                <p class="text-xs text-slate-400">Sistema POS</p>
+            <div class="flex-1 min-w-0 transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 lg:hidden'">
+                <h1 class="font-bold text-sm whitespace-nowrap">{{ $empresaGlobal->nombre_comercial ?? 'TPV Minimarket' }}</h1>
+                <p class="text-[10px] text-slate-400 whitespace-nowrap">Sistema POS</p>
             </div>
         </div>
 
         <nav class="py-4 overflow-y-auto" style="max-height: calc(100vh - 80px);">
             <a href="{{ route('dashboard') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span>
+                <i class="fas fa-tachometer-alt w-5"></i><span class="whitespace-nowrap">Dashboard</span>
             </a>
             <a href="{{ route('ventas.pos') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.pos') ? 'active' : '' }}">
-                <i class="fas fa-cash-register w-5"></i><span>Punto de Venta</span>
+                <i class="fas fa-cash-register w-5"></i><span class="whitespace-nowrap">Punto de Venta</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold">Operaciones</p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Operaciones</span></p>
             <a href="{{ route('ventas.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.index') ? 'active' : '' }}">
-                <i class="fas fa-receipt w-5"></i><span>Ventas</span>
+                <i class="fas fa-receipt w-5"></i><span class="whitespace-nowrap">Ventas</span>
             </a>
             <a href="{{ route('compras.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('compras.*') ? 'active' : '' }}">
-                <i class="fas fa-truck w-5"></i><span>Compras</span>
+                <i class="fas fa-truck w-5"></i><span class="whitespace-nowrap">Compras</span>
             </a>
             <a href="{{ route('caja.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('caja.*') ? 'active' : '' }}">
-                <i class="fas fa-money-bill-wave w-5"></i><span>Caja</span>
+                <i class="fas fa-money-bill-wave w-5"></i><span class="whitespace-nowrap">Caja</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold">Inventario</p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Inventario</span></p>
             <a href="{{ route('productos.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('productos.*') ? 'active' : '' }}">
-                <i class="fas fa-box w-5"></i><span>Productos</span>
+                <i class="fas fa-box w-5"></i><span class="whitespace-nowrap">Productos</span>
             </a>
             <a href="{{ route('categorias.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('categorias.*') ? 'active' : '' }}">
-                <i class="fas fa-tags w-5"></i><span>Categorías</span>
+                <i class="fas fa-tags w-5"></i><span class="whitespace-nowrap">Categorías</span>
             </a>
             <a href="{{ route('promociones.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('promociones.*') ? 'active' : '' }}">
-                <i class="fas fa-percent w-5"></i><span>Promociones</span>
+                <i class="fas fa-percent w-5"></i><span class="whitespace-nowrap">Promociones</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold">Contactos</p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Contactos</span></p>
             <a href="{{ route('clientes.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
-                <i class="fas fa-users w-5"></i><span>Clientes</span>
+                <i class="fas fa-users w-5"></i><span class="whitespace-nowrap">Clientes</span>
             </a>
             <a href="{{ route('proveedores.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('proveedores.*') ? 'active' : '' }}">
-                <i class="fas fa-truck-loading w-5"></i><span>Proveedores</span>
+                <i class="fas fa-truck-loading w-5"></i><span class="whitespace-nowrap">Proveedores</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold">SUNAT</p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">SUNAT</span></p>
             <a href="{{ route('facturacion.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.index') || request()->routeIs('facturacion.show') ? 'active' : '' }}">
-                <i class="fas fa-file-invoice-dollar w-5"></i><span>Facturación Electrónica</span>
+                <i class="fas fa-file-invoice-dollar w-5"></i><span class="whitespace-nowrap">Facturación Electrónica</span>
             </a>
             <a href="{{ route('facturacion.resumenes') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.resumenes') ? 'active' : '' }}">
-                <i class="fas fa-calendar-day w-5"></i><span>Resúmenes Diarios</span>
+                <i class="fas fa-calendar-day w-5"></i><span class="whitespace-nowrap">Resúmenes Diarios</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold">Análisis</p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Análisis</span></p>
             <a href="{{ route('reportes.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
-                <i class="fas fa-chart-line w-5"></i><span>Reportes</span>
+                <i class="fas fa-chart-line w-5"></i><span class="whitespace-nowrap">Reportes</span>
             </a>
 
             @if(auth()->user()->isAdmin())
-                <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold">Sistema</p>
+                <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Sistema</span></p>
                 <a href="{{ route('usuarios.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-shield w-5"></i><span>Usuarios</span>
+                    <i class="fas fa-user-shield w-5"></i><span class="whitespace-nowrap">Usuarios</span>
                 </a>
                 <a href="{{ route('configuracion.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
-                    <i class="fas fa-cog w-5"></i><span>Configuración</span>
+                    <i class="fas fa-cog w-5"></i><span class="whitespace-nowrap">Configuración</span>
                 </a>
                 <a href="{{ route('facturacion.configuracion') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.configuracion') ? 'active' : '' }}">
-                    <i class="fas fa-shield-alt w-5"></i><span>Config. SUNAT</span>
+                    <i class="fas fa-shield-alt w-5"></i><span class="whitespace-nowrap">Config. SUNAT</span>
                 </a>
                 <a href="{{ route('backup.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('backup.*') ? 'active' : '' }}">
-                    <i class="fas fa-database w-5"></i><span>Backup</span>
+                    <i class="fas fa-database w-5"></i><span class="whitespace-nowrap">Backup</span>
                 </a>
             @endif
 
             <div class="px-5 mt-6">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button class="w-full flex items-center gap-3 px-3 py-2.5 bg-red-600/20 hover:bg-red-600/40 rounded-lg text-red-300 transition">
-                        <i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span>
+                    <button class="w-full flex items-center gap-3 px-5 py-3 bg-red-600/20 hover:bg-red-600/40 rounded-lg text-red-300 transition">
+                        <i class="fas fa-sign-out-alt w-5"></i><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Cerrar Sesión</span>
                     </button>
                 </form>
             </div>
@@ -218,7 +222,7 @@
     <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-20 lg:hidden" style="display:none;"></div>
 
     <!-- Main -->
-    <div class="flex-1 lg:ml-64 min-w-0">
+    <div class="flex-1 lg:ml-16 min-w-0 transition-all duration-300">
         <!-- Topbar -->
         
 @php
