@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('pos', [VentaController::class, 'pos'])->name('ventas.pos');
     Route::resource('ventas', VentaController::class)->only(['index', 'store', 'show']);
     Route::get('ventas/{venta}/ticket', [VentaController::class, 'ticket'])->name('ventas.ticket');
+    Route::get('ventas/{venta}/ticket-pdf', [VentaController::class, 'ticketPdf'])->name('ventas.ticket-pdf');
     Route::get('ventas/{venta}/pdf', [VentaController::class, 'pdf'])->name('ventas.pdf');
     Route::post('ventas/{venta}/anular', [VentaController::class, 'anular'])->name('ventas.anular');
 

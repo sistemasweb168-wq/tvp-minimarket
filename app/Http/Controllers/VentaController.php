@@ -320,6 +320,18 @@ class VentaController extends Controller
         return view('ventas.ticket', compact('venta'));
     }
 
+    public function ticketPdf(Venta $venta)
+    {
+        $venta->load(['cliente', 'user', 'detalles.producto']);
+        $empresa = \App\Models\Empresa::first();
+        // Width: 80mm approx 226.77 pt. Height: Long enough.
+        $customPaper = array(0,0,226.77,841.89);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('ventas.ticket_pdf', compact('venta', 'empresa'));
+        $pdf->setPaper($customPaper);
+        
+        return $pdf->stream($venta->numero_ticket . '.pdf');
+    }
+
     public function pdf(Venta $venta)
     {
         $venta->load(['cliente', 'user', 'detalles.producto']);

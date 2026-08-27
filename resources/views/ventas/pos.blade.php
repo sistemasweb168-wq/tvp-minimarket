@@ -1145,8 +1145,8 @@ function pos() {
                 return;
             }
             
-            // Enviamos siempre la versión PDF en tamaño A4 por WhatsApp para mejor legibilidad en celulares
-            let pdfUrl = this.ultimaVenta.url_ticket.replace('/ticket', '/pdf');
+            // Enviamos siempre la versión PDF en formato Ticket por WhatsApp
+            let pdfUrl = this.ultimaVenta.url_ticket.replace('/ticket', '/ticket-pdf');
             const url = pdfUrl.startsWith('http') ? pdfUrl : window.location.origin + pdfUrl;
             
             const mensaje = `¡Hola! 👋 Gracias por tu compra en nuestro Minimarket.
