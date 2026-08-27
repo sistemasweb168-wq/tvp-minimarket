@@ -730,7 +730,7 @@ function pos() {
 
             if (stockActual < cantidadDeseada) {
                 AudioPOS.warning();
-                Toast.fire({ icon: 'error', title: Sin Stock. Solo quedan  disponibles. });
+                Toast.fire({ icon: 'error', title: `Sin Stock. Solo quedan ${stockActual} disponibles.` });
                 return;
             }
 
