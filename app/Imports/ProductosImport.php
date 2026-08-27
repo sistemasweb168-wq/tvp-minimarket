@@ -16,7 +16,7 @@ class ProductosImport implements ToModel, WithHeadingRow
         $categoriaNombre = trim($row['categoria'] ?? 'Sin Categoría');
         $categoria = Categoria::firstOrCreate(
             ['nombre' => $categoriaNombre],
-            ['estado' => 1] // Activate by default
+            ['activo' => 1] // Activate by default
         );
 
         $codigo = trim($row['codigo_barras'] ?? '');
@@ -36,7 +36,7 @@ class ProductosImport implements ToModel, WithHeadingRow
                 'stock' => floatval($row['stock_inicial'] ?? 0),
                 'categoria_id' => $categoria->id,
                 'codigo_interno' => trim($row['codigo_interno'] ?? ''),
-                'estado' => 1
+                'activo' => 1
             ]
         );
     }

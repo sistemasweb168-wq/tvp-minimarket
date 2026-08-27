@@ -40,7 +40,7 @@ class EnviarAlertasWhatsApp extends Command
 
         // 1. Stock Bajo
         $stockBajo = Producto::where('controla_stock', 1)
-            ->where('estado', 1)
+            ->where('activo', 1)
             ->whereRaw('stock <= stock_minimo')
             ->get();
 
@@ -54,7 +54,7 @@ class EnviarAlertasWhatsApp extends Command
 
         // 2. Vencimientos en los próximos 30 días
         $vencimientos = Producto::whereNotNull('fecha_vencimiento')
-            ->where('estado', 1)
+            ->where('activo', 1)
             ->whereDate('fecha_vencimiento', '<=', now()->addDays(30))
             ->get();
 

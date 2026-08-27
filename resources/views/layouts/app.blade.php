@@ -222,8 +222,8 @@
         <!-- Topbar -->
         
 @php
-    $alertasStock = \App\Models\Producto::where('controla_stock', 1)->where('estado', 1)->whereRaw('stock <= stock_minimo')->count();
-    $alertasVencimiento = \App\Models\Producto::whereNotNull('fecha_vencimiento')->where('estado', 1)->whereDate('fecha_vencimiento', '<=', now()->addDays(30))->count();
+    $alertasStock = \App\Models\Producto::where('controla_stock', 1)->where('activo', 1)->whereRaw('stock <= stock_minimo')->count();
+    $alertasVencimiento = \App\Models\Producto::whereNotNull('fecha_vencimiento')->where('activo', 1)->whereDate('fecha_vencimiento', '<=', now()->addDays(30))->count();
     $totalAlertas = $alertasStock + $alertasVencimiento;
 @endphp
 <header class="bg-slate-900 shadow-md border-b border-slate-800 sticky top-0 z-20">
