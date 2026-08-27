@@ -93,6 +93,14 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Productos por vencer
+        $productosVencer = Producto::whereNotNull('fecha_vencimiento')
+            ->whereDate('fecha_vencimiento', '<=', Carbon::now()->addDays(30))
+            ->where('activo', true)
+            ->orderBy('fecha_vencimiento', 'asc')
+            ->limit(5)
+            ->get();
+
         // NUEVO: Ventas por día de la semana (últimos 30 días)
         $ventasDiaSemana = DB::table('ventas')
             ->select(
@@ -143,7 +151,7 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'stats', 'ventasSemana', 'productosTop',
             'ventasCategoria', 'ultimasVentas', 'stockCritico',
-            'ventasPorDia', 'formasPago', 'topClientes'
+            'productosVencer', 'ventasPorDia', 'formasPago', 'topClientes'
         ));
     }
 }

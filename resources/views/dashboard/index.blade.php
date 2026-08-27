@@ -200,8 +200,8 @@
     </div>
 </div>
 
-<!-- Productos top y stock crítico -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+<!-- Productos top y stock crítico y por vencer -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
     <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fas fa-trophy text-yellow-500 mr-2"></i>Más vendidos del mes</h3>
@@ -252,6 +252,44 @@
                 <div class="text-center py-8 text-emerald-600">
                     <i class="fas fa-check-circle text-4xl mb-2"></i>
                     <p>¡Todos los productos tienen stock adecuado!</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fas fa-clock text-orange-500 mr-2"></i>Por vencer (30 días)</h3>
+            <a href="{{ route('productos.index') }}" class="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700">Ver catálogo →</a>
+        </div>
+        <div class="space-y-3">
+            @forelse($productosVencer as $p)
+                @php
+                    $dias = \Carbon\Carbon::now()->diffInDays($p->fecha_vencimiento, false);
+                    $color = $dias < 0 ? 'red' : ($dias <= 7 ? 'orange' : 'yellow');
+                @endphp
+                <div class="flex items-center gap-3 p-3 bg-{{$color}}-50 rounded-lg">
+                    <div class="w-10 h-10 bg-{{$color}}-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-hourglass-half text-{{$color}}-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-slate-800 truncate">{{ $p->nombre }}</p>
+                        <p class="text-xs text-slate-500">Lote: {{ $p->lote ?? 'N/A' }}</p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        @if($dias < 0)
+                            <p class="text-sm font-bold text-red-600">Vencido</p>
+                            <p class="text-xs text-slate-500">Hace {{ abs(intval($dias)) }} días</p>
+                        @else
+                            <p class="text-sm font-bold text-{{$color}}-600">En {{ intval($dias) }} días</p>
+                            <p class="text-[10px] text-slate-500">{{ $p->fecha_vencimiento->format('d/m/Y') }}</p>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-8 text-emerald-600">
+                    <i class="fas fa-shield-alt text-4xl mb-2"></i>
+                    <p>¡No hay productos por vencer pronto!</p>
                 </div>
             @endforelse
         </div>
