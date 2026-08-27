@@ -3,7 +3,7 @@
 @section('header', 'Nuevo Producto')
 
 @section('content')
-<form method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+<form x-data="comboForm()" method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
     @csrf
 
     <div class="lg:col-span-2 space-y-5">
@@ -142,4 +142,21 @@
         </div>
     </div>
 </form>
+@endsection
+
+@section('scripts')
+<script>
+    function comboForm() {
+        return {
+            tipo_producto: 'estandar',
+            componentes: [],
+            addComponent() {
+                this.componentes.push({ id: '', cantidad: 1 });
+            },
+            removeComponent(index) {
+                this.componentes.splice(index, 1);
+            }
+        }
+    }
+</script>
 @endsection

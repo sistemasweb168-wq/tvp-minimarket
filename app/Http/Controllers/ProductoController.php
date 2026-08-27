@@ -65,6 +65,7 @@ class ProductoController extends Controller
 
     public function create()
     {
+        $productosList = Producto::where('tipo_producto', 'estandar')->get();
         $categorias = Categoria::where('activo', true)->orderBy('nombre')->get();
         $proveedores = Proveedor::where('activo', true)->orderBy('razon_social')->get();
         $codigo = 'P' . str_pad(Producto::count() + 1, 6, '0', STR_PAD_LEFT);
@@ -110,6 +111,15 @@ class ProductoController extends Controller
         }
 
         $producto = Producto::create($data);
+        if ($request->tipo_producto === 'combo' && $request->has('componente_id')) {
+            $syncData = [];
+            foreach ($request->componente_id as $index => $compId) {
+                $cant = $request->componente_cantidad[$index] ?? 1;
+                $syncData[$compId] = ['cantidad' => $cant];
+            }
+            $producto->componentesCombo()->sync($syncData);
+        }
+
 
         if ($producto->stock > 0) {
             MovimientoInventario::create([
@@ -141,6 +151,8 @@ class ProductoController extends Controller
 
     public function edit(Producto $producto)
     {
+        $productosList = Producto::where('tipo_producto', 'estandar')->where('id', '!=', $producto->id)->get();
+        $producto->load('componentesCombo');
         $categorias = Categoria::where('activo', true)->orderBy('nombre')->get();
         $proveedores = Proveedor::where('activo', true)->orderBy('razon_social')->get();
         return view('productos.edit', compact('producto', 'categorias', 'proveedores'));
@@ -183,6 +195,17 @@ class ProductoController extends Controller
         }
 
         $producto->update($data);
+        if ($request->tipo_producto === 'combo' && $request->has('componente_id')) {
+            $syncData = [];
+            foreach ($request->componente_id as $index => $compId) {
+                $cant = $request->componente_cantidad[$index] ?? 1;
+                $syncData[$compId] = ['cantidad' => $cant];
+            }
+            $producto->componentesCombo()->sync($syncData);
+        } else {
+            $producto->componentesCombo()->sync([]);
+        }
+
         return redirect()->route('productos.index')->with('success', 'Producto actualizado correctamente');
     }
 
