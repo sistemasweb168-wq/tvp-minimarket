@@ -320,6 +320,17 @@ class VentaController extends Controller
         return view('ventas.ticket', compact('venta'));
     }
 
+    public function pdf(Venta $venta)
+    {
+        $venta->load(['cliente', 'user', 'detalles.producto']);
+        $empresa = \App\Models\Empresa::first();
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('ventas.a4', compact('venta', 'empresa'));
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->stream($venta->numero_ticket . '.pdf');
+    }
+
     public function anular(Venta $venta)
     {
         if ($venta->estado === 'anulada') {

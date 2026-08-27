@@ -1132,8 +1132,11 @@ function pos() {
 
         abrirTicket(formato) {
             if (!this.ultimaVenta) return;
-            // Si tuvieramos /factura para A4, usaríamos eso. Por ahora abrimos la misma URL
-            window.open(this.ultimaVenta.url_ticket, '_blank');
+            let url = this.ultimaVenta.url_ticket;
+            if (formato === 'a4') {
+                url = url.replace('/ticket', '/pdf');
+            }
+            window.open(url, '_blank');
         },
 
         enviarWhatsApp() {
@@ -1141,12 +1144,16 @@ function pos() {
                 Toast.fire({ icon: 'warning', title: 'Ingrese un número válido' });
                 return;
             }
-            const url = this.ultimaVenta.url_ticket.startsWith('http') ? this.ultimaVenta.url_ticket : window.location.origin + this.ultimaVenta.url_ticket;
+            
+            // Enviamos siempre la versión PDF en tamaño A4 por WhatsApp para mejor legibilidad en celulares
+            let pdfUrl = this.ultimaVenta.url_ticket.replace('/ticket', '/pdf');
+            const url = pdfUrl.startsWith('http') ? pdfUrl : window.location.origin + pdfUrl;
+            
             const mensaje = `¡Hola! 👋 Gracias por tu compra en nuestro Minimarket.
 
 Aquí tienes tu comprobante electrónico *${this.ultimaVenta.numero_ticket}* por el total de *S/ ${this.ultimaVenta.total.toFixed(2)}*.
 
-Puedes verlo y descargarlo aquí: ${url}`;
+Puedes verlo y descargarlo en formato PDF aquí: ${url}`;
             const link = `https://wa.me/51${this.telefonoWhatsApp.replace(/\s+/g,'')}?text=${encodeURIComponent(mensaje)}`;
             window.open(link, '_blank');
         },

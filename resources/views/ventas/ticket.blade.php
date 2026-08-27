@@ -15,10 +15,16 @@
         * { box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; padding: 0; margin: 0; background: #f5f5f5; }
         .ticket {
-            width: 80mm; max-width: 320px; margin: 20px auto; background: white;
-            padding: 15px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 75mm; max-width: 100%; margin: 20px auto; background: white;
+            padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             font-size: 11px; line-height: 1.35;
         }
+        @media print {
+            body { background: white; }
+            .ticket { margin: 0; padding: 0; box-shadow: none; width: 75mm; }
+            .no-print { display: none !important; }
+        }
+        @page { margin: 0; }
         .header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 8px; margin-bottom: 8px; }
         .header h1 { margin: 3px 0; font-size: 15px; font-weight: bold; }
         .header p { margin: 1px 0; font-size: 10px; }
@@ -55,7 +61,7 @@
     </style>
 </head>
 <body>
-<div class="actions">
+<div class="actions no-print">
     <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     <button class="btn-close" onclick="window.close()">Cerrar</button>
 </div>
@@ -174,5 +180,8 @@
     </div>
 </div>
 <script>setTimeout(() => window.print(), 600);</script>
+    <script>
+        window.onload = function() { window.print(); }
+    </script>
 </body>
 </html>
