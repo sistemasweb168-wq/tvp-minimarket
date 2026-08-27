@@ -1078,12 +1078,8 @@ function pos() {
                     // 🔊 Sonido de Éxito / Caja Registradora
                     AudioPOS.success();
 
-                    // Si emitió un CPE electrónico abrir esa vista, sino el ticket normal
-                    const urlImprimir = result.cpe_url || result.redirect;
-                    if (urlImprimir) {
-                        window.open(urlImprimir, '_blank');
-                    }
-
+                    // La apertura del ticket ahora es controlada por el Modal Post-Venta
+                    
                     this.carrito = [];
                     this.descuento = 0;
                     this.montoRecibido = 0;
