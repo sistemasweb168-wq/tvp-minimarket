@@ -3,7 +3,60 @@
 @section('header', 'Control de Envases Retornables & Garantías')
 
 @section('content')
-<div x-data="{ modalPrestamo: false, clienteId: '', clienteNombre: '', tipoEnvase: 'Caja de Cerveza 12u', cantidad: 1, montoGarantia: 20.00, observaciones: '' }">
+<div x-data="{
+    modalPrestamo: false,
+    clientesList: {{ Js::from($clientes) }},
+    clienteId: '',
+    clienteNombre: '',
+    busquedaCliente: '',
+    dropdownCliente: false,
+    tipoEnvase: 'Caja de Cerveza 12u (620ml)',
+    tipoEnvaseCustom: '',
+    esPersonalizado: false,
+    cantidad: 1,
+    montoGarantia: 20.00,
+    observaciones: '',
+
+    seleccionarCliente(c) {
+        this.clienteId = c.id;
+        this.clienteNombre = c.nombres + (c.apellidos ? ' ' + c.apellidos : '');
+        this.busquedaCliente = this.clienteNombre;
+        this.dropdownCliente = false;
+    },
+    limpiarCliente() {
+        this.clienteId = '';
+        this.clienteNombre = '';
+        this.busquedaCliente = '';
+        this.dropdownCliente = false;
+    },
+    setTipoEnvase(nombre, garantiaSug) {
+        this.esPersonalizado = false;
+        this.tipoEnvase = nombre;
+        this.montoGarantia = (garantiaSug * this.cantidad).toFixed(2);
+    },
+    setPersonalizado() {
+        this.esPersonalizado = true;
+        this.tipoEnvase = '';
+    },
+    recalcularGarantia() {
+        if (this.tipoEnvase.includes('Caja de Cerveza 12u')) {
+            this.montoGarantia = (20.00 * this.cantidad).toFixed(2);
+        } else if (this.tipoEnvase.includes('Botella Suelta')) {
+            this.montoGarantia = (2.00 * this.cantidad).toFixed(2);
+        } else if (this.tipoEnvase.includes('Personal')) {
+            this.montoGarantia = (15.00 * this.cantidad).toFixed(2);
+        }
+    },
+    get clientesFiltrados() {
+        if (!this.busquedaCliente || this.clienteId) return [];
+        const q = this.busquedaCliente.toLowerCase();
+        return this.clientesList.filter(c => 
+            (c.nombres && c.nombres.toLowerCase().includes(q)) || 
+            (c.apellidos && c.apellidos.toLowerCase().includes(q)) || 
+            (c.documento && c.documento.includes(q))
+        ).slice(0, 5);
+    }
+}">
 
     <!-- Resumen Superior -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
@@ -61,7 +114,7 @@
             <form method="GET" action="{{ route('envases.index') }}" class="relative flex-1 sm:w-64">
                 <input type="hidden" name="estado" value="{{ $estado }}">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Buscar cliente..." class="w-full pl-8 pr-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm outline-none focus:border-amber-500">
+                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por cliente o envase..." class="w-full pl-8 pr-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm outline-none focus:border-amber-500">
             </form>
             <button type="button" @click="modalPrestamo = true" class="px-4 py-2.5 gradient-primary text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-md hover:brightness-105 transition whitespace-nowrap">
                 <i class="fas fa-plus-circle"></i>
@@ -124,7 +177,7 @@
                                 @if($e->estado === 'prestado')
                                     <form action="{{ route('envases.devolver', $e->id) }}" method="POST" onsubmit="return confirm('¿Confirmas que el cliente devolvió los envases y se le reembolsará la garantía de S/ {{ number_format($e->monto_garantia, 2) }}?')">
                                         @csrf
-                                        <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1.5 mx-auto">
+                                        <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1.5 mx-auto cursor-pointer">
                                             <i class="fas fa-undo"></i> Recibir & Reembolsar
                                         </button>
                                     </form>
@@ -151,10 +204,12 @@
         @endif
     </div>
 
-    <!-- MODAL PRESTAR ENVASES CON GARANTIA -->
+    <!-- ============================================================== -->
+    <!-- 🚀 MODAL PRESTAR ENVASES CON BÚSQUEDA INTELIGENTE DE CLIENTE  -->
+    <!-- ============================================================== -->
     <div x-show="modalPrestamo" x-cloak class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg p-6 shadow-2xl" @click.outside="modalPrestamo = false">
-            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-800">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
                 <h3 class="text-lg font-bold text-white flex items-center gap-2">
                     <i class="fas fa-box-open text-amber-500"></i>
                     <span>Registrar Salida de Envases / Cascos</span>
@@ -166,56 +221,118 @@
 
             <form action="{{ route('envases.store') }}" method="POST" class="space-y-4">
                 @csrf
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Cliente Registrado</label>
-                        <select name="cliente_id" x-model="clienteId" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
-                            <option value="">Cliente Ocasional / Manual...</option>
-                            @foreach($clientes as $c)
-                                <option value="{{ $c->id }}">{{ $c->nombres }} {{ $c->apellidos }} ({{ $c->documento }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div x-show="!clienteId">
-                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Nombre del Cliente</label>
-                        <input type="text" name="cliente_nombre" placeholder="Ej. Juan Pérez / Vecino" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
-                    </div>
-                </div>
+                <input type="hidden" name="cliente_id" :value="clienteId">
+                <input type="hidden" name="cliente_nombre" :value="clienteNombre || busquedaCliente">
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Tipo de Envase</label>
-                        <select name="tipo_envase" x-model="tipoEnvase" required class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
-                            <option value="Caja de Cerveza (12 botellas 620ml)">Caja Cerveza 12u (620ml)</option>
-                            <option value="Botella Retornable 620ml (Casco)">Botella Suelta 620ml</option>
-                            <option value="Caja Cerveza Personal (310ml)">Caja Personal (310ml)</option>
-                            <option value="Botella Retornable 1 Litro">Botella 1 Litro</option>
-                            <option value="Bidón de Agua / Otro">Bidón / Otro Envase</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Cantidad de Envases</label>
-                        <input type="number" name="cantidad" x-model="cantidad" step="1" min="1" required class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Monto de Garantía Cobrado en Efectivo (S/)</label>
+                <!-- 1. Buscador Autocomplete de Cliente -->
+                <div class="relative">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">
+                        Cliente (Buscar por Nombre / DNI o Escribir Manual)
+                    </label>
+                    
                     <div class="relative">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">S/</span>
-                        <input type="number" name="monto_garantia" x-model="montoGarantia" step="0.50" min="0" required class="w-full pl-10 pr-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none font-bold text-amber-400">
+                        <i class="fas fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" 
+                               x-model="busquedaCliente"
+                               @focus="dropdownCliente = true"
+                               @input="clienteId = ''; clienteNombre = busquedaCliente; dropdownCliente = true"
+                               placeholder="Escribe el nombre o DNI del cliente..."
+                               required
+                               class="w-full pl-9 pr-8 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none font-medium">
+                        
+                        <button type="button" x-show="busquedaCliente" @click="limpiarCliente()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
                     </div>
-                    <p class="text-[11px] text-slate-400 mt-1">Este monto ingresará a tu caja del turno actual como garantía en custodia.</p>
+
+                    <!-- Indicador de Cliente Seleccionado -->
+                    <template x-if="clienteId">
+                        <div class="mt-1.5 px-2.5 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-300 text-xs flex items-center justify-between">
+                            <span><i class="fas fa-check-circle mr-1"></i> Cliente registrado vinculado</span>
+                            <button type="button" @click="limpiarCliente()" class="underline text-[10px] text-emerald-400 hover:text-white">Cambiar</button>
+                        </div>
+                    </template>
+
+                    <!-- Lista Desplegable de Coincidencias -->
+                    <div x-show="dropdownCliente && clientesFiltrados.length > 0" 
+                         @click.outside="dropdownCliente = false"
+                         class="absolute left-0 right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden max-h-48 overflow-y-auto divide-y divide-slate-700">
+                        <template x-for="c in clientesFiltrados" :key="c.id">
+                            <div @click="seleccionarCliente(c)" class="p-2.5 hover:bg-slate-700/80 cursor-pointer flex justify-between items-center transition">
+                                <div>
+                                    <p class="text-xs font-bold text-white" x-text="c.nombres + ' ' + (c.apellidos || '')"></p>
+                                    <p class="text-[10px] text-slate-400" x-text="c.documento ? ('Doc: ' + c.documento) : 'Sin documento'"></p>
+                                </div>
+                                <span class="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded-full font-bold">Seleccionar</span>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
+                <!-- 2. Selector de Tipo de Envase con Botones Rápidos -->
                 <div>
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Observaciones (Opcional)</label>
-                    <input type="text" name="observaciones" placeholder="Ej. Prometió devolver el sábado..." class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">
+                        Tipo de Envase / Casco
+                    </label>
+                    <div class="grid grid-cols-2 gap-1.5 mb-2">
+                        <button type="button" @click="setTipoEnvase('Caja de Cerveza 12u (620ml)', 20.00)"
+                                :class="!esPersonalizado && tipoEnvase.includes('Caja de Cerveza 12u') ? 'bg-amber-500 text-slate-950 font-bold border-amber-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+                                class="p-2 rounded-xl border text-xs text-left transition flex items-center gap-1.5">
+                            <i class="fas fa-beer-mug-empty"></i>
+                            <span class="truncate">Caja 12u (620ml)</span>
+                        </button>
+                        <button type="button" @click="setTipoEnvase('Botella Suelta Retornable (620ml)', 2.00)"
+                                :class="!esPersonalizado && tipoEnvase.includes('Botella Suelta') ? 'bg-amber-500 text-slate-950 font-bold border-amber-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+                                class="p-2 rounded-xl border text-xs text-left transition flex items-center gap-1.5">
+                            <i class="fas fa-wine-bottle"></i>
+                            <span class="truncate">Botella Suelta</span>
+                        </button>
+                        <button type="button" @click="setTipoEnvase('Caja Cerveza Personal (310ml)', 15.00)"
+                                :class="!esPersonalizado && tipoEnvase.includes('Personal') ? 'bg-amber-500 text-slate-950 font-bold border-amber-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+                                class="p-2 rounded-xl border text-xs text-left transition flex items-center gap-1.5">
+                            <i class="fas fa-boxes-stacked"></i>
+                            <span class="truncate">Caja Personal 310ml</span>
+                        </button>
+                        <button type="button" @click="setPersonalizado()"
+                                :class="esPersonalizado ? 'bg-amber-500 text-slate-950 font-bold border-amber-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+                                class="p-2 rounded-xl border text-xs text-left transition flex items-center gap-1.5">
+                            <i class="fas fa-pen"></i>
+                            <span class="truncate">Otro Envase</span>
+                        </button>
+                    </div>
+
+                    <!-- Input si es personalizado o nombre final -->
+                    <div x-show="esPersonalizado">
+                        <input type="text" x-model="tipoEnvase" placeholder="Escribe el tipo de envase o marca..." required class="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm focus:border-amber-500 outline-none">
+                    </div>
+                    <input type="hidden" name="tipo_envase" :value="tipoEnvase">
+                </div>
+
+                <!-- 3. Cantidad y Garantía en Soles -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Cantidad</label>
+                        <input type="number" name="cantidad" x-model.number="cantidad" @input="recalcularGarantia()" step="1" min="1" required class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none font-bold text-center">
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Garantía en Soles (S/)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">S/</span>
+                            <input type="number" name="monto_garantia" x-model.number="montoGarantia" step="0.50" min="0" required class="w-full pl-8 pr-3 py-2.5 bg-slate-800 border border-slate-700 text-amber-400 font-black rounded-xl text-sm focus:border-amber-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Observaciones -->
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block">Observaciones (Opcional)</label>
+                    <input type="text" name="observaciones" placeholder="Ej. Prometió devolver el fin de semana..." class="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm focus:border-amber-500 outline-none">
                 </div>
 
                 <div class="flex gap-3 pt-3 border-t border-slate-800">
-                    <button type="button" @click="modalPrestamo = false" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm transition">Cancelar</button>
-                    <button type="submit" class="flex-1 py-2.5 gradient-primary text-white font-bold rounded-xl text-sm shadow-lg shadow-amber-500/20 hover:brightness-105 transition">Registrar Préstamo</button>
+                    <button type="button" @click="modalPrestamo = false" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="flex-1 py-2.5 gradient-primary text-white font-bold rounded-xl text-sm shadow-lg shadow-amber-500/20 hover:brightness-105 transition cursor-pointer">Registrar Préstamo</button>
                 </div>
             </form>
         </div>
