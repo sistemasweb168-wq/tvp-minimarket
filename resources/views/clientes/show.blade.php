@@ -6,13 +6,13 @@
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-    <div class="bg-white rounded-2xl shadow-md p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
         <div class="text-center mb-4">
             <div class="w-24 h-24 mx-auto gradient-primary rounded-full flex items-center justify-center text-white text-4xl font-bold mb-3">
                 {{ strtoupper(substr($cliente->nombres, 0, 1)) }}
             </div>
             <h2 class="text-xl font-bold">{{ $cliente->nombre_completo }}</h2>
-            <p class="text-sm text-slate-500">{{ $cliente->codigo }}</p>
+            <p class="text-sm text-slate-400">{{ $cliente->codigo }}</p>
         </div>
         <div class="space-y-2 text-sm">
             <p><i class="fas fa-id-card text-slate-400 w-5"></i> {{ $cliente->tipo_documento }}: {{ $cliente->documento ?: '—' }}</p>
@@ -27,25 +27,25 @@
         <div class="grid grid-cols-3 gap-4">
             <div class="bg-yellow-50 rounded-xl p-4 text-center">
                 <i class="fas fa-star text-yellow-500 text-2xl mb-1"></i>
-                <p class="text-sm text-slate-600">Puntos</p>
+                <p class="text-sm text-slate-300">Puntos</p>
                 <p class="text-2xl font-bold text-yellow-600">{{ $cliente->puntos_fidelidad }}</p>
             </div>
             <div class="bg-blue-50 rounded-xl p-4 text-center">
                 <i class="fas fa-credit-card text-blue-500 text-2xl mb-1"></i>
-                <p class="text-sm text-slate-600">Crédito</p>
+                <p class="text-sm text-slate-300">Crédito</p>
                 <p class="text-2xl font-bold text-blue-600">{{ $moneda }}{{ number_format($cliente->credito_disponible, 2) }}</p>
             </div>
             <div class="bg-green-50 rounded-xl p-4 text-center">
                 <i class="fas fa-shopping-cart text-green-500 text-2xl mb-1"></i>
-                <p class="text-sm text-slate-600">Compras</p>
+                <p class="text-sm text-slate-300">Compras</p>
                 <p class="text-2xl font-bold text-green-600">{{ $cliente->ventas->count() }}</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-md p-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
             <h3 class="font-bold mb-4"><i class="fas fa-receipt mr-2 text-emerald-500"></i>Historial de compras</h3>
             <table class="w-full text-sm">
-                <thead class="text-xs uppercase text-slate-500 border-b">
+                <thead class="text-xs uppercase text-slate-400 border-b">
                     <tr><th class="text-left py-2">Ticket</th><th class="text-left py-2">Fecha</th><th class="text-left py-2">Pago</th><th class="text-right py-2">Total</th></tr>
                 </thead>
                 <tbody>

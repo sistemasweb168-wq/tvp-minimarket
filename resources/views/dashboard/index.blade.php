@@ -7,18 +7,18 @@
 
 <!-- Saludo -->
 <div class="mb-5 sm:mb-6">
-    <h1 class="text-xl sm:text-2xl font-bold text-slate-800">¡Hola, {{ explode(' ', auth()->user()->name)[0] }}! 👋</h1>
-    <p class="text-sm sm:text-base text-slate-500">Resumen de tu negocio - {{ now()->translatedFormat('l, d \d\e F') }}</p>
+    <h1 class="text-xl sm:text-2xl font-bold text-slate-100">¡Hola, {{ explode(' ', auth()->user()->name)[0] }}! 👋</h1>
+    <p class="text-sm sm:text-base text-slate-400">Resumen de tu negocio - {{ now()->translatedFormat('l, d \d\e F') }}</p>
 </div>
 
 <!-- Tarjetas de estadísticas -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-5 sm:mb-6">
     <div class="gradient-card-1 rounded-2xl p-4 sm:p-5 text-white shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
         <div class="flex justify-between items-start mb-2 sm:mb-3">
-            <div class="bg-white/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+            <div class="bg-slate-900 border border-slate-800/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                 <i class="fas fa-coins text-lg sm:text-2xl"></i>
             </div>
-            <span class="text-[10px] sm:text-xs bg-white/20 px-2 py-1 rounded-full">HOY</span>
+            <span class="text-[10px] sm:text-xs bg-slate-900 border border-slate-800/20 px-2 py-1 rounded-full">HOY</span>
         </div>
         <p class="text-white/80 text-xs sm:text-sm">Ventas del día</p>
         <h3 class="text-xl sm:text-3xl font-bold mt-1 break-all">{{ $moneda }} {{ number_format($stats['ventas_hoy'], 2) }}</h3>
@@ -27,10 +27,10 @@
 
     <div class="gradient-card-2 rounded-2xl p-4 sm:p-5 text-white shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
         <div class="flex justify-between items-start mb-2 sm:mb-3">
-            <div class="bg-white/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+            <div class="bg-slate-900 border border-slate-800/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                 <i class="fas fa-chart-line text-lg sm:text-2xl"></i>
             </div>
-            <span class="text-[10px] sm:text-xs bg-white/20 px-2 py-1 rounded-full">MES</span>
+            <span class="text-[10px] sm:text-xs bg-slate-900 border border-slate-800/20 px-2 py-1 rounded-full">MES</span>
         </div>
         <p class="text-white/80 text-xs sm:text-sm">Ventas del mes</p>
         <h3 class="text-xl sm:text-3xl font-bold mt-1 break-all">{{ $moneda }} {{ number_format($stats['ventas_mes'], 2) }}</h3>
@@ -39,10 +39,10 @@
 
     <div class="gradient-card-3 rounded-2xl p-4 sm:p-5 text-white shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
         <div class="flex justify-between items-start mb-2 sm:mb-3">
-            <div class="bg-white/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+            <div class="bg-slate-900 border border-slate-800/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                 <i class="fas fa-box text-lg sm:text-2xl"></i>
             </div>
-            <span class="text-[10px] sm:text-xs bg-white/20 px-2 py-1 rounded-full">STOCK</span>
+            <span class="text-[10px] sm:text-xs bg-slate-900 border border-slate-800/20 px-2 py-1 rounded-full">STOCK</span>
         </div>
         <p class="text-white/80 text-xs sm:text-sm">Productos</p>
         <h3 class="text-xl sm:text-3xl font-bold mt-1">{{ $stats['productos_total'] }}</h3>
@@ -53,10 +53,10 @@
 
     <div class="gradient-card-4 rounded-2xl p-4 sm:p-5 text-white shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
         <div class="flex justify-between items-start mb-2 sm:mb-3">
-            <div class="bg-white/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+            <div class="bg-slate-900 border border-slate-800/20 rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
                 <i class="fas fa-users text-lg sm:text-2xl"></i>
             </div>
-            <span class="text-[10px] sm:text-xs bg-white/20 px-2 py-1 rounded-full">ACTIVOS</span>
+            <span class="text-[10px] sm:text-xs bg-slate-900 border border-slate-800/20 px-2 py-1 rounded-full">ACTIVOS</span>
         </div>
         <p class="text-white/80 text-xs sm:text-sm">Clientes</p>
         <h3 class="text-xl sm:text-3xl font-bold mt-1">{{ $stats['clientes_total'] }}</h3>
@@ -66,11 +66,11 @@
 
 <!-- Gráficos principales -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-    <div class="lg:col-span-2 bg-white rounded-2xl shadow-md p-6">
+    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h3 class="font-bold text-slate-800">Ventas - Últimos 7 días</h3>
-                <p class="text-sm text-slate-500">Evolución de las ventas diarias</p>
+                <h3 class="font-bold text-slate-100">Ventas - Últimos 7 días</h3>
+                <p class="text-sm text-slate-400">Evolución de las ventas diarias</p>
             </div>
             <div class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold w-fit">
                 <i class="fas fa-arrow-up mr-1"></i>En tiempo real
@@ -81,8 +81,8 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
-        <h3 class="font-bold text-slate-800 mb-4">Ventas por Categoría</h3>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6">
+        <h3 class="font-bold text-slate-100 mb-4">Ventas por Categoría</h3>
         <div class="relative" style="height: 200px;">
             <canvas id="categoriasChart"></canvas>
         </div>
@@ -91,9 +91,9 @@
                 <div class="flex items-center justify-between text-sm">
                     <div class="flex items-center gap-2">
                         <span class="w-3 h-3 rounded-full" style="background: {{ $cat->color }}"></span>
-                        <span class="text-slate-700">{{ $cat->nombre }}</span>
+                        <span class="text-slate-200">{{ $cat->nombre }}</span>
                     </div>
-                    <span class="font-semibold text-slate-800">{{ $moneda }}{{ number_format($cat->total, 2) }}</span>
+                    <span class="font-semibold text-slate-100">{{ $moneda }}{{ number_format($cat->total, 2) }}</span>
                 </div>
             @endforeach
         </div>
@@ -103,16 +103,16 @@
 <!-- ====== NUEVOS GRÁFICOS ESTADÍSTICOS ====== -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
     <!-- Gráfico: Ventas por Día de la Semana -->
-    <div class="lg:col-span-2 bg-white rounded-2xl shadow-md p-5 sm:p-6">
+    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
             <div>
-                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
                         <i class="fas fa-calendar-week text-purple-600 text-sm"></i>
                     </span>
                     Ventas por Día de la Semana
                 </h3>
-                <p class="text-xs sm:text-sm text-slate-500 ml-10">Últimos 30 días - identifica tus días más fuertes</p>
+                <p class="text-xs sm:text-sm text-slate-400 ml-10">Últimos 30 días - identifica tus días más fuertes</p>
             </div>
             <div class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold w-fit">
                 <i class="fas fa-chart-bar mr-1"></i>30 días
@@ -124,15 +124,15 @@
     </div>
 
     <!-- Gráfico: Distribución por Forma de Pago -->
-    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6">
         <div class="mb-4">
-            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+            <h3 class="font-bold text-slate-100 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
                     <i class="fas fa-credit-card text-blue-600 text-sm"></i>
                 </span>
                 Forma de Pago
             </h3>
-            <p class="text-xs text-slate-500 ml-10">Mes actual</p>
+            <p class="text-xs text-slate-400 ml-10">Mes actual</p>
         </div>
         <div class="relative" style="min-height:180px;">
             <canvas id="formaPagoChart"></canvas>
@@ -148,10 +148,10 @@
                         <span class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:{{ $info[1] }}20">
                             <i class="fas {{ $info[0] }} text-xs" style="color:{{ $info[1] }}"></i>
                         </span>
-                        <span class="text-slate-700 capitalize">{{ $fp->forma_pago }}</span>
+                        <span class="text-slate-200 capitalize">{{ $fp->forma_pago }}</span>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-slate-800 text-sm">{{ $moneda }}{{ number_format($fp->total, 2) }}</p>
+                        <p class="font-bold text-slate-100 text-sm">{{ $moneda }}{{ number_format($fp->total, 2) }}</p>
                         <p class="text-[10px] text-slate-400">{{ $fp->cantidad }} tickets</p>
                     </div>
                 </div>
@@ -164,16 +164,16 @@
 </div>
 
 <!-- Top Clientes -->
-<div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 mb-6">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6 mb-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
         <div>
-            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+            <h3 class="font-bold text-slate-100 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center">
                     <i class="fas fa-crown text-pink-600 text-sm"></i>
                 </span>
                 Top 5 Clientes del Mes
             </h3>
-            <p class="text-xs sm:text-sm text-slate-500 ml-10">Clientes que más han gastado este mes</p>
+            <p class="text-xs sm:text-sm text-slate-400 ml-10">Clientes que más han gastado este mes</p>
         </div>
         <a href="{{ route('clientes.index') }}" class="text-sm text-emerald-600 hover:text-emerald-700 w-fit">Ver todos →</a>
     </div>
@@ -187,10 +187,10 @@
                 <div class="w-12 h-12 gradient-primary rounded-full flex items-center justify-center text-white font-bold text-lg mb-2">
                     {{ strtoupper(substr($cl->nombres, 0, 1)) }}
                 </div>
-                <p class="font-semibold text-slate-800 text-sm truncate">{{ $cl->nombres }} {{ $cl->apellidos }}</p>
+                <p class="font-semibold text-slate-100 text-sm truncate">{{ $cl->nombres }} {{ $cl->apellidos }}</p>
                 <p class="text-xl font-bold text-emerald-600 mt-1">{{ $moneda }}{{ number_format($cl->total_gastado, 0) }}</p>
                 <div class="flex items-center justify-between mt-2 text-xs">
-                    <span class="text-slate-500"><i class="fas fa-shopping-bag mr-1"></i>{{ $cl->cantidad_compras }}</span>
+                    <span class="text-slate-400"><i class="fas fa-shopping-bag mr-1"></i>{{ $cl->cantidad_compras }}</span>
                     <span class="text-yellow-600"><i class="fas fa-star mr-1"></i>{{ $cl->puntos_fidelidad }}</span>
                 </div>
             </div>
@@ -202,21 +202,21 @@
 
 <!-- Productos top y stock crítico y por vencer -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fas fa-trophy text-yellow-500 mr-2"></i>Más vendidos del mes</h3>
+            <h3 class="font-bold text-slate-100 text-sm sm:text-base"><i class="fas fa-trophy text-yellow-500 mr-2"></i>Más vendidos del mes</h3>
             <a href="{{ route('reportes.productos') }}" class="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700">Ver todos →</a>
         </div>
         <div class="space-y-3">
             @forelse($productosTop as $i => $p)
-                <div class="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-lg transition">
+                <div class="flex items-center gap-3 p-3 hover:bg-slate-800 rounded-lg transition">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0
                         {{ $i == 0 ? 'bg-yellow-500' : ($i == 1 ? 'bg-slate-400' : ($i == 2 ? 'bg-orange-600' : 'bg-slate-300')) }}">
                         {{ $i + 1 }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-slate-800 truncate">{{ $p->nombre }}</p>
-                        <p class="text-xs text-slate-500">{{ $p->codigo }} • {{ number_format($p->total_vendido, 0) }} unidades</p>
+                        <p class="font-semibold text-slate-100 truncate">{{ $p->nombre }}</p>
+                        <p class="text-xs text-slate-400">{{ $p->codigo }} • {{ number_format($p->total_vendido, 0) }} unidades</p>
                     </div>
                     <div class="text-right flex-shrink-0">
                         <p class="font-bold text-emerald-600">{{ $moneda }}{{ number_format($p->total_ingresos, 2) }}</p>
@@ -228,9 +228,9 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>Stock crítico</h3>
+            <h3 class="font-bold text-slate-100 text-sm sm:text-base"><i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>Stock crítico</h3>
             <a href="{{ route('productos.index', ['estado' => 'stock_bajo']) }}" class="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700">Ver todos →</a>
         </div>
         <div class="space-y-3">
@@ -240,12 +240,12 @@
                         <i class="fas fa-box text-red-500"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-slate-800 truncate">{{ $p->nombre }}</p>
-                        <p class="text-xs text-slate-500">{{ $p->codigo }} • Mín: {{ number_format($p->stock_minimo, 2) }}</p>
+                        <p class="font-semibold text-slate-100 truncate">{{ $p->nombre }}</p>
+                        <p class="text-xs text-slate-400">{{ $p->codigo }} • Mín: {{ number_format($p->stock_minimo, 2) }}</p>
                     </div>
                     <div class="text-right flex-shrink-0">
                         <p class="text-2xl font-bold text-red-600">{{ number_format($p->stock, 2) }}</p>
-                        <p class="text-xs text-slate-500">{{ $p->unidad_medida }}</p>
+                        <p class="text-xs text-slate-400">{{ $p->unidad_medida }}</p>
                     </div>
                 </div>
             @empty
@@ -257,9 +257,9 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fas fa-clock text-orange-500 mr-2"></i>Por vencer (30 días)</h3>
+            <h3 class="font-bold text-slate-100 text-sm sm:text-base"><i class="fas fa-clock text-orange-500 mr-2"></i>Por vencer (30 días)</h3>
             <a href="{{ route('productos.index') }}" class="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700">Ver catálogo →</a>
         </div>
         <div class="space-y-3">
@@ -273,16 +273,16 @@
                         <i class="fas fa-hourglass-half text-{{$color}}-500"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-slate-800 truncate">{{ $p->nombre }}</p>
-                        <p class="text-xs text-slate-500">Lote: {{ $p->lote ?? 'N/A' }}</p>
+                        <p class="font-semibold text-slate-100 truncate">{{ $p->nombre }}</p>
+                        <p class="text-xs text-slate-400">Lote: {{ $p->lote ?? 'N/A' }}</p>
                     </div>
                     <div class="text-right flex-shrink-0">
                         @if($dias < 0)
                             <p class="text-sm font-bold text-red-600">Vencido</p>
-                            <p class="text-xs text-slate-500">Hace {{ abs(intval($dias)) }} días</p>
+                            <p class="text-xs text-slate-400">Hace {{ abs(intval($dias)) }} días</p>
                         @else
                             <p class="text-sm font-bold text-{{$color}}-600">En {{ intval($dias) }} días</p>
-                            <p class="text-[10px] text-slate-500">{{ $p->fecha_vencimiento->format('d/m/Y') }}</p>
+                            <p class="text-[10px] text-slate-400">{{ $p->fecha_vencimiento->format('d/m/Y') }}</p>
                         @endif
                     </div>
                 </div>
@@ -297,14 +297,14 @@
 </div>
 
 <!-- Últimas ventas -->
-<div class="bg-white rounded-2xl shadow-md p-5 sm:p-6">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 sm:p-6">
     <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-slate-800 text-sm sm:text-base"><i class="fas fa-history text-blue-500 mr-2"></i>Últimas ventas</h3>
+        <h3 class="font-bold text-slate-100 text-sm sm:text-base"><i class="fas fa-history text-blue-500 mr-2"></i>Últimas ventas</h3>
         <a href="{{ route('ventas.index') }}" class="text-xs sm:text-sm text-emerald-600 hover:text-emerald-700">Ver todas →</a>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="text-xs text-slate-500 uppercase border-b border-slate-200">
+            <thead class="text-xs text-slate-400 uppercase border-b border-slate-700">
                 <tr>
                     <th class="text-left py-2 px-2">Ticket</th>
                     <th class="text-left py-2 px-2">Cliente</th>
@@ -317,15 +317,15 @@
             </thead>
             <tbody>
                 @forelse($ultimasVentas as $v)
-                    <tr class="border-b border-slate-100 hover:bg-slate-50">
-                        <td class="py-3 px-2 font-mono text-xs font-semibold text-slate-700">{{ $v->numero_ticket }}</td>
+                    <tr class="border-b border-slate-800 hover:bg-slate-800">
+                        <td class="py-3 px-2 font-mono text-xs font-semibold text-slate-200">{{ $v->numero_ticket }}</td>
                         <td class="py-3 px-2">{{ $v->cliente?->nombre_completo ?? 'Cliente Genérico' }}</td>
                         <td class="py-3 px-2 hide-mobile">{{ $v->user->name }}</td>
                         <td class="py-3 px-2 hide-mobile">
                             <span class="inline-block px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">{{ ucfirst($v->forma_pago) }}</span>
                         </td>
                         <td class="py-3 px-2 text-right font-semibold text-emerald-600">{{ $moneda }} {{ number_format($v->total, 2) }}</td>
-                        <td class="py-3 px-2 text-xs text-slate-500 hide-mobile">{{ $v->fecha_venta->diffForHumans() }}</td>
+                        <td class="py-3 px-2 text-xs text-slate-400 hide-mobile">{{ $v->fecha_venta->diffForHumans() }}</td>
                         <td class="py-3 px-2 text-right">
                             <a href="{{ route('ventas.show', $v->id) }}" class="text-emerald-600 hover:text-emerald-700">
                                 <i class="fas fa-eye"></i>

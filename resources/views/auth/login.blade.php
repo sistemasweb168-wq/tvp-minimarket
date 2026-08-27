@@ -34,7 +34,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 antialiased" x-data="{ showPass: false, userVal: 'admin', passVal: 'admin123' }">
+<body class="bg-slate-900 min-h-screen text-slate-100 antialiased" x-data="{ showPass: false, userVal: 'admin', passVal: 'admin123' }">
 
     <div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
 
@@ -50,7 +50,7 @@
             <!-- Cabecera de portada -->
             <div class="relative z-10 flex items-center gap-3.5">
                 @if($empresaGlobal && $empresaGlobal->logo_url)
-                    <img src="{{ $empresaGlobal->logo_url }}" class="w-14 h-14 rounded-2xl object-contain bg-white/95 p-2 shadow-xl backdrop-blur-sm" alt="Logo">
+                    <img src="{{ $empresaGlobal->logo_url }}" class="w-14 h-14 rounded-2xl object-contain bg-slate-900 border border-slate-800/95 p-2 shadow-xl backdrop-blur-sm" alt="Logo">
                 @else
                     <div class="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-xl shadow-emerald-500/30">
                         <i class="fas fa-store text-2xl text-white"></i>
@@ -80,7 +80,7 @@
 
                 <!-- Badges de características -->
                 <div class="grid grid-cols-2 gap-3.5">
-                    <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15">
+                    <div class="flex items-center gap-3 bg-slate-900 border border-slate-800/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15">
                         <div class="w-10 h-10 rounded-xl bg-emerald-500/30 flex items-center justify-center text-emerald-300">
                             <i class="fas fa-bolt text-lg"></i>
                         </div>
@@ -89,7 +89,7 @@
                             <p class="text-[11px] text-slate-300">Con calculadora de cambio</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15">
+                    <div class="flex items-center gap-3 bg-slate-900 border border-slate-800/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15">
                         <div class="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center text-blue-300">
                             <i class="fas fa-receipt text-lg"></i>
                         </div>
@@ -113,19 +113,19 @@
         <!-- ============================================================== -->
         <!-- 🔐 MITAD DERECHA: FORMULARIO DE INICIO DE SESIÓN              -->
         <!-- ============================================================== -->
-        <div class="flex flex-col justify-between p-6 sm:p-10 lg:p-14 xl:p-20 bg-white">
+        <div class="flex flex-col justify-between p-6 sm:p-10 lg:p-14 xl:p-20 bg-slate-900 border border-slate-800">
             
             <!-- Cabecera Móvil (Solo visible en pantallas pequeñas) -->
             <div class="lg:hidden flex items-center gap-3 mb-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
                 @if($empresaGlobal && $empresaGlobal->logo_url)
-                    <img src="{{ $empresaGlobal->logo_url }}" class="w-12 h-12 rounded-xl object-contain bg-white p-1 shadow-sm" alt="Logo">
+                    <img src="{{ $empresaGlobal->logo_url }}" class="w-12 h-12 rounded-xl object-contain bg-slate-900 border border-slate-800 p-1 shadow-sm" alt="Logo">
                 @else
                     <div class="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-white shadow-sm">
                         <i class="fas fa-store text-xl"></i>
                     </div>
                 @endif
                 <div>
-                    <h3 class="font-extrabold text-base text-slate-800">{{ $empresaGlobal->nombre_comercial ?? 'Minimarket VALEZKA' }}</h3>
+                    <h3 class="font-extrabold text-base text-slate-100">{{ $empresaGlobal->nombre_comercial ?? 'Minimarket VALEZKA' }}</h3>
                     <p class="text-xs text-emerald-700 font-medium">Punto de Venta</p>
                 </div>
             </div>
@@ -137,10 +137,10 @@
                     <div class="hidden lg:inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-primary text-white mb-4 shadow-lg shadow-emerald-500/20">
                         <i class="fas fa-cash-register text-2xl"></i>
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-50 tracking-tight mb-2">
                         Iniciar Sesión
                     </h2>
-                    <p class="text-sm text-slate-500">
+                    <p class="text-sm text-slate-400">
                         Ingresa tus credenciales para acceder al sistema POS.
                     </p>
                 </div>
@@ -164,13 +164,13 @@
 
                     <!-- Campo Usuario / Email -->
                     <div>
-                        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Usuario o Correo</label>
+                        <label class="block text-xs sm:text-sm font-bold text-slate-200 mb-1.5">Usuario o Correo</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none text-slate-400">
                                 <i class="fas fa-user text-sm sm:text-base"></i>
                             </div>
                             <input type="text" name="username" x-model="userVal" required autofocus
-                                   class="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 border border-slate-300 rounded-2xl focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm font-medium text-slate-800 transition"
+                                   class="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 border border-slate-600 rounded-2xl focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 text-sm font-medium text-slate-100 transition"
                                    placeholder="admin o correo@ejemplo.com">
                         </div>
                     </div>
@@ -178,16 +178,16 @@
                     <!-- Campo Contraseña -->
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
-                            <label class="block text-xs sm:text-sm font-bold text-slate-700">Contraseña</label>
+                            <label class="block text-xs sm:text-sm font-bold text-slate-200">Contraseña</label>
                         </div>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none text-slate-400">
                                 <i class="fas fa-lock text-sm sm:text-base"></i>
                             </div>
                             <input :type="showPass ? 'text' : 'password'" name="password" x-model="passVal" required autocomplete="current-password"
-                                   class="w-full pl-10 sm:pl-12 pr-11 py-3 sm:py-3.5 border border-slate-300 rounded-2xl focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm font-medium text-slate-800 transition"
+                                   class="w-full pl-10 sm:pl-12 pr-11 py-3 sm:py-3.5 border border-slate-600 rounded-2xl focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 text-sm font-medium text-slate-100 transition"
                                    placeholder="••••••••">
-                            <button type="button" @click="showPass = !showPass" class="absolute inset-y-0 right-0 pr-3.5 sm:pr-4 flex items-center text-slate-400 hover:text-slate-600 transition" tabindex="-1">
+                            <button type="button" @click="showPass = !showPass" class="absolute inset-y-0 right-0 pr-3.5 sm:pr-4 flex items-center text-slate-400 hover:text-slate-300 transition" tabindex="-1">
                                 <i :class="showPass ? 'fa-eye-slash' : 'fa-eye'" class="fas text-sm sm:text-base"></i>
                             </button>
                         </div>
@@ -195,8 +195,8 @@
 
                     <!-- Recordarme -->
                     <div class="flex items-center justify-between text-xs sm:text-sm pt-1">
-                        <label class="flex items-center gap-2 text-slate-600 cursor-pointer select-none">
-                            <input type="checkbox" name="remember" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300">
+                        <label class="flex items-center gap-2 text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" name="remember" class="w-4 h-4 rounded text-emerald-600 focus:ring-amber-500 border-slate-600">
                             <span>Mantener sesión iniciada</span>
                         </label>
                     </div>
@@ -209,27 +209,27 @@
                 </form>
 
                 <!-- Accesos Rápidos de Prueba (Botones 1-clic) -->
-                <div class="mt-6 pt-5 border-t border-slate-200">
+                <div class="mt-6 pt-5 border-t border-slate-700">
                     <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 text-center">
                         Accesos Rápidos de Demostración:
                     </p>
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" @click="userVal='admin'; passVal='admin123'" 
-                                class="p-2.5 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 transition text-center group">
+                                class="p-2.5 rounded-xl border border-slate-700 hover:border-emerald-400 hover:bg-emerald-50/50 transition text-center group">
                             <i class="fas fa-user-shield text-emerald-600 text-sm mb-1 group-hover:scale-110 transition"></i>
-                            <p class="text-xs font-bold text-slate-800">Admin</p>
+                            <p class="text-xs font-bold text-slate-100">Admin</p>
                             <p class="text-[10px] text-slate-400">admin123</p>
                         </button>
                         <button type="button" @click="userVal='gerente'; passVal='gerente123'" 
-                                class="p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition text-center group">
+                                class="p-2.5 rounded-xl border border-slate-700 hover:border-blue-400 hover:bg-blue-50/50 transition text-center group">
                             <i class="fas fa-user-tie text-blue-600 text-sm mb-1 group-hover:scale-110 transition"></i>
-                            <p class="text-xs font-bold text-slate-800">Gerente</p>
+                            <p class="text-xs font-bold text-slate-100">Gerente</p>
                             <p class="text-[10px] text-slate-400">gerente123</p>
                         </button>
                         <button type="button" @click="userVal='cajero'; passVal='cajero123'" 
-                                class="p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 transition text-center group">
+                                class="p-2.5 rounded-xl border border-slate-700 hover:border-amber-400 hover:bg-amber-50/50 transition text-center group">
                             <i class="fas fa-cash-register text-amber-600 text-sm mb-1 group-hover:scale-110 transition"></i>
-                            <p class="text-xs font-bold text-slate-800">Cajero</p>
+                            <p class="text-xs font-bold text-slate-100">Cajero</p>
                             <p class="text-[10px] text-slate-400">cajero123</p>
                         </button>
                     </div>

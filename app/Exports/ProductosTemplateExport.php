@@ -13,8 +13,8 @@ class ProductosTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
     public function array(): array
     {
         return [
-            ['7751234567890', 'Whisky Johnnie Walker Black Label 750ml', '110.50', '25', 'Licores', 'WHI-001'],
-            ['7750987654321', 'Cerveza Pilsen Callao 620ml', '6.50', '120', 'Cervezas', 'CER-002'],
+            ['7751234567890', 'Whisky Johnnie Walker Black Label 750ml', '110.50', '100.00', '6', '25', 'Licores', 'WHI-001'],
+            ['7750987654321', 'Cerveza Pilsen Callao 620ml', '6.50', '5.50', '12', '120', 'Cervezas', 'CER-002'],
         ];
     }
 
@@ -24,6 +24,8 @@ class ProductosTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
             'CODIGO_BARRAS',
             'NOMBRE_PRODUCTO',
             'PRECIO_VENTA',
+            'PRECIO_POR_MAYOR',
+            'CANTIDAD_AL_POR_MAYOR',
             'STOCK_INICIAL',
             'CATEGORIA',
             'CODIGO_INTERNO'

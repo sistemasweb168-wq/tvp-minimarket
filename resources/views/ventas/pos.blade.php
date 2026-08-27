@@ -163,7 +163,7 @@
                             <div class="flex items-center bg-white border border-slate-300 rounded-lg overflow-hidden shadow-sm">
                                 <button type="button" @click="cambiarCantidad(idx, -1)" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100 transition"><i class="fas fa-minus text-[10px]"></i></button>
                                 <input type="number" step="0.01" x-model.number="item.cantidad"
-                                       @input="actualizarTotal()" class="w-14 text-center border-x border-slate-200 py-1 text-xs font-bold text-slate-800 focus:outline-none">
+                                       @input="recalcularPrecios()" class="w-14 text-center border-x border-slate-200 py-1 text-xs font-bold text-slate-800 focus:outline-none">
                                 <button type="button" @click="cambiarCantidad(idx, 1)" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100 transition"><i class="fas fa-plus text-[10px]"></i></button>
                             </div>
                             <div class="text-right">
@@ -190,7 +190,7 @@
                     <span>Descuento:</span>
                     <div class="flex items-center gap-1">
                         <span>{{ $moneda }}</span>
-                        <input type="number" x-model.number="descuento" @input="actualizarTotal()" min="0" step="0.01"
+                        <input type="number" x-model.number="descuento" @input="recalcularPrecios()" min="0" step="0.01"
                                class="w-20 text-right px-2 py-0.5 border border-slate-300 rounded font-semibold text-slate-700 text-xs focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
@@ -825,12 +825,15 @@ function pos() {
                     nombre: p.nombre,
                     cantidad: 1,
                     precio_unitario: parseFloat(p.precio_venta),
+                    precio_normal: parseFloat(p.precio_venta),
+                    precio_mayoreo: parseFloat(p.precio_mayoreo || 0),
+                    cantidad_mayoreo: parseInt(p.cantidad_mayoreo || 0),
                     stock: stockActual,
                 });
             }
             AudioPOS.beep(950, 'sine', 0.05);
             this.busqueda = '';
-            this.actualizarTotal();
+            this.recalcularPrecios();
         },
 
         cambiarCantidad(idx, delta) {
@@ -877,6 +880,16 @@ function pos() {
             });
         },
 
+        recalcularPrecios() {
+            this.carrito.forEach(item => {
+                if (item.cantidad_mayoreo > 0 && item.cantidad >= item.cantidad_mayoreo && item.precio_mayoreo > 0) {
+                    item.precio_unitario = item.precio_mayoreo;
+                } else {
+                    item.precio_unitario = item.precio_normal;
+                }
+            });
+            this.recalcularPrecios();
+        },
         actualizarTotal() {
             if (this.modalPago && this.formaPago === 'efectivo') {
                 this.montoRecibido = this.total;

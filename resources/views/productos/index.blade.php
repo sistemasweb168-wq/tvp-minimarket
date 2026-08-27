@@ -5,21 +5,21 @@
 @section('content')
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
-<div class="bg-white rounded-2xl shadow-md p-4 sm:p-5 mb-4 sm:mb-5">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 mb-4 sm:mb-5">
     <div class="flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
         <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 md:flex flex-1 gap-2 max-w-2xl">
             <div class="relative flex-1 col-span-1 sm:col-span-2 md:col-span-1">
                 <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                 <input name="buscar" value="{{ request('buscar') }}" placeholder="Buscar producto, código..."
-                       class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-emerald-500">
+                       class="w-full pl-10 pr-3 py-2 border border-slate-600 rounded-xl text-sm focus:outline-none focus:border-amber-500">
             </div>
-            <select name="categoria_id" class="px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-emerald-500">
+            <select name="categoria_id" class="px-3 py-2 border border-slate-600 rounded-xl text-sm focus:outline-none focus:border-amber-500">
                 <option value="">Todas las categorías</option>
                 @foreach($categorias as $c)
                     <option value="{{ $c->id }}" {{ request('categoria_id') == $c->id ? 'selected' : '' }}>{{ $c->nombre }}</option>
                 @endforeach
             </select>
-            <select name="estado" class="px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-emerald-500">
+            <select name="estado" class="px-3 py-2 border border-slate-600 rounded-xl text-sm focus:outline-none focus:border-amber-500">
                 <option value="">Todos</option>
                 <option value="activo" {{ request('estado')=='activo'?'selected':'' }}>Activos</option>
                 <option value="inactivo" {{ request('estado')=='inactivo'?'selected':'' }}>Inactivos</option>
@@ -39,14 +39,14 @@
 </div>
 
 <!-- Vista de Productos (Tarjetas en Móvil / Tabla en Desktop) -->
-<div class="bg-white rounded-2xl shadow-md overflow-hidden">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS NATIVAS < md) -->
     <div class="md:hidden divide-y divide-slate-100">
         @forelse($productos as $p)
-            <div class="p-3.5 flex items-start gap-3 hover:bg-slate-50 transition">
+            <div class="p-3.5 flex items-start gap-3 hover:bg-slate-800 transition">
                 <!-- Imagen -->
-                <div class="w-14 h-14 bg-slate-100 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-100 shadow-xs">
+                <div class="w-14 h-14 bg-slate-900 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-800 shadow-xs">
                     @if($p->imagen)
                         <img src="{{ $p->imagen_url }}" class="w-full h-full object-cover">
                     @else
@@ -57,7 +57,7 @@
                 <!-- Info Central -->
                 <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-1 mb-0.5">
-                        <h4 class="font-extrabold text-slate-800 text-xs sm:text-sm leading-snug break-words">{{ $p->nombre }}</h4>
+                        <h4 class="font-extrabold text-slate-100 text-xs sm:text-sm leading-snug break-words">{{ $p->nombre }}</h4>
                     </div>
                     <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
                         <span class="font-mono text-[10px] text-slate-400 font-semibold">{{ $p->codigo }}</span>
@@ -65,18 +65,18 @@
                             <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-md text-white" style="background:{{ $p->categoria->color }}">{{ $p->categoria->nombre }}</span>
                         @endif
                         @if(!$p->activo)
-                            <span class="text-[10px] font-bold px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded">Inactivo</span>
+                            <span class="text-[10px] font-bold px-1.5 py-0.2 bg-slate-900 text-slate-300 rounded">Inactivo</span>
                         @elseif($p->stock_bajo)
                             <span class="text-[10px] font-bold px-1.5 py-0.2 bg-red-100 text-red-700 rounded">Stock bajo</span>
                         @endif
                     </div>
-                    <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100/80">
+                    <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-800/80">
                         <div>
                             <span class="font-black text-emerald-600 text-sm sm:text-base">{{ $moneda }}{{ number_format($p->precio_venta, 2) }}</span>
                             <span class="text-[10px] text-slate-400 ml-1">C: {{ $moneda }}{{ number_format($p->precio_compra, 2) }}</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <span class="text-xs font-black {{ $p->stock_bajo ? 'text-red-600' : 'text-slate-700' }}">{{ number_format($p->stock, 0) }} {{ $p->unidad_medida }}</span>
+                            <span class="text-xs font-black {{ $p->stock_bajo ? 'text-red-600' : 'text-slate-200' }}">{{ number_format($p->stock, 0) }} {{ $p->unidad_medida }}</span>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
     <!-- 💻 VISTA ESCRITORIO (TABLA COMPLETA >= md) -->
     <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-100">
+            <thead class="bg-slate-800 text-xs uppercase text-slate-400 border-b border-slate-800">
                 <tr>
                     <th class="py-3.5 px-4">Producto</th>
                     <th class="py-3.5 px-4">Categoría</th>
@@ -114,10 +114,10 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse($productos as $p)
-                    <tr class="hover:bg-slate-50/80 transition">
+                    <tr class="hover:bg-slate-800/80 transition">
                         <td class="py-3.5 px-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                <div class="w-12 h-12 bg-slate-900 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
                                     @if($p->imagen)
                                         <img src="{{ $p->imagen_url }}" class="w-full h-full object-cover">
                                     @else
@@ -125,7 +125,7 @@
                                     @endif
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="font-bold text-slate-800 text-sm">{{ $p->nombre }}</p>
+                                    <p class="font-bold text-slate-100 text-sm">{{ $p->nombre }}</p>
                                     <p class="text-xs text-slate-400 font-mono">{{ $p->codigo }}</p>
                                 </div>
                             </div>
@@ -142,12 +142,12 @@
                             <p class="text-xs text-slate-400">Compra: {{ $moneda }}{{ number_format($p->precio_compra, 2) }}</p>
                         </td>
                         <td class="py-3.5 px-4 text-right whitespace-nowrap">
-                            <p class="font-extrabold text-sm {{ $p->stock_bajo ? 'text-red-600' : 'text-slate-800' }}">{{ number_format($p->stock, 0) }}</p>
+                            <p class="font-extrabold text-sm {{ $p->stock_bajo ? 'text-red-600' : 'text-slate-100' }}">{{ number_format($p->stock, 0) }}</p>
                             <p class="text-xs text-slate-400">{{ $p->unidad_medida }}</p>
                         </td>
                         <td class="py-3.5 px-4 text-center">
                             @if(!$p->activo)
-                                <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">Inactivo</span>
+                                <span class="px-2.5 py-1 bg-slate-900 text-slate-300 rounded-full text-xs font-bold">Inactivo</span>
                             @elseif($p->stock_bajo)
                                 <span class="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Stock bajo</span>
                             @else
@@ -177,17 +177,17 @@
         </table>
     </div>
 
-    <div class="p-3 sm:p-4 border-t border-slate-100">{{ $productos->withQueryString()->links() }}</div>
+    <div class="p-3 sm:p-4 border-t border-slate-800">{{ $productos->withQueryString()->links() }}</div>
 </div>
 
 <!-- Modal Importar Excel -->
 <div id="modal-importar" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 backdrop-blur-sm hidden">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 relative">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-6 relative">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-slate-800">Importar Productos</h3>
-            <button onclick="document.getElementById('modal-importar').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-lg"></i></button>
+            <h3 class="text-xl font-bold text-slate-100">Importar Productos</h3>
+            <button onclick="document.getElementById('modal-importar').classList.add('hidden')" class="text-slate-400 hover:text-slate-300"><i class="fas fa-times text-lg"></i></button>
         </div>
-        <p class="text-sm text-slate-600 mb-4">Descarga la plantilla, llénala con tus licores y sube el archivo para actualizar tu catálogo masivamente.</p>
+        <p class="text-sm text-slate-300 mb-4">Descarga la plantilla, llénala con tus licores y sube el archivo para actualizar tu catálogo masivamente.</p>
         <div class="mb-6 flex justify-center bg-blue-50 p-3 rounded-xl border border-blue-100">
             <a href="{{ route('productos.plantilla') }}" class="text-blue-700 hover:text-blue-800 font-bold text-sm flex items-center gap-2">
                 <i class="fas fa-download"></i> Descargar Plantilla.xlsx
@@ -196,11 +196,11 @@
         <form action="{{ route('productos.importar') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="mb-5">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Seleccionar Archivo Excel</label>
-                <input type="file" name="archivo_excel" accept=".xlsx,.xls,.csv" class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer" required>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Seleccionar Archivo Excel</label>
+                <input type="file" name="archivo_excel" accept=".xlsx,.xls,.csv" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-slate-900 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer" required>
             </div>
-            <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
-                <button type="button" onclick="document.getElementById('modal-importar').classList.add('hidden')" class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">Cancelar</button>
+            <div class="flex justify-end gap-2 border-t border-slate-800 pt-4">
+                <button type="button" onclick="document.getElementById('modal-importar').classList.add('hidden')" class="px-5 py-2.5 bg-slate-900 text-slate-200 rounded-xl font-bold hover:bg-slate-700 transition">Cancelar</button>
                 <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-md">Subir Inventario</button>
             </div>
         </form>

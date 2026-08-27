@@ -9,27 +9,27 @@
     @csrf
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div class="lg:col-span-2 space-y-5">
-            <div class="bg-white rounded-2xl shadow-md p-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
                 <h3 class="font-bold mb-4">Datos de la compra</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold mb-1">Proveedor *</label>
-                        <select name="proveedor_id" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg">
+                        <select name="proveedor_id" required class="w-full px-3 py-2.5 border border-slate-600 rounded-lg">
                             <option value="">— Seleccionar —</option>
                             @foreach($proveedores as $p)<option value="{{ $p->id }}">{{ $p->razon_social }}</option>@endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-1">N° Factura</label>
-                        <input type="text" name="numero_factura" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg">
+                        <input type="text" name="numero_factura" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-1">Fecha</label>
-                        <input type="date" name="fecha_compra" value="{{ now()->toDateString() }}" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg">
+                        <input type="date" name="fecha_compra" value="{{ now()->toDateString() }}" required class="w-full px-3 py-2.5 border border-slate-600 rounded-lg">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-1">Forma de pago</label>
-                        <select name="forma_pago" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg">
+                        <select name="forma_pago" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg">
                             <option value="efectivo">Efectivo</option>
                             <option value="transferencia">Transferencia</option>
                             <option value="credito">Crédito</option>
@@ -38,22 +38,22 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-md p-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
                 <h3 class="font-bold mb-4">Productos</h3>
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-2 mb-3">
-                    <select x-model="nuevoItem.producto_id" class="md:col-span-5 px-3 py-2 border border-slate-300 rounded-lg">
+                    <select x-model="nuevoItem.producto_id" class="md:col-span-5 px-3 py-2 border border-slate-600 rounded-lg">
                         <option value="">— Producto —</option>
                         @foreach($productos as $p)
                             <option value="{{ $p->id }}" data-precio="{{ $p->precio_compra }}" data-nombre="{{ $p->nombre }}" data-codigo="{{ $p->codigo }}">{{ $p->codigo }} - {{ $p->nombre }}</option>
                         @endforeach
                     </select>
-                    <input type="number" step="0.001" x-model.number="nuevoItem.cantidad" placeholder="Cantidad" class="md:col-span-2 px-3 py-2 border border-slate-300 rounded-lg">
-                    <input type="number" step="0.01" x-model.number="nuevoItem.precio_unitario" placeholder="Precio" class="md:col-span-3 px-3 py-2 border border-slate-300 rounded-lg">
+                    <input type="number" step="0.001" x-model.number="nuevoItem.cantidad" placeholder="Cantidad" class="md:col-span-2 px-3 py-2 border border-slate-600 rounded-lg">
+                    <input type="number" step="0.01" x-model.number="nuevoItem.precio_unitario" placeholder="Precio" class="md:col-span-3 px-3 py-2 border border-slate-600 rounded-lg">
                     <button type="button" @click="agregar" class="md:col-span-2 gradient-primary text-white py-2 rounded-lg"><i class="fas fa-plus mr-1"></i>Agregar</button>
                 </div>
 
                 <table class="w-full text-sm">
-                    <thead class="text-xs uppercase text-slate-500 border-b">
+                    <thead class="text-xs uppercase text-slate-400 border-b">
                         <tr>
                             <th class="text-left py-2">Producto</th>
                             <th class="text-right py-2">Cantidad</th>
@@ -79,14 +79,14 @@
         </div>
 
         <div class="space-y-5">
-            <div class="bg-white rounded-2xl shadow-md p-6 sticky top-20">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6 sticky top-20">
                 <h3 class="font-bold mb-3">Resumen</h3>
                 <div class="space-y-2 text-sm pb-3 border-b">
-                    <div class="flex justify-between"><span class="text-slate-600">Items:</span><span x-text="items.length"></span></div>
-                    <div class="flex justify-between"><span class="text-slate-600">Cantidad:</span><span x-text="items.reduce((s,i) => s + parseFloat(i.cantidad), 0).toFixed(2)"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-300">Items:</span><span x-text="items.length"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-300">Cantidad:</span><span x-text="items.reduce((s,i) => s + parseFloat(i.cantidad), 0).toFixed(2)"></span></div>
                 </div>
                 <div class="flex justify-between text-2xl font-bold pt-3"><span>Total:</span><span class="text-emerald-600" x-text="`{{ $moneda }}${total.toFixed(2)}`"></span></div>
-                <textarea name="observaciones" placeholder="Observaciones..." rows="2" class="w-full mt-3 px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
+                <textarea name="observaciones" placeholder="Observaciones..." rows="2" class="w-full mt-3 px-3 py-2 border border-slate-600 rounded-lg text-sm"></textarea>
                 <button type="submit" :disabled="items.length === 0" class="w-full mt-3 gradient-primary text-white py-3 rounded-lg font-semibold disabled:opacity-50">
                     <i class="fas fa-save mr-2"></i>Registrar Compra
                 </button>

@@ -7,16 +7,16 @@
 
 <!-- Stats SUNAT -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-5">
-    <div class="bg-white rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-slate-500">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-slate-500">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-xs text-slate-500 font-semibold">TOTAL CPE</p>
-                <p class="text-2xl sm:text-3xl font-bold text-slate-800">{{ $stats['total'] }}</p>
+                <p class="text-xs text-slate-400 font-semibold">TOTAL CPE</p>
+                <p class="text-2xl sm:text-3xl font-bold text-slate-100">{{ $stats['total'] }}</p>
             </div>
             <i class="fas fa-file-invoice text-3xl text-slate-300"></i>
         </div>
     </div>
-    <div class="bg-white rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-green-500">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-green-500">
         <div class="flex justify-between items-center">
             <div>
                 <p class="text-xs text-green-600 font-semibold">ACEPTADOS</p>
@@ -25,7 +25,7 @@
             <i class="fas fa-check-circle text-3xl text-green-300"></i>
         </div>
     </div>
-    <div class="bg-white rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-yellow-500">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-yellow-500">
         <div class="flex justify-between items-center">
             <div>
                 <p class="text-xs text-yellow-600 font-semibold">PENDIENTES</p>
@@ -34,7 +34,7 @@
             <i class="fas fa-clock text-3xl text-yellow-300"></i>
         </div>
     </div>
-    <div class="bg-white rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-red-500">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 border-l-4 border-red-500">
         <div class="flex justify-between items-center">
             <div>
                 <p class="text-xs text-red-600 font-semibold">RECHAZADOS</p>
@@ -60,18 +60,18 @@
 @endif
 
 <!-- Filtros -->
-<div class="bg-white rounded-2xl shadow-md p-5 mb-5">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 mb-5">
     <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-3">
         <input name="buscar" value="{{ request('buscar') }}" placeholder="N° comprobante / Doc cliente"
-               class="px-3 py-2.5 border border-slate-300 rounded-lg md:col-span-2">
-        <select name="tipo" class="px-3 py-2.5 border border-slate-300 rounded-lg">
+               class="px-3 py-2.5 border border-slate-600 rounded-lg md:col-span-2">
+        <select name="tipo" class="px-3 py-2.5 border border-slate-600 rounded-lg">
             <option value="">Todos los tipos</option>
             <option value="01" {{ request('tipo')=='01'?'selected':'' }}>Factura</option>
             <option value="03" {{ request('tipo')=='03'?'selected':'' }}>Boleta</option>
             <option value="07" {{ request('tipo')=='07'?'selected':'' }}>Nota de Crédito</option>
             <option value="08" {{ request('tipo')=='08'?'selected':'' }}>Nota de Débito</option>
         </select>
-        <select name="estado" class="px-3 py-2.5 border border-slate-300 rounded-lg">
+        <select name="estado" class="px-3 py-2.5 border border-slate-600 rounded-lg">
             <option value="">Todos los estados</option>
             @foreach(['pendiente'=>'Pendiente','enviado'=>'Enviado','aceptado'=>'Aceptado','rechazado'=>'Rechazado','observado'=>'Observado','anulado'=>'Anulado','baja'=>'Dado de baja'] as $k => $v)
                 <option value="{{ $k }}" {{ request('estado')==$k?'selected':'' }}>{{ $v }}</option>
@@ -82,7 +82,7 @@
 </div>
 
 <!-- Tabla de Comprobantes (Tarjetas en Móvil / Tabla en Desktop) -->
-<div class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden border border-slate-800">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
     <div class="md:hidden divide-y divide-slate-100">
@@ -91,23 +91,23 @@
                 $tipoColor = ['01'=>'purple', '03'=>'blue', '07'=>'amber', '08'=>'indigo'][$c->tipo_documento] ?? 'slate';
                 $estado = $c->estado_sunat;
             @endphp
-            <div class="p-3.5 hover:bg-slate-50 transition">
+            <div class="p-3.5 hover:bg-slate-800 transition">
                 <div class="flex items-center justify-between mb-1.5">
                     <div class="flex items-center gap-1.5">
                         <span class="px-2 py-0.5 bg-{{ $tipoColor }}-100 text-{{ $tipoColor }}-800 rounded-lg text-[10px] font-black">
                             {{ $c->tipo_documento_nombre }}
                         </span>
-                        <span class="font-mono text-xs font-black text-slate-800">{{ $c->numero_completo }}</span>
+                        <span class="font-mono text-xs font-black text-slate-100">{{ $c->numero_completo }}</span>
                     </div>
                     <span class="font-black text-emerald-600 text-sm">{{ $moneda }}{{ number_format($c->importe_total, 2) }}</span>
                 </div>
 
-                <div class="text-xs text-slate-600 mb-2">
+                <div class="text-xs text-slate-300 mb-2">
                     <p class="font-bold truncate">{{ $c->receptor_razon_social }}</p>
                     <p class="text-[11px] text-slate-400 font-mono">{{ $c->receptor_tipo_doc_label }}: {{ $c->receptor_numero_doc }} • {{ $c->fecha_emision->format('d/m/Y') }}</p>
                 </div>
 
-                <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800">
                     <div>
                         @if($estado === 'aceptado')
                             <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-black"><i class="fas fa-check-circle mr-1"></i>Aceptado</span>
@@ -138,7 +138,7 @@
     <!-- 💻 VISTA ESCRITORIO (TABLA >= md) -->
     <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left text-sm border-collapse">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-100">
+            <thead class="bg-slate-800 text-xs uppercase text-slate-400 border-b border-slate-800">
                 <tr>
                     <th class="py-3.5 px-4">N° Comprobante</th>
                     <th class="py-3.5 px-4">Tipo</th>
@@ -151,8 +151,8 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
             @forelse($comprobantes as $c)
-                <tr class="hover:bg-slate-50/80 transition">
-                    <td class="py-3.5 px-4 font-mono text-xs font-bold text-slate-800">{{ $c->numero_completo }}</td>
+                <tr class="hover:bg-slate-800/80 transition">
+                    <td class="py-3.5 px-4 font-mono text-xs font-bold text-slate-100">{{ $c->numero_completo }}</td>
                     <td class="py-3.5 px-4">
                         @php
                         $tipoColor = ['01'=>'purple', '03'=>'blue', '07'=>'amber', '08'=>'indigo'][$c->tipo_documento] ?? 'slate';
@@ -162,10 +162,10 @@
                         </span>
                     </td>
                     <td class="py-3.5 px-4">
-                        <p class="font-bold text-slate-800 text-xs sm:text-sm">{{ $c->receptor_razon_social }}</p>
+                        <p class="font-bold text-slate-100 text-xs sm:text-sm">{{ $c->receptor_razon_social }}</p>
                         <p class="text-xs text-slate-400 font-mono">{{ $c->receptor_tipo_doc_label }}: {{ $c->receptor_numero_doc }}</p>
                     </td>
-                    <td class="py-3.5 px-4 text-xs text-slate-500">{{ $c->fecha_emision->format('d/m/Y') }}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-400">{{ $c->fecha_emision->format('d/m/Y') }}</td>
                     <td class="py-3.5 px-4 text-right font-black text-emerald-600 whitespace-nowrap">{{ $moneda }}{{ number_format($c->importe_total, 2) }}</td>
                     <td class="py-3.5 px-4 text-center">
                         @php
@@ -191,6 +191,6 @@
         </table>
     </div>
 
-    <div class="p-3 sm:p-4 border-t border-slate-100">{{ $comprobantes->withQueryString()->links() }}</div>
+    <div class="p-3 sm:p-4 border-t border-slate-800">{{ $comprobantes->withQueryString()->links() }}</div>
 </div>
 @endsection

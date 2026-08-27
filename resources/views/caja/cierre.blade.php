@@ -5,20 +5,20 @@
 @section('content')
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
-<div class="bg-white rounded-2xl shadow-md p-8 max-w-3xl mx-auto">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-8 max-w-3xl mx-auto">
     <div class="text-center mb-6">
         <i class="fas fa-clipboard-check text-5xl text-emerald-500 mb-3"></i>
         <h2 class="text-2xl font-bold">Reporte de Cierre</h2>
-        <p class="text-slate-500">{{ $turno->caja->nombre }} - {{ $turno->user->name }}</p>
+        <p class="text-slate-400">{{ $turno->caja->nombre }} - {{ $turno->user->name }}</p>
     </div>
 
     <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="bg-slate-50 p-4 rounded-xl">
-            <p class="text-xs text-slate-600">APERTURA</p>
+        <div class="bg-slate-800 p-4 rounded-xl">
+            <p class="text-xs text-slate-300">APERTURA</p>
             <p class="text-sm">{{ $turno->fecha_apertura->format('d/m/Y H:i') }}</p>
         </div>
-        <div class="bg-slate-50 p-4 rounded-xl">
-            <p class="text-xs text-slate-600">CIERRE</p>
+        <div class="bg-slate-800 p-4 rounded-xl">
+            <p class="text-xs text-slate-300">CIERRE</p>
             <p class="text-sm">{{ $turno->fecha_cierre?->format('d/m/Y H:i') ?? 'Abierto' }}</p>
         </div>
     </div>
@@ -53,7 +53,7 @@
     @endif
 
     <div class="flex flex-col sm:flex-row gap-3 mt-6">
-        <a href="{{ route('caja.index') }}" class="flex-1 text-center py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition">Volver</a>
+        <a href="{{ route('caja.index') }}" class="flex-1 text-center py-3 bg-slate-900 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition">Volver</a>
         <a href="{{ route('caja.ticket', $turno->id) }}" target="_blank" class="flex-1 text-center py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition flex items-center justify-center gap-2">
             <i class="fas fa-receipt"></i><span>Ticket 80mm</span>
         </a>

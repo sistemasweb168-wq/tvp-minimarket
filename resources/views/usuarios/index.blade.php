@@ -4,11 +4,11 @@
 
 @section('content')
 <div x-data="{ open: false, edit: null }">
-<div class="bg-white rounded-2xl shadow-md p-4 sm:p-5 mb-4 sm:mb-5 border border-slate-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 mb-4 sm:mb-5 border border-slate-800 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
     <form method="GET" class="flex-1 flex gap-2 w-full max-w-xl">
         <div class="relative flex-1">
             <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs sm:text-sm"></i>
-            <input name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por nombre o usuario..." class="w-full pl-10 pr-3 py-2 sm:py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            <input name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por nombre o usuario..." class="w-full pl-10 pr-3 py-2 sm:py-2.5 border border-slate-600 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
         </div>
         <button class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition"><i class="fas fa-search"></i></button>
     </form>
@@ -20,23 +20,23 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     @forelse($usuarios as $u)
-        <div class="bg-white rounded-2xl shadow-md p-5 hover:shadow-lg transition">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 hover:shadow-lg transition">
             <div class="flex items-start gap-4">
                 <div class="w-16 h-16 gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                     {{ strtoupper(substr($u->name, 0, 1)) }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <h3 class="font-bold truncate">{{ $u->name }}</h3>
-                    <p class="text-sm text-slate-500">{{ '@' . $u->username }}</p>
+                    <p class="text-sm text-slate-400">{{ '@' . $u->username }}</p>
                     @if($u->role)
                         <span class="inline-block mt-2 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">{{ $u->role->nombre }}</span>
                     @endif
                 </div>
             </div>
-            <div class="mt-3 pt-3 border-t border-slate-100 text-sm space-y-1">
+            <div class="mt-3 pt-3 border-t border-slate-800 text-sm space-y-1">
                 <p><i class="fas fa-envelope text-slate-400 w-4"></i> {{ $u->email }}</p>
                 @if($u->telefono)<p><i class="fas fa-phone text-slate-400 w-4"></i> {{ $u->telefono }}</p>@endif
-                <p class="text-xs text-slate-500">
+                <p class="text-xs text-slate-400">
                     {!! $u->activo ? '<span class="text-green-600"><i class="fas fa-circle text-[8px]"></i> Activo</span>' : '<span class="text-red-600"><i class="fas fa-circle text-[8px]"></i> Inactivo</span>' !!}
                 </p>
             </div>
@@ -56,27 +56,27 @@
 
 <!-- Modal -->
 <div x-show="open" x-cloak class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-2xl w-full max-w-md p-6" @click.outside="open=false">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6" @click.outside="open=false">
         <h3 class="text-xl font-bold mb-4" x-text="edit ? 'Editar Usuario' : 'Nuevo Usuario'"></h3>
         <form :action="edit ? `/usuarios/${edit.id}` : '{{ route('usuarios.store') }}'" method="POST" class="space-y-3">
             @csrf
             <template x-if="edit"><input type="hidden" name="_method" value="PUT"></template>
-            <div><label class="text-sm font-semibold">Nombre completo</label><input name="name" :value="edit?.name || ''" required class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+            <div><label class="text-sm font-semibold">Nombre completo</label><input name="name" :value="edit?.name || ''" required class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
             <div class="grid grid-cols-2 gap-2">
-                <div><label class="text-sm font-semibold">Usuario</label><input name="username" :value="edit?.username || ''" required class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
-                <div><label class="text-sm font-semibold">Email</label><input name="email" type="email" :value="edit?.email || ''" required class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+                <div><label class="text-sm font-semibold">Usuario</label><input name="username" :value="edit?.username || ''" required class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
+                <div><label class="text-sm font-semibold">Email</label><input name="email" type="email" :value="edit?.email || ''" required class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
             </div>
-            <div><label class="text-sm font-semibold">Teléfono</label><input name="telefono" :value="edit?.telefono || ''" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+            <div><label class="text-sm font-semibold">Teléfono</label><input name="telefono" :value="edit?.telefono || ''" class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
             <div><label class="text-sm font-semibold">Rol</label>
-                <select name="role_id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                <select name="role_id" required class="w-full px-3 py-2 border border-slate-600 rounded-lg">
                     @foreach($roles as $r)<option value="{{ $r->id }}" x-bind:selected="edit?.role_id === {{ $r->id }}">{{ $r->nombre }}</option>@endforeach
                 </select>
             </div>
-            <div><label class="text-sm font-semibold" x-text="edit ? 'Nueva contraseña (dejar en blanco para no cambiar)' : 'Contraseña'"></label><input type="password" name="password" :required="!edit" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
-            <div><label class="text-sm font-semibold">Confirmar contraseña</label><input type="password" name="password_confirmation" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+            <div><label class="text-sm font-semibold" x-text="edit ? 'Nueva contraseña (dejar en blanco para no cambiar)' : 'Contraseña'"></label><input type="password" name="password" :required="!edit" class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
+            <div><label class="text-sm font-semibold">Confirmar contraseña</label><input type="password" name="password_confirmation" class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
             <template x-if="edit"><label class="flex gap-2"><input type="checkbox" name="activo" value="1" :checked="edit?.activo"> Activo</label></template>
             <div class="flex gap-2 pt-3">
-                <button type="button" @click="open=false" class="flex-1 py-2.5 bg-slate-200 rounded-lg">Cancelar</button>
+                <button type="button" @click="open=false" class="flex-1 py-2.5 bg-slate-700 rounded-lg">Cancelar</button>
                 <button type="submit" class="flex-1 py-2.5 gradient-primary text-white rounded-lg font-semibold">Guardar</button>
             </div>
         </form>

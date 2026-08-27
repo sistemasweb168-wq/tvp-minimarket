@@ -30,8 +30,10 @@ class ProductosImport implements ToModel, WithHeadingRow
             ['codigo' => $codigo],
             [
                 'nombre' => mb_strtoupper(trim($row['nombre_producto'])),
-                'precio' => floatval($row['precio_venta'] ?? 0),
-                'stock' => intval($row['stock_inicial'] ?? 0),
+                'precio_venta' => floatval($row['precio_venta'] ?? 0),
+                'precio_mayoreo' => floatval($row['precio_por_mayor'] ?? 0),
+                'cantidad_mayoreo' => intval($row['cantidad_al_por_mayor'] ?? 0),
+                'stock' => floatval($row['stock_inicial'] ?? 0),
                 'categoria_id' => $categoria->id,
                 'codigo_interno' => trim($row['codigo_interno'] ?? ''),
                 'estado' => 1

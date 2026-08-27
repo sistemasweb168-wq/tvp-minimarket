@@ -5,11 +5,11 @@
 @section('content')
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
-<div class="bg-white rounded-2xl shadow-md p-5 mb-5">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 mb-5">
     <form method="GET" class="flex flex-col md:flex-row gap-3">
         <div class="flex-1 grid grid-cols-2 gap-3">
-            <div><label class="block text-sm font-semibold mb-1">Desde</label><input type="date" name="desde" value="{{ $desde }}" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg"></div>
-            <div><label class="block text-sm font-semibold mb-1">Hasta</label><input type="date" name="hasta" value="{{ $hasta }}" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg"></div>
+            <div><label class="block text-sm font-semibold mb-1">Desde</label><input type="date" name="desde" value="{{ $desde }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
+            <div><label class="block text-sm font-semibold mb-1">Hasta</label><input type="date" name="hasta" value="{{ $hasta }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
         </div>
         <button class="self-end gradient-primary text-white px-6 py-2.5 rounded-lg font-semibold"><i class="fas fa-search mr-2"></i>Generar</button>
         <button onclick="window.print()" type="button" class="self-end bg-slate-800 text-white px-6 py-2.5 rounded-lg font-semibold"><i class="fas fa-print mr-2"></i>Imprimir</button>
@@ -37,10 +37,10 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-    <div class="bg-white rounded-2xl shadow-md p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
         <h3 class="font-bold mb-4">Por Forma de Pago</h3>
         <table class="w-full text-sm">
-            <thead class="text-xs uppercase text-slate-500 border-b">
+            <thead class="text-xs uppercase text-slate-400 border-b">
                 <tr><th class="text-left py-2">Forma</th><th class="text-right py-2">Cantidad</th><th class="text-right py-2">Total</th></tr>
             </thead>
             <tbody>
@@ -55,10 +55,10 @@
         </table>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-md p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
         <h3 class="font-bold mb-4">Ventas por Día</h3>
         <table class="w-full text-sm max-h-80 overflow-y-auto">
-            <thead class="text-xs uppercase text-slate-500 border-b sticky top-0 bg-white">
+            <thead class="text-xs uppercase text-slate-400 border-b sticky top-0 bg-slate-900 border border-slate-800">
                 <tr><th class="text-left py-2">Fecha</th><th class="text-right py-2">Tickets</th><th class="text-right py-2">Total</th></tr>
             </thead>
             <tbody>
@@ -74,9 +74,9 @@
     </div>
 </div>
 
-<div class="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
-    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-extrabold text-sm sm:text-base text-slate-800">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden border border-slate-800">
+    <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
+        <h3 class="font-extrabold text-sm sm:text-base text-slate-100">
             Detalle de Ventas ({{ $ventas->count() }} tickets)
         </h3>
     </div>
@@ -84,14 +84,14 @@
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
     <div class="md:hidden divide-y divide-slate-100">
         @forelse($ventas as $v)
-            <div class="p-3.5 hover:bg-slate-50 transition">
+            <div class="p-3.5 hover:bg-slate-800 transition">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="font-mono text-xs font-black text-slate-800">{{ $v->numero_ticket }}</span>
+                    <span class="font-mono text-xs font-black text-slate-100">{{ $v->numero_ticket }}</span>
                     <span class="font-black text-emerald-600 text-sm">{{ $moneda }}{{ number_format($v->total, 2) }}</span>
                 </div>
-                <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-                    <span class="font-medium text-slate-700 truncate"><i class="fas fa-user text-[10px] text-slate-400 mr-1"></i>{{ $v->cliente?->nombre_completo ?? 'Genérico' }}</span>
-                    <span class="bg-slate-100 text-slate-700 px-2 py-0.2 rounded font-bold">{{ ucfirst($v->forma_pago) }}</span>
+                <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                    <span class="font-medium text-slate-200 truncate"><i class="fas fa-user text-[10px] text-slate-400 mr-1"></i>{{ $v->cliente?->nombre_completo ?? 'Genérico' }}</span>
+                    <span class="bg-slate-900 text-slate-200 px-2 py-0.2 rounded font-bold">{{ ucfirst($v->forma_pago) }}</span>
                 </div>
                 <div class="text-[10px] text-slate-400">
                     <i class="far fa-clock mr-1"></i>{{ $v->fecha_venta->format('d/m/Y H:i') }} • Cajero: {{ $v->user->name }}
@@ -105,7 +105,7 @@
     <!-- 💻 VISTA ESCRITORIO (TABLA >= md) -->
     <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left text-sm border-collapse">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500 border-b border-slate-100">
+            <thead class="bg-slate-800 text-xs uppercase text-slate-400 border-b border-slate-800">
                 <tr>
                     <th class="py-3 px-4">Ticket</th>
                     <th class="py-3 px-4">Fecha</th>
@@ -117,11 +117,11 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
             @forelse($ventas as $v)
-                <tr class="hover:bg-slate-50/80 transition">
-                    <td class="py-3 px-4 font-mono text-xs font-bold text-slate-800">{{ $v->numero_ticket }}</td>
-                    <td class="py-3 px-4 text-xs text-slate-500">{{ $v->fecha_venta->format('d/m/Y H:i') }}</td>
-                    <td class="py-3 px-4 font-medium text-slate-800">{{ $v->cliente?->nombre_completo ?? 'Genérico' }}</td>
-                    <td class="py-3 px-4 text-xs text-slate-600">{{ $v->user->name }}</td>
+                <tr class="hover:bg-slate-800/80 transition">
+                    <td class="py-3 px-4 font-mono text-xs font-bold text-slate-100">{{ $v->numero_ticket }}</td>
+                    <td class="py-3 px-4 text-xs text-slate-400">{{ $v->fecha_venta->format('d/m/Y H:i') }}</td>
+                    <td class="py-3 px-4 font-medium text-slate-100">{{ $v->cliente?->nombre_completo ?? 'Genérico' }}</td>
+                    <td class="py-3 px-4 text-xs text-slate-300">{{ $v->user->name }}</td>
                     <td class="py-3 px-4"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">{{ ucfirst($v->forma_pago) }}</span></td>
                     <td class="py-3 px-4 text-right font-black text-emerald-600">{{ $moneda }}{{ number_format($v->total, 2) }}</td>
                 </tr>
