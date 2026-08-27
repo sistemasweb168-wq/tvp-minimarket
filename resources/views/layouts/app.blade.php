@@ -151,7 +151,7 @@
             <a href="{{ route('dashboard') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="fas fa-tachometer-alt w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Dashboard</span>
             </a>
-            @if(auth()->user()->hasPermission(\'pos\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('pos') || auth()->user()->isAdmin())
 <a href="{{ route('ventas.pos') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.pos') ? 'active' : '' }}">
                 <i class="fas fa-cash-register w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Punto de Venta</span>
             </a>
@@ -160,17 +160,17 @@
             @if(auth()->user()->hasPermission('ventas') || auth()->user()->hasPermission('compras') || auth()->user()->hasPermission('caja') || auth()->user()->isAdmin())
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Operaciones</span></p>
 @endif
-            @if(auth()->user()->hasPermission(\'ventas\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('ventas') || auth()->user()->isAdmin())
 <a href="{{ route('ventas.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.index') ? 'active' : '' }}">
                 <i class="fas fa-receipt w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Ventas</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'compras\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('compras') || auth()->user()->isAdmin())
 <a href="{{ route('compras.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('compras.*') ? 'active' : '' }}">
                 <i class="fas fa-truck w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Compras</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'caja\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('caja') || auth()->user()->isAdmin())
 <a href="{{ route('caja.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('caja.*') ? 'active' : '' }}">
                 <i class="fas fa-money-bill-wave w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Caja</span>
             </a>
@@ -179,17 +179,17 @@
             @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Inventario</span></p>
 @endif
-            @if(auth()->user()->hasPermission(\'productos\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
 <a href="{{ route('productos.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('productos.*') ? 'active' : '' }}">
                 <i class="fas fa-box w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Productos</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'productos\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
 <a href="{{ route('categorias.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('categorias.*') ? 'active' : '' }}">
                 <i class="fas fa-tags w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Categorías</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'productos\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
 <a href="{{ route('promociones.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('promociones.*') ? 'active' : '' }}">
                 <i class="fas fa-percent w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Promociones</span>
             </a>
@@ -198,12 +198,12 @@
             @if(auth()->user()->hasPermission('clientes') || auth()->user()->hasPermission('proveedores') || auth()->user()->isAdmin())
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Contactos</span></p>
 @endif
-            @if(auth()->user()->hasPermission(\'clientes\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('clientes') || auth()->user()->isAdmin())
 <a href="{{ route('clientes.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
                 <i class="fas fa-users w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Clientes</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'proveedores\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('proveedores') || auth()->user()->isAdmin())
 <a href="{{ route('proveedores.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('proveedores.*') ? 'active' : '' }}">
                 <i class="fas fa-truck-loading w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Proveedores</span>
             </a>
@@ -212,12 +212,12 @@
             @if(auth()->user()->hasPermission('sunat') || auth()->user()->isAdmin())
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">SUNAT</span></p>
 @endif
-            @if(auth()->user()->hasPermission(\'sunat\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('sunat') || auth()->user()->isAdmin())
 <a href="{{ route('facturacion.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.index') || request()->routeIs('facturacion.show') ? 'active' : '' }}">
                 <i class="fas fa-file-invoice-dollar w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Facturación Electrónica</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'sunat\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('sunat') || auth()->user()->isAdmin())
 <a href="{{ route('facturacion.resumenes') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.resumenes') ? 'active' : '' }}">
                 <i class="fas fa-calendar-day w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Resúmenes Diarios</span>
             </a>
@@ -226,7 +226,7 @@
             @if(auth()->user()->hasPermission('reportes') || auth()->user()->isAdmin())
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Análisis</span></p>
 @endif
-            @if(auth()->user()->hasPermission(\'reportes\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('reportes') || auth()->user()->isAdmin())
 <a href="{{ route('reportes.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
                 <i class="fas fa-chart-line w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Reportes</span>
             </a>
@@ -385,7 +385,7 @@
                 <i class="fas fa-tachometer-alt text-lg mb-0.5"></i>
                 <span>Inicio</span>
             </a>
-            @if(auth()->user()->hasPermission(\'pos\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('pos') || auth()->user()->isAdmin())
 <a href="{{ route('ventas.pos') }}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-bold transition {{ request()->routeIs('ventas.pos') ? 'text-emerald-600 bg-emerald-50' : 'text-emerald-700 hover:text-emerald-900' }}">
                 <div class="w-8 h-8 gradient-primary text-white rounded-full flex items-center justify-center shadow-md mb-0.5">
                     <i class="fas fa-cash-register text-sm"></i>
@@ -393,13 +393,13 @@
                 <span>POS</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'ventas\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('ventas') || auth()->user()->isAdmin())
 <a href="{{ route('ventas.index') }}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-semibold transition {{ request()->routeIs('ventas.index') ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-800' }}">
                 <i class="fas fa-receipt text-lg mb-0.5"></i>
                 <span>Ventas</span>
             </a>
 @endif
-            @if(auth()->user()->hasPermission(\'productos\') || auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
 <a href="{{ route('productos.index') }}" class="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-semibold transition {{ request()->routeIs('productos.*') ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-800' }}">
                 <i class="fas fa-box text-lg mb-0.5"></i>
                 <span>Stock</span>
