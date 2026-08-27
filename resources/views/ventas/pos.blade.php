@@ -1369,6 +1369,7 @@ window.POS_OnCodigoDetectado = async function(codigo) {
     document.getElementById('pos-cam-status').textContent = `✅ ${codigo}`;
 
     // Buscar producto y agregar al carrito
+    const statusEl = document.getElementById('pos-cam-status');
     try {
         const res  = await fetch(`/api/productos/buscar?q=${encodeURIComponent(codigo)}`);
         const lista = await res.json();
@@ -1378,18 +1379,25 @@ window.POS_OnCodigoDetectado = async function(codigo) {
                 detail: { producto: lista[0] } 
             }));
             
+            statusEl.textContent = `✅ ${lista[0].nombre} (Agregado)`;
+            statusEl.style.color = '#4ade80'; // Verde
             Toast.fire({ icon: 'success', title: `✅ ${lista[0].nombre}` });
         } else {
+            statusEl.textContent = `❌ No encontrado: ${codigo}`;
+            statusEl.style.color = '#f87171'; // Rojo
             Toast.fire({ icon: 'warning', title: `Código no encontrado: ${codigo}` });
         }
     } catch(e) {
+        statusEl.textContent = '❌ Error de conexión';
+        statusEl.style.color = '#f87171'; // Rojo
         Toast.fire({ icon: 'error', title: 'Error al buscar el producto' });
     }
 
     // Reanudar detección después de 1.5 segundos
     setTimeout(() => {
         if (window.POS_EscanerActivo) {
-            document.getElementById('pos-cam-status').textContent = 'Apunta al código de barras';
+            statusEl.textContent = 'Apunta al código de barras';
+            statusEl.style.color = 'white';
             const video = document.getElementById('pos-cam-video');
             if (video) window.POS_IniciarDetector(video);
         }
