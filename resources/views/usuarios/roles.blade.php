@@ -58,29 +58,48 @@ $permisosDisponibles = [
     @endforeach
 </div>
 
-<div x-show="open" x-cloak class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6" @click.outside="open=false">
-        <h3 class="text-xl font-bold mb-4" x-text="edit ? 'Editar Rol' : 'Nuevo Rol'"></h3>
-        <form :action="edit ? `/roles/${edit.id}` : '{{ route('roles.store') }}'" method="POST" class="space-y-3">
+<div x-show="open" x-cloak class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg p-6 shadow-2xl" @click.outside="open=false">
+        <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-800">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fas fa-shield-alt text-amber-500"></i>
+                <span x-text="edit ? 'Editar Rol' : 'Nuevo Rol'"></span>
+            </h3>
+            <button type="button" @click="open=false" class="text-slate-400 hover:text-white p-1">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form :action="edit ? `/roles/${edit.id}` : '{{ route('roles.store') }}'" method="POST" class="space-y-4">
             @csrf
             <template x-if="edit"><input type="hidden" name="_method" value="PUT"></template>
-            <div><label class="text-sm font-semibold">Nombre del rol</label><input name="nombre" :value="edit?.nombre || ''" required class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
-            <div><label class="text-sm font-semibold">Descripción</label><input name="descripcion" :value="edit?.descripcion || ''" class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
             <div>
-                <label class="text-sm font-semibold mb-2 block">Permisos</label>
-                <div class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Nombre del rol</label>
+                <input type="text" name="nombre" :value="edit?.nombre || ''" required placeholder="Ej. Cajero Turno Noche" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+            </div>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 block">Descripción</label>
+                <input type="text" name="descripcion" :value="edit?.descripcion || ''" placeholder="Breve resumen de funciones..." class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+            </div>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 block">Permisos Permitidos</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-1 bg-slate-950/50 rounded-xl border border-slate-800">
                     <template x-for="(label, key) in permisosDisp" :key="key">
-                        <label class="flex items-center gap-2 p-2 hover:bg-slate-800 rounded">
-                            <input type="checkbox" name="permisos[]" :value="key" x-bind:checked="edit?.permisos?.includes(key)" class="rounded text-emerald-500">
-                            <span class="text-sm" x-text="label"></span>
+                        <label class="flex items-center gap-2.5 p-2.5 hover:bg-slate-800/80 rounded-lg cursor-pointer transition border border-transparent hover:border-slate-700">
+                            <input type="checkbox" name="permisos[]" :value="key" x-bind:checked="edit?.permisos?.includes(key)" class="rounded text-amber-500 focus:ring-amber-500 bg-slate-800 border-slate-600">
+                            <span class="text-xs font-medium text-slate-200" x-text="label"></span>
                         </label>
                     </template>
                 </div>
             </div>
-            <template x-if="edit"><label class="flex gap-2"><input type="checkbox" name="activo" value="1" :checked="edit?.activo"> Activo</label></template>
-            <div class="flex gap-2 pt-3">
-                <button type="button" @click="open=false" class="flex-1 py-2.5 bg-slate-700 rounded-lg">Cancelar</button>
-                <button type="submit" class="flex-1 py-2.5 gradient-primary text-white rounded-lg font-semibold">Guardar</button>
+            <template x-if="edit">
+                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer pt-1">
+                    <input type="checkbox" name="activo" value="1" :checked="edit?.activo" class="rounded text-amber-500 bg-slate-800 border-slate-600">
+                    <span>Rol Activo</span>
+                </label>
+            </template>
+            <div class="flex gap-3 pt-3 border-t border-slate-800">
+                <button type="button" @click="open=false" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm transition">Cancelar</button>
+                <button type="submit" class="flex-1 py-2.5 gradient-primary text-white font-bold rounded-xl text-sm shadow-lg shadow-amber-500/20 hover:brightness-105 transition">Guardar Rol</button>
             </div>
         </form>
     </div>

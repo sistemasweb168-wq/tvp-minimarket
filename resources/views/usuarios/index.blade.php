@@ -61,29 +61,61 @@
 <div class="mt-4">{{ $usuarios->withQueryString()->links() }}</div>
 
 <!-- Modal -->
-<div x-show="open" x-cloak class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6" @click.outside="open=false">
-        <h3 class="text-xl font-bold mb-4" x-text="edit ? 'Editar Usuario' : 'Nuevo Usuario'"></h3>
-        <form :action="edit ? `/usuarios/${edit.id}` : '{{ route('usuarios.store') }}'" method="POST" class="space-y-3">
+<div x-show="open" x-cloak class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md p-6 shadow-2xl" @click.outside="open=false">
+        <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-800">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fas fa-user text-amber-500"></i>
+                <span x-text="edit ? 'Editar Usuario' : 'Nuevo Usuario'"></span>
+            </h3>
+            <button type="button" @click="open=false" class="text-slate-400 hover:text-white p-1">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form :action="edit ? `/usuarios/${edit.id}` : '{{ route('usuarios.store') }}'" method="POST" class="space-y-3.5">
             @csrf
             <template x-if="edit"><input type="hidden" name="_method" value="PUT"></template>
-            <div><label class="text-sm font-semibold">Nombre completo</label><input name="name" :value="edit?.name || ''" required class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
-            <div class="grid grid-cols-2 gap-2">
-                <div><label class="text-sm font-semibold">Usuario</label><input name="username" :value="edit?.username || ''" required class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
-                <div><label class="text-sm font-semibold">Email</label><input name="email" type="email" :value="edit?.email || ''" required class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block">Nombre completo</label>
+                <input type="text" name="name" :value="edit?.name || ''" required class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
             </div>
-            <div><label class="text-sm font-semibold">Teléfono</label><input name="telefono" :value="edit?.telefono || ''" class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
-            <div><label class="text-sm font-semibold">Rol</label>
-                <select name="role_id" required class="w-full px-3 py-2 border border-slate-600 rounded-lg">
+            <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block">Usuario</label>
+                    <input type="text" name="username" :value="edit?.username || ''" required class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block">Email</label>
+                    <input name="email" type="email" :value="edit?.email || ''" required class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block">Teléfono</label>
+                <input type="text" name="telefono" :value="edit?.telefono || ''" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+            </div>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block">Rol Asignado</label>
+                <select name="role_id" required class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none font-semibold">
                     @foreach($roles as $r)<option value="{{ $r->id }}" x-bind:selected="edit?.role_id === {{ $r->id }}">{{ $r->nombre }}</option>@endforeach
                 </select>
             </div>
-            <div><label class="text-sm font-semibold" x-text="edit ? 'Nueva contraseña (dejar en blanco para no cambiar)' : 'Contraseña'"></label><input type="password" name="password" :required="!edit" class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
-            <div><label class="text-sm font-semibold">Confirmar contraseña</label><input type="password" name="password_confirmation" class="w-full px-3 py-2 border border-slate-600 rounded-lg"></div>
-            <template x-if="edit"><label class="flex gap-2"><input type="checkbox" name="activo" value="1" :checked="edit?.activo"> Activo</label></template>
-            <div class="flex gap-2 pt-3">
-                <button type="button" @click="open=false" class="flex-1 py-2.5 bg-slate-700 rounded-lg">Cancelar</button>
-                <button type="submit" class="flex-1 py-2.5 gradient-primary text-white rounded-lg font-semibold">Guardar</button>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block" x-text="edit ? 'Nueva contraseña (opcional)' : 'Contraseña'"></label>
+                <input type="password" name="password" :required="!edit" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+            </div>
+            <div>
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1 block">Confirmar contraseña</label>
+                <input type="password" name="password_confirmation" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-amber-500 outline-none">
+            </div>
+            <template x-if="edit">
+                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer pt-1">
+                    <input type="checkbox" name="activo" value="1" :checked="edit?.activo" class="rounded text-amber-500 bg-slate-800 border-slate-600">
+                    <span>Usuario Activo</span>
+                </label>
+            </template>
+            <div class="flex gap-3 pt-3 border-t border-slate-800">
+                <button type="button" @click="open=false" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm transition">Cancelar</button>
+                <button type="submit" class="flex-1 py-2.5 gradient-primary text-white font-bold rounded-xl text-sm shadow-lg shadow-amber-500/20 hover:brightness-105 transition">Guardar Usuario</button>
             </div>
         </form>
     </div>

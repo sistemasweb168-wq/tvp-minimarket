@@ -95,23 +95,25 @@
         }
     
         /* Estilos Globales para Inputs en Modo Oscuro */
-        input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="search"], input[type="date"], select, textarea {
+        input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]), select, textarea {
             background-color: #1e293b !important; /* bg-slate-800 */
             border: 1px solid #334155 !important; /* border-slate-700 */
             color: #f8fafc !important; /* text-slate-50 */
-            border-radius: 0.5rem;
+            border-radius: 0.75rem !important;
+            font-size: 0.9rem !important;
         }
         input:read-only, input:disabled {
             background-color: #0f172a !important; /* bg-slate-900 */
             color: #94a3b8 !important;
         }
         input::placeholder, textarea::placeholder {
-            color: #64748b !important;
+            color: #94a3b8 !important;
+            opacity: 1 !important;
         }
         input:focus, select:focus, textarea:focus {
             outline: none !important;
             border-color: #f59e0b !important;
-            box-shadow: 0 0 0 1px #f59e0b !important;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
         }
 
         /* Ocultar scrollbar en el sidebar pero mantener funcionalidad de scroll */
