@@ -1183,6 +1183,7 @@ Puedes verlo y descargarlo en formato PDF aquí: ${url}`;
         cerrarPostVenta() {
             this.modalPostVenta = false;
             this.ultimaVenta = null;
+            this.vistaMovil = 'productos';
         }
     }
 }
