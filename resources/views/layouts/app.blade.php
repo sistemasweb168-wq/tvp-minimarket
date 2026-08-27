@@ -36,7 +36,7 @@
         * { font-family: 'Inter', sans-serif; }
         html { scroll-behavior: smooth; }
         body { overflow-x: hidden; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 0px; height: 0px; display: none; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
@@ -133,7 +133,7 @@
                sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
                isHovered ? 'lg:w-64 shadow-2xl' : ''
            ]">
-        <div class="px-3 py-5 border-b border-slate-800 flex items-center gap-3">
+        <div class="px-3 py-5 border-b border-slate-800 flex items-center">
             @if($empresaGlobal && $empresaGlobal->logo_url)
                 <img src="{{ $empresaGlobal->logo_url }}" class="w-10 h-10 rounded-lg object-contain bg-white p-1" alt="logo">
             @else
@@ -141,84 +141,84 @@
                     <i class="fas fa-store text-white"></i>
                 </div>
             @endif
-            <div class="flex-1 min-w-0 transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">
+            <div class="flex-1 min-w-0 ml-3" x-show="isHovered || sidebarOpen" style="display: none;">
                 <h1 class="font-bold text-sm whitespace-nowrap">{{ $empresaGlobal->nombre_comercial ?? 'TPV Minimarket' }}</h1>
                 <p class="text-[10px] text-slate-400 whitespace-nowrap">Sistema POS</p>
             </div>
         </div>
 
         <nav class="py-4 overflow-y-auto sidebar-scroll" style="max-height: calc(100vh - 80px);">
-            <a href="{{ route('dashboard') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fas fa-tachometer-alt w-5"></i><span class="whitespace-nowrap">Dashboard</span>
+            <a href="{{ route('dashboard') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <i class="fas fa-tachometer-alt w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Dashboard</span>
             </a>
-            <a href="{{ route('ventas.pos') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.pos') ? 'active' : '' }}">
-                <i class="fas fa-cash-register w-5"></i><span class="whitespace-nowrap">Punto de Venta</span>
-            </a>
-
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Operaciones</span></p>
-            <a href="{{ route('ventas.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.index') ? 'active' : '' }}">
-                <i class="fas fa-receipt w-5"></i><span class="whitespace-nowrap">Ventas</span>
-            </a>
-            <a href="{{ route('compras.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('compras.*') ? 'active' : '' }}">
-                <i class="fas fa-truck w-5"></i><span class="whitespace-nowrap">Compras</span>
-            </a>
-            <a href="{{ route('caja.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('caja.*') ? 'active' : '' }}">
-                <i class="fas fa-money-bill-wave w-5"></i><span class="whitespace-nowrap">Caja</span>
+            <a href="{{ route('ventas.pos') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.pos') ? 'active' : '' }}">
+                <i class="fas fa-cash-register w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Punto de Venta</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Inventario</span></p>
-            <a href="{{ route('productos.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('productos.*') ? 'active' : '' }}">
-                <i class="fas fa-box w-5"></i><span class="whitespace-nowrap">Productos</span>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Operaciones</span></p>
+            <a href="{{ route('ventas.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.index') ? 'active' : '' }}">
+                <i class="fas fa-receipt w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Ventas</span>
             </a>
-            <a href="{{ route('categorias.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('categorias.*') ? 'active' : '' }}">
-                <i class="fas fa-tags w-5"></i><span class="whitespace-nowrap">Categorías</span>
+            <a href="{{ route('compras.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('compras.*') ? 'active' : '' }}">
+                <i class="fas fa-truck w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Compras</span>
             </a>
-            <a href="{{ route('promociones.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('promociones.*') ? 'active' : '' }}">
-                <i class="fas fa-percent w-5"></i><span class="whitespace-nowrap">Promociones</span>
-            </a>
-
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Contactos</span></p>
-            <a href="{{ route('clientes.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
-                <i class="fas fa-users w-5"></i><span class="whitespace-nowrap">Clientes</span>
-            </a>
-            <a href="{{ route('proveedores.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('proveedores.*') ? 'active' : '' }}">
-                <i class="fas fa-truck-loading w-5"></i><span class="whitespace-nowrap">Proveedores</span>
+            <a href="{{ route('caja.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('caja.*') ? 'active' : '' }}">
+                <i class="fas fa-money-bill-wave w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Caja</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">SUNAT</span></p>
-            <a href="{{ route('facturacion.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.index') || request()->routeIs('facturacion.show') ? 'active' : '' }}">
-                <i class="fas fa-file-invoice-dollar w-5"></i><span class="whitespace-nowrap">Facturación Electrónica</span>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Inventario</span></p>
+            <a href="{{ route('productos.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('productos.*') ? 'active' : '' }}">
+                <i class="fas fa-box w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Productos</span>
             </a>
-            <a href="{{ route('facturacion.resumenes') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.resumenes') ? 'active' : '' }}">
-                <i class="fas fa-calendar-day w-5"></i><span class="whitespace-nowrap">Resúmenes Diarios</span>
+            <a href="{{ route('categorias.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('categorias.*') ? 'active' : '' }}">
+                <i class="fas fa-tags w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Categorías</span>
+            </a>
+            <a href="{{ route('promociones.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('promociones.*') ? 'active' : '' }}">
+                <i class="fas fa-percent w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Promociones</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Análisis</span></p>
-            <a href="{{ route('reportes.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
-                <i class="fas fa-chart-line w-5"></i><span class="whitespace-nowrap">Reportes</span>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Contactos</span></p>
+            <a href="{{ route('clientes.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
+                <i class="fas fa-users w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Clientes</span>
+            </a>
+            <a href="{{ route('proveedores.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('proveedores.*') ? 'active' : '' }}">
+                <i class="fas fa-truck-loading w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Proveedores</span>
+            </a>
+
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">SUNAT</span></p>
+            <a href="{{ route('facturacion.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.index') || request()->routeIs('facturacion.show') ? 'active' : '' }}">
+                <i class="fas fa-file-invoice-dollar w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Facturación Electrónica</span>
+            </a>
+            <a href="{{ route('facturacion.resumenes') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.resumenes') ? 'active' : '' }}">
+                <i class="fas fa-calendar-day w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Resúmenes Diarios</span>
+            </a>
+
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Análisis</span></p>
+            <a href="{{ route('reportes.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
+                <i class="fas fa-chart-line w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Reportes</span>
             </a>
 
             @if(auth()->user()->isAdmin())
-                <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Sistema</span></p>
-                <a href="{{ route('usuarios.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
-                    <i class="fas fa-user-shield w-5"></i><span class="whitespace-nowrap">Usuarios</span>
+                <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Sistema</span></p>
+                <a href="{{ route('usuarios.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-shield w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Usuarios</span>
                 </a>
-                <a href="{{ route('configuracion.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
-                    <i class="fas fa-cog w-5"></i><span class="whitespace-nowrap">Configuración</span>
+                <a href="{{ route('configuracion.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
+                    <i class="fas fa-cog w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Configuración</span>
                 </a>
-                <a href="{{ route('facturacion.configuracion') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.configuracion') ? 'active' : '' }}">
-                    <i class="fas fa-shield-alt w-5"></i><span class="whitespace-nowrap">Config. SUNAT</span>
+                <a href="{{ route('facturacion.configuracion') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.configuracion') ? 'active' : '' }}">
+                    <i class="fas fa-shield-alt w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Config. SUNAT</span>
                 </a>
-                <a href="{{ route('backup.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('backup.*') ? 'active' : '' }}">
-                    <i class="fas fa-database w-5"></i><span class="whitespace-nowrap">Backup</span>
+                <a href="{{ route('backup.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('backup.*') ? 'active' : '' }}">
+                    <i class="fas fa-database w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Backup</span>
                 </a>
             @endif
 
             <div class="px-5 mt-6">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button class="w-full flex items-center gap-3 px-5 py-3 bg-red-600/20 hover:bg-red-600/40 rounded-lg text-red-300 transition">
-                        <i class="fas fa-sign-out-alt w-5"></i><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Cerrar Sesión</span>
+                    <button class="w-full flex items-center px-5 py-3 bg-red-600/20 hover:bg-red-600/40 rounded-lg text-red-300 transition">
+                        <i class="fas fa-sign-out-alt w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Cerrar Sesión</span>
                     </button>
                 </form>
             </div>
@@ -323,7 +323,7 @@
         <!-- Contenido principal -->
         <main class="p-3 sm:p-6 pb-24 lg:pb-6 min-w-0">
             @if(session('success'))
-                <div class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm text-sm">
+                <div class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center shadow-sm text-sm">
                     <i class="fas fa-check-circle text-emerald-500 text-base flex-shrink-0"></i>
                     <span class="flex-1">{{ session('success') }}</span>
                     <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700 text-sm">
@@ -333,7 +333,7 @@
             @endif
 
             @if(session('error'))
-                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm text-sm">
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center shadow-sm text-sm">
                     <i class="fas fa-exclamation-circle text-red-500 text-base flex-shrink-0"></i>
                     <span class="flex-1">{{ session('error') }}</span>
                     <button onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 text-sm">
