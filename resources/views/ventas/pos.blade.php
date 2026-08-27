@@ -101,9 +101,9 @@
                                     <i class="fas fa-box text-2xl sm:text-3xl text-slate-300"></i>
                                 </template>
                             </div>
-                            <p class="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 mb-1" x-text="p.nombre"></p>
+                            <p class="text-[11px] sm:text-xs font-bold text-slate-100 line-clamp-2 mb-1" x-text="p.nombre"></p>
                         </div>
-                        <div class="flex justify-between items-end mt-1 pt-1.5 border-t border-slate-50">
+                        <div class="flex justify-between items-end mt-1 pt-1.5 border-t border-slate-700">
                             <span class="text-[10px] sm:text-[11px] font-bold" 
                                   :class="parseFloat(p.stock) <= 0 ? 'text-red-500' : (parseFloat(p.stock) <= 5 ? 'text-orange-500' : 'text-slate-400')"
                                   x-text="`Stk: ${parseFloat(p.stock).toFixed(0)}`"></span>

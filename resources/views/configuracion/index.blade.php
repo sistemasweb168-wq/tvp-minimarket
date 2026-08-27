@@ -62,7 +62,8 @@
                     <div><label class="block text-sm font-semibold mb-1">RUC / NIT</label><input type="text" name="ruc_nit" value="{{ $empresa->ruc_nit }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
                     <div class="md:col-span-2"><label class="block text-sm font-semibold mb-1">Dirección</label><input type="text" name="direccion" value="{{ $empresa->direccion }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
                     <div><label class="block text-sm font-semibold mb-1">Ciudad</label><input type="text" name="ciudad" value="{{ $empresa->ciudad }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
-                    <div><label class="block text-sm font-semibold mb-1">Teléfono</label><input type="text" name="telefono" value="{{ $empresa->telefono }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
+                                          <div><label class="block text-sm font-semibold mb-1 text-amber-500"><i class="fab fa-whatsapp mr-1"></i>WhatsApp Alertas</label><input type="text" name="whatsapp_alertas" value="{{ $empresa->whatsapp_alertas }}" placeholder="Ej: 999888777" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
+                      <div><label class="block text-sm font-semibold mb-1">Teléfono</label><input type="text" name="telefono" value="{{ $empresa->telefono }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
                     <div><label class="block text-sm font-semibold mb-1">Email</label><input type="email" name="email" value="{{ $empresa->email }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
                     <div><label class="block text-sm font-semibold mb-1">Sitio Web</label><input type="text" name="sitio_web" value="{{ $empresa->sitio_web }}" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg"></div>
                 </div>

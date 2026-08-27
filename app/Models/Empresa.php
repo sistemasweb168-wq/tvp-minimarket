@@ -13,7 +13,7 @@ class Empresa extends Model
 
     protected $fillable = [
         'razon_social', 'nombre_comercial', 'ruc_nit', 'direccion', 'ciudad',
-        'telefono', 'email', 'sitio_web', 'logo', 'login_imagen', 'moneda', 'codigo_moneda',
+        'telefono', 'whatsapp_alertas', 'email', 'sitio_web', 'logo', 'login_imagen', 'moneda', 'codigo_moneda',
         'impuesto', 'impuesto_incluido', 'mensaje_ticket', 'terminos_condiciones',
         // SUNAT
         'ubigeo', 'departamento', 'provincia', 'distrito', 'codigo_pais',
