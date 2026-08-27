@@ -51,7 +51,17 @@ class User extends Authenticatable
     {
         if (!$this->role) return false;
         $permisos = $this->role->permisos ?? [];
-        return in_array($permiso, $permisos) || in_array('*', $permisos);
+        if (in_array('*', $permisos) || in_array($permiso, $permisos)) {
+            return true;
+        }
+        // Cajero / POS / Ventas compatibilidad directa
+        if ($permiso === 'pos' && (in_array('ventas', $permisos) || strtolower($this->role->nombre) === 'cajero')) {
+            return true;
+        }
+        if ($permiso === 'ventas' && in_array('pos', $permisos)) {
+            return true;
+        }
+        return false;
     }
 
     public function isAdmin(): bool

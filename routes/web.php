@@ -20,7 +20,13 @@ use App\Http\Controllers\SunatApiController;
 
 // Autenticación
 Route::get('/', function() {
-    return redirect(auth()->check() ? route('dashboard') : route('login'));
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    if (auth()->user()->hasRole('Cajero') || (!auth()->user()->isAdmin() && !auth()->user()->hasRole('Gerente') && auth()->user()->hasPermission('pos'))) {
+        return redirect()->route('ventas.pos');
+    }
+    return redirect()->route('dashboard');
 });
 
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login');

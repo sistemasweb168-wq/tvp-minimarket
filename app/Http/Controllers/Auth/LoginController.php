@@ -37,6 +37,11 @@ class LoginController extends Controller
             $user = Auth::user();
             $user->update(['ultimo_login' => now()]);
 
+            // Si es cajero o no tiene rol administrativo, llevarlo directo al Punto de Venta (POS)
+            if ($user->hasRole('Cajero') || (!$user->isAdmin() && !$user->hasRole('Gerente') && $user->hasPermission('pos'))) {
+                return redirect()->route('ventas.pos')->with('success', '¡Bienvenido ' . $user->name . '!');
+            }
+
             return redirect()->intended(route('dashboard'))
                 ->with('success', '¡Bienvenido ' . $user->name . '!');
         }
