@@ -1141,8 +1141,7 @@ function pos() {
                 Toast.fire({ icon: 'warning', title: 'Ingrese un número válido' });
                 return;
             }
-            const empresa = 'Nuestra Tienda'; // O de tu DB
-            const url = window.location.origin + this.ultimaVenta.url_ticket;
+            const url = this.ultimaVenta.url_ticket.startsWith('http') ? this.ultimaVenta.url_ticket : window.location.origin + this.ultimaVenta.url_ticket;
             const mensaje = `¡Hola! 👋 Gracias por tu compra en nuestro Minimarket.
 
 Aquí tienes tu comprobante electrónico *${this.ultimaVenta.numero_ticket}* por el total de *S/ ${this.ultimaVenta.total.toFixed(2)}*.
