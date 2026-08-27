@@ -26,7 +26,14 @@
                     <label class="block text-sm font-semibold text-slate-200 mb-1">Descripción</label>
                     <textarea name="descripcion" rows="2" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg">{{ old('descripcion') }}</textarea>
                 </div>
-                <div>
+                                  <div>
+                      <label class="block text-sm font-semibold text-slate-200 mb-1">Tipo de Producto <span class="text-red-500">*</span></label>
+                      <select name="tipo_producto" x-model="tipo_producto" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg">
+                          <option value="estandar">Estándar</option>
+                          <option value="combo">Combo / Pack</option>
+                      </select>
+                  </div>
+<div>
                     <label class="block text-sm font-semibold text-slate-200 mb-1">Categoría</label>
                     <select name="categoria_id" class="w-full px-3 py-2.5 border border-slate-600 rounded-lg">
                         <option value="">— Sin categoría —</option>

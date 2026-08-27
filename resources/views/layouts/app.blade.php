@@ -220,7 +220,13 @@
     <!-- Main -->
     <div class="flex-1 lg:ml-64 min-w-0">
         <!-- Topbar -->
-        <header class="bg-slate-900 shadow-md border-b border-slate-800 sticky top-0 z-20">
+        
+@php
+    $alertasStock = \App\Models\Producto::where('controla_stock', 1)->where('estado', 1)->whereRaw('stock <= stock_minimo')->count();
+    $alertasVencimiento = \App\Models\Producto::whereNotNull('fecha_vencimiento')->where('estado', 1)->whereDate('fecha_vencimiento', '<=', now()->addDays(30))->count();
+    $totalAlertas = $alertasStock + $alertasVencimiento;
+@endphp
+<header class="bg-slate-900 shadow-md border-b border-slate-800 sticky top-0 z-20">
             <div class="flex items-center justify-between px-3 sm:px-6 py-3">
                 <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                     <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-slate-400 hover:text-white flex-shrink-0">
@@ -234,7 +240,49 @@
                         <span class="hidden lg:inline">{{ now()->translatedFormat('l, d \d\e F \d\e Y') }}</span>
                         <span class="lg:hidden">{{ now()->format('d/m/Y') }}</span>
                     </div>
-                    <div class="relative" x-data="{ open: false }">
+                    
+                      <div class="relative" x-data="{ open: false }">
+                          <button @click="open = !open" class="relative text-slate-400 hover:text-amber-500 transition px-2">
+                              <i class="fas fa-bell text-xl"></i>
+                              @if($totalAlertas > 0)
+                                  <span class="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">{{ $totalAlertas }}</span>
+                              @endif
+                          </button>
+                          <div x-show="open" @click.outside="open = false" class="absolute right-0 mt-2 w-72 bg-slate-900 rounded-xl shadow-lg border border-slate-700 py-3 z-50" style="display:none;" x-cloak>
+                              <div class="px-4 pb-2 border-b border-slate-800 mb-2">
+                                  <h3 class="font-bold text-slate-200">Notificaciones</h3>
+                              </div>
+                              @if($totalAlertas > 0)
+                                  @if($alertasStock > 0)
+                                      <a href="{{ route('reportes.inventario') }}" class="block px-4 py-2 hover:bg-slate-800 text-sm">
+                                          <div class="flex items-start gap-3">
+                                              <div class="w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation-triangle"></i></div>
+                                              <div>
+                                                  <p class="font-bold text-slate-200">Stock Bajo</p>
+                                                  <p class="text-xs text-slate-400">Hay {{ $alertasStock }} productos en límite crítico.</p>
+                                              </div>
+                                          </div>
+                                      </a>
+                                  @endif
+                                  @if($alertasVencimiento > 0)
+                                      <a href="{{ route('reportes.vencimientos') }}" class="block px-4 py-2 hover:bg-slate-800 text-sm">
+                                          <div class="flex items-start gap-3">
+                                              <div class="w-8 h-8 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-clock"></i></div>
+                                              <div>
+                                                  <p class="font-bold text-slate-200">Por Vencer</p>
+                                                  <p class="text-xs text-slate-400">Hay {{ $alertasVencimiento }} productos venciendo pronto.</p>
+                                              </div>
+                                          </div>
+                                      </a>
+                                  @endif
+                              @else
+                                  <div class="px-4 py-3 text-center text-slate-500 text-sm">
+                                      No hay alertas pendientes.
+                                  </div>
+                              @endif
+                          </div>
+                      </div>
+<div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center gap-2 hover:bg-slate-100 px-2 sm:px-3 py-2 rounded-lg transition">
                             <div class="w-8 h-8 gradient-primary rounded-full flex items-center justify-center text-white font-semibold text-sm">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
