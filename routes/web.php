@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Productos
+    Route::get('productos/plantilla', [ProductoController::class, 'descargarPlantilla'])->name('productos.plantilla');
+    Route::post('productos/importar', [ProductoController::class, 'importarExcel'])->name('productos.importar');
     Route::resource('productos', ProductoController::class);
     Route::post('productos/{producto}/ajuste-stock', [ProductoController::class, 'ajusteStock'])->name('productos.ajuste-stock');
     Route::get('api/productos/buscar', [ProductoController::class, 'buscarApi'])->name('api.productos.buscar');

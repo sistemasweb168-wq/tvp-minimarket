@@ -7,9 +7,31 @@ use App\Models\Producto;
 use App\Models\Categoria;
 use App\Models\Proveedor;
 use App\Models\MovimientoInventario;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProductosTemplateExport;
+use App\Imports\ProductosImport;
 
 class ProductoController extends Controller
 {
+    public function descargarPlantilla()
+    {
+        return Excel::download(new ProductosTemplateExport, 'plantilla_productos.xlsx');
+    }
+
+    public function importarExcel(Request $request)
+    {
+        $request->validate([
+            'archivo_excel' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            Excel::import(new ProductosImport, $request->file('archivo_excel'));
+            return redirect()->route('productos.index')->with('success', 'Inventario importado correctamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('productos.index')->with('error', 'Error al importar: ' . $e->getMessage());
+        }
+    }
+
     public function index(Request $request)
     {
         $query = Producto::with(['categoria', 'proveedor']);

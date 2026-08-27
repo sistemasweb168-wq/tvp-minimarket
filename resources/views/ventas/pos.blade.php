@@ -9,15 +9,15 @@
 
 <div x-data="pos()" x-init="init()">
     <!-- Selector Móvil: Catálogo vs Carrito -->
-    <div class="lg:hidden flex bg-slate-200/80 p-1 rounded-2xl mb-3 shadow-inner">
+    <div class="lg:hidden flex bg-slate-800/80 p-1 rounded-2xl mb-3 shadow-inner border border-slate-700">
         <button type="button" @click="vistaMovil = 'productos'" 
-                :class="vistaMovil === 'productos' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'text-slate-600 font-semibold'" 
+                :class="vistaMovil === 'productos' ? 'bg-slate-700 text-amber-400 shadow-sm font-bold' : 'text-slate-400 font-semibold hover:text-slate-200'" 
                 class="flex-1 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
             <i class="fas fa-boxes"></i>
             <span>Catálogo</span>
         </button>
         <button type="button" @click="vistaMovil = 'carrito'" 
-                :class="vistaMovil === 'carrito' ? 'bg-white text-emerald-700 shadow-sm font-bold' : 'text-slate-600 font-semibold'" 
+                :class="vistaMovil === 'carrito' ? 'bg-slate-700 text-amber-400 shadow-sm font-bold' : 'text-slate-400 font-semibold hover:text-slate-200'" 
                 class="flex-1 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 relative">
             <i class="fas fa-shopping-cart"></i>
             <span>Carrito</span>
@@ -30,7 +30,7 @@
         <!-- Panel Productos (Visible siempre en Desktop, o si vistaMovil === 'productos' en móvil) -->
         <div class="lg:col-span-2 space-y-4" :class="vistaMovil === 'productos' ? 'block' : 'hidden lg:block'">
             <!-- Búsqueda + Botón Escáner Cámara -->
-            <div class="bg-white rounded-2xl shadow-md p-3 sm:p-4">
+            <div class="bg-slate-900 rounded-2xl shadow-md p-3 sm:p-4 border border-slate-800">
                 <div class="flex gap-2 sm:gap-2.5 items-center">
                     <div class="flex-1 relative">
                         <i class="fas fa-search absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
@@ -45,7 +45,7 @@
                             id="btn-abrir-escaner"
                             onclick="POS_AbrirCamara(event)"
                             title="Escanear con la Cámara del Celular / PC"
-                            class="px-3.5 py-2.5 sm:py-3 gradient-primary hover:brightness-105 text-white rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm flex-shrink-0">
+                            class="px-4 py-3.5 sm:py-3 gradient-primary hover:brightness-105 text-white rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm flex-shrink-0">
                         <i class="fas fa-camera text-sm sm:text-base"></i>
                         <span class="hidden sm:inline">Cámara</span>
                     </button>
@@ -57,7 +57,7 @@
                     <!-- Toggle Sonido -->
                     <button type="button" @click="toggleSonido()" :title="sonidoSilenciado ? 'Activar Sonidos POS' : 'Silenciar Sonidos POS'"
                             class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0"
-                            :class="sonidoSilenciado ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'">
+                            :class="sonidoSilenciado ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-amber-400 border border-emerald-200'">
                         <i :class="sonidoSilenciado ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
                     </button>
                 </div>
@@ -65,15 +65,15 @@
 
             <!-- Categorías rápidas -->
             <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-                <button type="button" @click="filtrarCategoria(null)" :class="categoriaActiva === null ? 'bg-emerald-500 text-white shadow-emerald-200' : 'bg-white text-slate-700 hover:bg-slate-50'"
-                        class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm transition">
+                <button type="button" @click="filtrarCategoria(null)" :class="categoriaActiva === null ? 'bg-amber-500 text-slate-900 shadow-amber-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700'"
+                        class="px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm transition">
                     <i class="fas fa-th-large mr-1.5"></i>Todos
                 </button>
                 @foreach($categorias as $cat)
                     <button type="button" @click="filtrarCategoria({{ $cat->id }})"
-                            :class="categoriaActiva === {{ $cat->id }} ? 'text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-50'"
+                            :class="categoriaActiva === {{ $cat->id }} ? 'text-slate-900 shadow-md' : 'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700'"
                             :style="categoriaActiva === {{ $cat->id }} ? 'background: {{ $cat->color }}' : ''"
-                            class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm transition">
+                            class="px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm transition">
                         <i class="fas fa-{{ $cat->icono }} mr-1.5"></i>{{ $cat->nombre }}
                     </button>
                 @endforeach
@@ -85,7 +85,7 @@
                     <button type="button" @click="agregarProducto(p)"
                             :disabled="parseFloat(p.stock) <= 0"
                             :class="{'opacity-60 grayscale cursor-not-allowed': parseFloat(p.stock) <= 0}"
-                            class="relative bg-white rounded-2xl shadow-sm hover:shadow-md transition active:scale-95 p-2.5 sm:p-3 text-left border border-slate-100 flex flex-col justify-between overflow-hidden">
+                            class="relative bg-slate-900 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-500 transition active:scale-95 p-2.5 sm:p-3 text-left border border-slate-800 flex flex-col justify-between overflow-hidden">
                         
                         <!-- Etiqueta de Agotado -->
                         <div x-show="parseFloat(p.stock) <= 0" class="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
@@ -93,7 +93,7 @@
                         </div>
 
                         <div>
-                            <div class="aspect-square bg-slate-100 rounded-xl mb-2 flex items-center justify-center overflow-hidden relative">
+                            <div class="aspect-square bg-slate-800 rounded-xl mb-2 flex items-center justify-center overflow-hidden relative">
                                 <template x-if="p.imagen">
                                     <img :src="`/uploads/productos/${p.imagen}`" class="w-full h-full object-cover">
                                 </template>
@@ -107,7 +107,7 @@
                             <span class="text-[10px] sm:text-[11px] font-bold" 
                                   :class="parseFloat(p.stock) <= 0 ? 'text-red-500' : (parseFloat(p.stock) <= 5 ? 'text-orange-500' : 'text-slate-400')"
                                   x-text="`Stk: ${parseFloat(p.stock).toFixed(0)}`"></span>
-                            <span class="text-xs sm:text-sm font-black text-emerald-600" x-text="`{{ $moneda }} ${parseFloat(p.precio_venta).toFixed(2)}`"></span>
+                            <span class="text-xs sm:text-sm font-black text-amber-400" x-text="`{{ $moneda }} ${parseFloat(p.precio_venta).toFixed(2)}`"></span>
                         </div>
                     </button>
                 </template>
@@ -135,7 +135,7 @@
 
         <!-- Panel Carrito (Visible siempre en Desktop, o si vistaMovil === 'carrito' en móvil) -->
         <div class="bg-white rounded-2xl shadow-md flex flex-col" :class="vistaMovil === 'carrito' ? 'flex' : 'hidden lg:flex'" style="max-height: calc(100vh - 120px);">
-            <div class="p-4 border-b border-slate-100 flex justify-between items-center gradient-primary text-white rounded-t-2xl">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center gradient-primary text-white rounded-t-2xl">
                 <div>
                     <h3 class="font-bold flex items-center gap-2 text-base"><i class="fas fa-shopping-cart"></i>Carrito de Venta</h3>
                     <p class="text-xs text-emerald-100 font-medium">Turno #{{ $turnoActivo->id }} • {{ $turnoActivo->caja->nombre }}</p>
@@ -168,7 +168,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-[11px] text-slate-400" x-text="`{{ $moneda }} ${item.precio_unitario.toFixed(2)}`"></p>
-                                <p class="font-extrabold text-sm text-emerald-600" x-text="`{{ $moneda }} ${(item.cantidad * item.precio_unitario).toFixed(2)}`"></p>
+                                <p class="font-extrabold text-sm text-amber-400" x-text="`{{ $moneda }} ${(item.cantidad * item.precio_unitario).toFixed(2)}`"></p>
                             </div>
                         </div>
                     </div>
@@ -198,7 +198,7 @@
                     <span>Impuesto ({{ $empresaGlobal->impuesto ?? 0 }}%):</span>
                     <span x-text="`{{ $moneda }} ${impuesto.toFixed(2)}`"></span>
                 </div>
-                <div class="flex justify-between items-baseline text-2xl font-black text-emerald-600 pt-2 border-t border-slate-200">
+                <div class="flex justify-between items-baseline text-2xl font-black text-amber-400 pt-2 border-t border-slate-200">
                     <span class="text-sm uppercase text-slate-600 font-bold tracking-wide">TOTAL:</span>
                     <span x-text="`{{ $moneda }} ${total.toFixed(2)}`"></span>
                 </div>
@@ -253,7 +253,7 @@
                             <button type="button" @click="cambiarTipoComprobante('TICKET')"
                                     :class="tipoComprobante === 'TICKET' ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20 font-bold' : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:bg-slate-100'"
                                     class="border-2 py-1.5 sm:py-2 px-1 rounded-xl text-center text-xs transition flex flex-col items-center justify-center">
-                                <span class="font-extrabold flex items-center gap-1 text-[11px] sm:text-xs"><i class="fas fa-receipt text-xs text-emerald-600"></i>Ticket</span>
+                                <span class="font-extrabold flex items-center gap-1 text-[11px] sm:text-xs"><i class="fas fa-receipt text-xs text-amber-400"></i>Ticket</span>
                                 <span class="text-[9px] text-slate-400">Nota Venta</span>
                             </button>
 
@@ -284,7 +284,7 @@
                             <template x-if="tipoComprobante !== 'FACTURA'">
                                 <button type="button" @click="toggleClienteGenerico()" 
                                         class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg transition"
-                                        :class="clienteModo === 'generico' ? 'bg-slate-200 text-slate-700' : 'text-emerald-600 hover:underline'">
+                                        :class="clienteModo === 'generico' ? 'bg-slate-200 text-slate-700' : 'text-amber-400 hover:underline'">
                                     <span x-text="clienteModo === 'generico' ? '✓ Modo Varios' : '+ DNI'"></span>
                                 </button>
                             </template>
@@ -302,7 +302,7 @@
                                     <p class="text-[9px] text-slate-400">Venta rápida al público</p>
                                 </div>
                             </div>
-                            <button type="button" @click="clienteModo = 'documento'" class="text-[10px] sm:text-[11px] font-bold text-emerald-600 hover:underline">
+                            <button type="button" @click="clienteModo = 'documento'" class="text-[10px] sm:text-[11px] font-bold text-amber-400 hover:underline">
                                 Cambiar a DNI
                             </button>
                         </div>
@@ -317,7 +317,7 @@
                                            :placeholder="tipoComprobante === 'FACTURA' ? 'RUC de 11 dígitos' : 'DNI de 8 dígitos'"
                                            :maxlength="tipoComprobante === 'FACTURA' ? 11 : 11"
                                            class="w-full pl-2.5 pr-8 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-black text-slate-800 focus:outline-none focus:border-emerald-500">
-                                    <span x-show="consultandoApi" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-emerald-600 text-xs">
+                                    <span x-show="consultandoApi" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-amber-400 text-xs">
                                         <i class="fas fa-spinner fa-spin"></i>
                                     </span>
                                 </div>
@@ -398,7 +398,7 @@
                     <div x-show="formaPago === 'efectivo'" class="bg-slate-50 border border-slate-200 p-2.5 sm:p-3 rounded-2xl space-y-1.5 sm:space-y-2 flex-1">
                         <div class="flex justify-between items-center">
                             <label class="text-[10px] sm:text-[11px] font-extrabold text-slate-700 uppercase">Monto Recibido</label>
-                            <button type="button" @click="montoRecibido = total; playBeep()" class="text-[10px] sm:text-[11px] font-bold text-emerald-600 hover:underline">
+                            <button type="button" @click="montoRecibido = total; playBeep()" class="text-[10px] sm:text-[11px] font-bold text-amber-400 hover:underline">
                                 Monto Exacto
                             </button>
                         </div>
@@ -479,7 +479,7 @@
                 <!-- Alert Sunat / Aceptado -->
                 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-6 text-emerald-800 shadow-inner">
                     <div class="flex items-center gap-2">
-                        <i class="fas fa-check-circle text-emerald-600"></i>
+                        <i class="fas fa-check-circle text-amber-400"></i>
                         <span class="text-sm font-semibold" x-text="`La venta ha sido procesada correctamente.`"></span>
                     </div>
                     <div class="font-black text-lg bg-white px-2 py-0.5 rounded shadow-sm border border-emerald-100" x-show="ultimaVenta?.cambio > 0">
