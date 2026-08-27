@@ -12,7 +12,7 @@ class Producto extends Model
     protected $table = 'productos';
 
     protected $fillable = [
-        'codigo', 'codigo_barras', 'nombre', 'descripcion', 'categoria_id', 'proveedor_id',
+        'tipo_producto', 'codigo', 'codigo_barras', 'nombre', 'descripcion', 'categoria_id', 'proveedor_id',
         'unidad_medida', 'precio_compra', 'precio_venta', 'precio_mayoreo', 'cantidad_mayoreo',
         'stock', 'stock_minimo', 'stock_maximo', 'controla_stock', 'aplica_impuesto',
         'imagen', 'fecha_vencimiento', 'lote', 'ubicacion', 'activo', 'destacado',
@@ -80,5 +80,10 @@ class Producto extends Model
     {
         if ($this->precio_compra == 0) return 0;
         return round((($this->precio_venta - $this->precio_compra) / $this->precio_compra) * 100, 2);
+    }
+
+    public function componentesCombo()
+    {
+        return $this->belongsToMany(Producto::class, 'combo_productos', 'combo_id', 'producto_id')->withPivot('cantidad');
     }
 }
