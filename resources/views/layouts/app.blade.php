@@ -117,15 +117,18 @@
     @yield('head')
 </head>
 <body class="bg-slate-950 text-slate-200">
-<div class="flex min-h-screen" x-data="{ sidebarOpen: window.innerWidth >= 1024 }">
+<div class="flex min-h-screen" x-data="{ sidebarOpen: false }">
 
     <!-- Sidebar -->
     <!-- Sidebar -->
     <aside x-data="{ isHovered: false }" 
            @mouseenter="isHovered = true" 
            @mouseleave="isHovered = false" 
-           class="bg-black border-r border-slate-900 text-white fixed inset-y-0 left-0 z-40 transition-all duration-300 lg:translate-x-0 overflow-x-hidden"
-           :class="sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 lg:w-16 ' + (isHovered ? 'lg:w-64 shadow-2xl' : 'lg:w-16')">
+           class="bg-black border-r border-slate-900 text-white fixed inset-y-0 left-0 z-40 transition-all duration-300 overflow-x-hidden w-64 lg:w-16"
+           :class="[
+               sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+               isHovered ? 'lg:w-64 shadow-2xl' : ''
+           ]">
         <div class="px-3 py-5 border-b border-slate-800 flex items-center gap-3">
             @if($empresaGlobal && $empresaGlobal->logo_url)
                 <img src="{{ $empresaGlobal->logo_url }}" class="w-10 h-10 rounded-lg object-contain bg-white p-1" alt="logo">
@@ -134,7 +137,7 @@
                     <i class="fas fa-store text-white"></i>
                 </div>
             @endif
-            <div class="flex-1 min-w-0 transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 lg:hidden'">
+            <div class="flex-1 min-w-0 transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">
                 <h1 class="font-bold text-sm whitespace-nowrap">{{ $empresaGlobal->nombre_comercial ?? 'TPV Minimarket' }}</h1>
                 <p class="text-[10px] text-slate-400 whitespace-nowrap">Sistema POS</p>
             </div>
@@ -148,7 +151,7 @@
                 <i class="fas fa-cash-register w-5"></i><span class="whitespace-nowrap">Punto de Venta</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Operaciones</span></p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Operaciones</span></p>
             <a href="{{ route('ventas.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('ventas.index') ? 'active' : '' }}">
                 <i class="fas fa-receipt w-5"></i><span class="whitespace-nowrap">Ventas</span>
             </a>
@@ -159,7 +162,7 @@
                 <i class="fas fa-money-bill-wave w-5"></i><span class="whitespace-nowrap">Caja</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Inventario</span></p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Inventario</span></p>
             <a href="{{ route('productos.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('productos.*') ? 'active' : '' }}">
                 <i class="fas fa-box w-5"></i><span class="whitespace-nowrap">Productos</span>
             </a>
@@ -170,7 +173,7 @@
                 <i class="fas fa-percent w-5"></i><span class="whitespace-nowrap">Promociones</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Contactos</span></p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Contactos</span></p>
             <a href="{{ route('clientes.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
                 <i class="fas fa-users w-5"></i><span class="whitespace-nowrap">Clientes</span>
             </a>
@@ -178,7 +181,7 @@
                 <i class="fas fa-truck-loading w-5"></i><span class="whitespace-nowrap">Proveedores</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">SUNAT</span></p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">SUNAT</span></p>
             <a href="{{ route('facturacion.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('facturacion.index') || request()->routeIs('facturacion.show') ? 'active' : '' }}">
                 <i class="fas fa-file-invoice-dollar w-5"></i><span class="whitespace-nowrap">Facturación Electrónica</span>
             </a>
@@ -186,13 +189,13 @@
                 <i class="fas fa-calendar-day w-5"></i><span class="whitespace-nowrap">Resúmenes Diarios</span>
             </a>
 
-            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Análisis</span></p>
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Análisis</span></p>
             <a href="{{ route('reportes.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
                 <i class="fas fa-chart-line w-5"></i><span class="whitespace-nowrap">Reportes</span>
             </a>
 
             @if(auth()->user()->isAdmin())
-                <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Sistema</span></p>
+                <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Sistema</span></p>
                 <a href="{{ route('usuarios.index') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
                     <i class="fas fa-user-shield w-5"></i><span class="whitespace-nowrap">Usuarios</span>
                 </a>
@@ -211,7 +214,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="w-full flex items-center gap-3 px-5 py-3 bg-red-600/20 hover:bg-red-600/40 rounded-lg text-red-300 transition">
-                        <i class="fas fa-sign-out-alt w-5"></i><span class="whitespace-nowrap transition-opacity duration-200" :class="(sidebarOpen || isHovered) ? 'opacity-100' : 'opacity-0 hidden'">Cerrar Sesión</span>
+                        <i class="fas fa-sign-out-alt w-5"></i><span class="whitespace-nowrap transition-opacity duration-200" :class="(isHovered || window.innerWidth < 1024) ? 'opacity-100' : 'opacity-0'">Cerrar Sesión</span>
                     </button>
                 </form>
             </div>
