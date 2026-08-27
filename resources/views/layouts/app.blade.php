@@ -113,6 +113,10 @@
             border-color: #f59e0b !important;
             box-shadow: 0 0 0 1px #f59e0b !important;
         }
+
+        /* Ocultar scrollbar en el sidebar pero mantener funcionalidad de scroll */
+        .sidebar-scroll::-webkit-scrollbar { display: none; }
+        .sidebar-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
     @yield('head')
 </head>
@@ -143,7 +147,7 @@
             </div>
         </div>
 
-        <nav class="py-4 overflow-y-auto" style="max-height: calc(100vh - 80px);">
+        <nav class="py-4 overflow-y-auto sidebar-scroll" style="max-height: calc(100vh - 80px);">
             <a href="{{ route('dashboard') }}" class="sidebar-link flex items-center gap-3 px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="fas fa-tachometer-alt w-5"></i><span class="whitespace-nowrap">Dashboard</span>
             </a>
