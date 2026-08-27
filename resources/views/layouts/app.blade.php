@@ -177,6 +177,11 @@
                 <i class="fas fa-money-bill-wave w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Caja</span>
             </a>
 @endif
+            @if(auth()->user()->hasPermission('caja') || auth()->user()->isAdmin())
+<a href="{{ route('envases.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('envases.*') ? 'active' : '' }}">
+                <i class="fas fa-box-open w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Envases & Cascos</span>
+            </a>
+@endif
 
             @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Inventario</span></p>
@@ -194,6 +199,11 @@
             @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
 <a href="{{ route('promociones.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('promociones.*') ? 'active' : '' }}">
                 <i class="fas fa-percent w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Promociones</span>
+            </a>
+@endif
+            @if(auth()->user()->hasPermission('productos') || auth()->user()->isAdmin())
+<a href="{{ route('kardex.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('kardex.*') ? 'active' : '' }}">
+                <i class="fas fa-clipboard-list w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Kardex & Mermas</span>
             </a>
 @endif
 
@@ -229,8 +239,13 @@
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Análisis</span></p>
 @endif
             @if(auth()->user()->hasPermission('reportes') || auth()->user()->isAdmin())
-<a href="{{ route('reportes.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
+<a href="{{ route('reportes.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.index') ? 'active' : '' }}">
                 <i class="fas fa-chart-line w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Reportes</span>
+            </a>
+@endif
+            @if(auth()->user()->hasPermission('reportes') || auth()->user()->isAdmin())
+<a href="{{ route('reportes.utilidades') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('reportes.utilidades') ? 'active' : '' }}">
+                <i class="fas fa-hand-holding-dollar w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Utilidad Neta Real</span>
             </a>
 @endif
 

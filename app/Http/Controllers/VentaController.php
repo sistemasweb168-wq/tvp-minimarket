@@ -188,6 +188,12 @@ class VentaController extends Controller
                 'monto_recibido' => $data['monto_recibido'],
                 'cambio' => $cambio,
                 'forma_pago' => $data['forma_pago'],
+                'detalle_pago' => $data['forma_pago'] === 'mixto' ? [
+                    'monto_efectivo' => floatval($request->monto_efectivo ?? 0),
+                    'monto_digital' => floatval($request->monto_digital ?? 0),
+                    'metodo_digital' => $request->metodo_digital ?? 'yape',
+                    'referencia_digital' => $request->referencia_digital ?? null,
+                ] : null,
                 'estado' => 'completada',
                 'observaciones' => $observaciones,
             ]);
@@ -205,13 +211,14 @@ class VentaController extends Controller
                     'descripcion' => $producto->nombre,
                     'cantidad' => $item['cantidad'],
                     'precio_unitario' => $item['precio_unitario'],
+                    'precio_compra' => $producto->precio_compra ?? 0,
                     'descuento' => 0,
                     'impuesto' => $itemImpuesto,
                     'subtotal' => $itemSubtotal,
                     'total' => $itemSubtotal + $itemImpuesto,
                 ]);
 
-                                if ($producto->tipo_producto === 'combo') {
+                if ($producto->tipo_producto === 'combo') {
                     // Descontar componentes
                     foreach ($producto->componentesCombo as $componente) {
                         if ($componente->controla_stock) {
@@ -257,7 +264,16 @@ class VentaController extends Controller
             // Actualizar totales del turno
             $turnoActivo->increment('total_ventas', $total);
             $turnoActivo->increment('cantidad_ventas');
-            if ($data['forma_pago'] === 'efectivo') {
+            if ($data['forma_pago'] === 'mixto') {
+                $montoEf = floatval($request->monto_efectivo ?? 0);
+                $montoDig = floatval($request->monto_digital ?? 0);
+                $turnoActivo->increment('total_efectivo', $montoEf);
+                if (($request->metodo_digital ?? '') === 'tarjeta') {
+                    $turnoActivo->increment('total_tarjeta', $montoDig);
+                } else {
+                    $turnoActivo->increment('total_otros', $montoDig);
+                }
+            } elseif ($data['forma_pago'] === 'efectivo') {
                 $turnoActivo->increment('total_efectivo', $total);
             } elseif ($data['forma_pago'] === 'tarjeta') {
                 $turnoActivo->increment('total_tarjeta', $total);

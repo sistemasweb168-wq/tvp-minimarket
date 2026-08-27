@@ -93,7 +93,9 @@ class CajaController extends Controller
     {
         $data = $request->validate([
             'tipo' => 'required|in:ingreso,egreso',
+            'categoria' => 'nullable|string|max:50',
             'concepto' => 'required|string|max:255',
+            'comprobante' => 'nullable|string|max:50',
             'monto' => 'required|numeric|min:0.01',
             'observaciones' => 'nullable|string',
         ]);
@@ -102,12 +104,14 @@ class CajaController extends Controller
             'turno_caja_id' => $turno->id,
             'user_id' => auth()->id(),
             'tipo' => $data['tipo'],
+            'categoria' => $data['categoria'] ?? ($data['tipo'] === 'egreso' ? 'gastos_operativos' : 'general'),
             'concepto' => $data['concepto'],
+            'comprobante' => $data['comprobante'] ?? null,
             'monto' => $data['monto'],
             'observaciones' => $data['observaciones'] ?? null,
         ]);
 
-        return back()->with('success', 'Movimiento registrado');
+        return back()->with('success', 'Movimiento registrado correctamente');
     }
 
     public function storeCaja(Request $request)

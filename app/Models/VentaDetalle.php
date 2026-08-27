@@ -13,12 +13,13 @@ class VentaDetalle extends Model
 
     protected $fillable = [
         'venta_id', 'producto_id', 'codigo', 'descripcion',
-        'cantidad', 'precio_unitario', 'descuento', 'impuesto', 'subtotal', 'total',
+        'cantidad', 'precio_unitario', 'precio_compra', 'descuento', 'impuesto', 'subtotal', 'total',
     ];
 
     protected $casts = [
         'cantidad' => 'decimal:3',
         'precio_unitario' => 'decimal:2',
+        'precio_compra' => 'decimal:2',
         'descuento' => 'decimal:2',
         'impuesto' => 'decimal:2',
         'subtotal' => 'decimal:2',

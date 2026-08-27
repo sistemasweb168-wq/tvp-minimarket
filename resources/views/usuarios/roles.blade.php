@@ -9,16 +9,19 @@ $permisosDisponibles = [
     'ventas' => 'Ver Historial de Ventas',
     'ventas.anular' => 'Anular Ventas',
     'productos' => 'Ver y Editar Productos',
+    'kardex' => 'Kardex y Registro de Mermas',
     'compras' => 'Gestión de Compras',
     'clientes' => 'Gestión de Clientes',
     'proveedores' => 'Gestión de Proveedores',
     'caja' => 'Apertura y Cierre de Caja',
     'caja.movimientos' => 'Movimientos de Dinero',
-    'reportes' => 'Acceso a Reportes',
+    'envases' => 'Control de Envases & Garantías',
+    'reportes' => 'Acceso a Reportes Generales',
+    'utilidades' => 'Reporte de Utilidad Neta Real',
     'sunat' => 'Facturación SUNAT',
-    'configuracion' => 'Configuración',
-    'usuarios' => 'Usuarios',
-    'backup' => 'Backup',
+    'configuracion' => 'Configuración del Sistema',
+    'usuarios' => 'Gestión de Usuarios y Roles',
+    'backup' => 'Backup del Sistema',
 ];
 @endphp
 

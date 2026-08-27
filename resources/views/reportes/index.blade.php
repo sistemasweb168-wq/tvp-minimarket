@@ -35,5 +35,13 @@
         <h3 class="font-bold text-lg mb-1">Vencimientos</h3>
         <p class="text-sm text-slate-400">Productos próximos a vencer o ya vencidos.</p>
     </a>
+
+    <a href="{{ route('reportes.utilidades') }}" class="bg-slate-900 border-2 border-emerald-500/40 rounded-2xl shadow-md p-6 hover:shadow-xl hover:-translate-y-1 transition group">
+        <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition shadow-lg shadow-emerald-500/25">
+            <i class="fas fa-hand-holding-dollar text-2xl"></i>
+        </div>
+        <h3 class="font-bold text-lg text-emerald-400 mb-1">Utilidad Neta Real</h3>
+        <p class="text-sm text-slate-400">Ganancia limpia real: Ventas - Costo de Compra - Gastos Operativos.</p>
+    </a>
 </div>
 @endsection

@@ -17,6 +17,8 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PromocionController;
 use App\Http\Controllers\FacturacionElectronicaController;
 use App\Http\Controllers\SunatApiController;
+use App\Http\Controllers\KardexController;
+use App\Http\Controllers\EnvaseGarantiaController;
 
 // Autenticación
 Route::get('/', function() {
@@ -80,6 +82,16 @@ Route::middleware('auth')->group(function () {
     Route::get('reportes/productos', [ReporteController::class, 'productos'])->name('reportes.productos');
     Route::get('reportes/inventario', [ReporteController::class, 'inventario'])->name('reportes.inventario');
     Route::get('reportes/vencimientos', [ReporteController::class, 'vencimientos'])->name('reportes.vencimientos');
+    Route::get('reportes/utilidades', [ReporteController::class, 'utilidades'])->name('reportes.utilidades');
+
+    // Kardex & Mermas / Roturas
+    Route::get('kardex', [KardexController::class, 'index'])->name('kardex.index')->middleware('permission:productos');
+    Route::post('kardex/merma', [KardexController::class, 'registrarMerma'])->name('kardex.merma')->middleware('permission:productos');
+
+    // Control de Envases Retornables & Garantías
+    Route::get('envases', [EnvaseGarantiaController::class, 'index'])->name('envases.index');
+    Route::post('envases', [EnvaseGarantiaController::class, 'store'])->name('envases.store');
+    Route::post('envases/{envase}/devolver', [EnvaseGarantiaController::class, 'devolver'])->name('envases.devolver');
 
     // Promociones
     Route::resource('promociones', PromocionController::class)->only(['index', 'store', 'update', 'destroy']);
