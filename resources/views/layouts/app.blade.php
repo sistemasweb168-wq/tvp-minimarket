@@ -265,6 +265,11 @@
                 </a>
             @endif
 
+            <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Ayuda</span></p>
+            <a href="{{ route('manual.index') }}" class="sidebar-link flex items-center px-5 py-3 text-amber-400 hover:bg-slate-800 transition {{ request()->routeIs('manual.*') ? 'active' : '' }}">
+                <i class="fas fa-book-open w-5 text-amber-400"></i><span class="whitespace-nowrap ml-3 font-bold" x-show="isHovered || sidebarOpen" style="display: none;">Manual de Usuario</span>
+            </a>
+
             <div class="px-5 mt-6">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
