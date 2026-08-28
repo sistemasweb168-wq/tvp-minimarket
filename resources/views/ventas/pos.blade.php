@@ -1311,15 +1311,12 @@ function pos() {
                 return;
             }
             
-            // Enviamos siempre la versión PDF en formato Ticket por WhatsApp
-            let pdfUrl = this.ultimaVenta.url_ticket.replace('/ticket', '/ticket-pdf');
-            const url = pdfUrl.startsWith('http') ? pdfUrl : window.location.origin + pdfUrl;
+            // Enlace al ticket digital interactivo (con banner y descarga PDF)
+            let ticketUrl = this.ultimaVenta.url_ticket;
+            const url = ticketUrl.startsWith('http') ? ticketUrl : window.location.origin + ticketUrl;
+            const nombreComercio = '{{ $empresaGlobal->nombre_comercial ?? $empresaGlobal->razon_social ?? "Mikito\'s Licorería" }}';
             
-            const mensaje = `¡Hola! 👋 Gracias por tu compra en nuestro Minimarket.
-
-Aquí tienes tu comprobante electrónico *${this.ultimaVenta.numero_ticket}* por el total de *S/ ${this.ultimaVenta.total.toFixed(2)}*.
-
-Puedes verlo y descargarlo en formato PDF aquí: ${url}`;
+            const mensaje = `¡Hola! 👋 ¡Muchas gracias por tu compra en *${nombreComercio}*! 🐻🍻\n\nTu comprobante *${this.ultimaVenta.numero_ticket}* por el total de *S/ ${this.ultimaVenta.total.toFixed(2)}* está listo.\n\n📄 Puedes ver tu ticket digital y descargarlo aquí:\n${url}\n\n¡Salud, buenos momentos y que disfrutes tus productos! ✨`;
             const link = `https://wa.me/51${this.telefonoWhatsApp.replace(/\s+/g,'')}?text=${encodeURIComponent(mensaje)}`;
             window.open(link, '_blank');
         },

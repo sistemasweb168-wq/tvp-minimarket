@@ -32,8 +32,45 @@ class Empresa extends Model
 
     public function getLogoUrlAttribute()
     {
-        if ($this->logo && file_exists(public_path('uploads/empresa/' . $this->logo))) {
+        if ($this->logo) {
+            if (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://')) {
+                return $this->logo;
+            }
+            if (file_exists(public_path('uploads/empresa/' . $this->logo))) {
+                return asset('uploads/empresa/' . $this->logo);
+            }
+            if (file_exists(public_path('img/' . $this->logo))) {
+                return asset('img/' . $this->logo);
+            }
             return asset('uploads/empresa/' . $this->logo);
+        }
+        if (file_exists(public_path('img/logo.png'))) {
+            return asset('img/logo.png');
+        }
+        return null;
+    }
+
+    public function getLogoPathAttribute()
+    {
+        if ($this->logo && file_exists(public_path('uploads/empresa/' . $this->logo))) {
+            return public_path('uploads/empresa/' . $this->logo);
+        }
+        if ($this->logo && file_exists(public_path('img/' . $this->logo))) {
+            return public_path('img/' . $this->logo);
+        }
+        if (file_exists(public_path('img/logo.png'))) {
+            return public_path('img/logo.png');
+        }
+        return null;
+    }
+
+    public function getLogoBase64Attribute()
+    {
+        $path = $this->logo_path;
+        if ($path && file_exists($path)) {
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $data = file_get_contents($path);
+            return 'data:image/' . $type . ';base64,' . base64_encode($data);
         }
         return null;
     }
