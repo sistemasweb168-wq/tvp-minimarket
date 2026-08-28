@@ -51,20 +51,24 @@
     $ingresosList = ($turno->movimientos ?? collect())->where('tipo', 'ingreso');
     $totalIngresos = $ingresosList->sum('monto');
 
-    // Garantías de envases
-    $garantiasCobradas = class_exists(\App\Models\EnvaseGarantia::class)
-        ? \App\Models\EnvaseGarantia::where('created_at', '>=', $turno->fecha_apertura)
-            ->when($turno->fecha_cierre, fn($q) => $q->where('created_at', '<=', $turno->fecha_cierre))
-            ->where('estado', 'prestado')
-            ->sum('monto_garantia')
-        : 0;
+    $garantiasCobradas = 0;
+    $garantiasDevueltas = 0;
+    try {
+        if (class_exists(\App\Models\EnvaseGarantia::class) && \Illuminate\Support\Facades\Schema::hasTable('envases_garantias')) {
+            $garantiasCobradas = \App\Models\EnvaseGarantia::where('created_at', '>=', $turno->fecha_apertura)
+                ->when($turno->fecha_cierre, fn($q) => $q->where('created_at', '<=', $turno->fecha_cierre))
+                ->where('estado', 'prestado')
+                ->sum('monto_garantia') ?? 0;
 
-    $garantiasDevueltas = class_exists(\App\Models\EnvaseGarantia::class)
-        ? \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turno->fecha_apertura)
-            ->when($turno->fecha_cierre, fn($q) => $q->where('fecha_devolucion', '<=', $turno->fecha_cierre))
-            ->where('estado', 'devuelto')
-            ->sum('monto_garantia')
-        : 0;
+            $garantiasDevueltas = \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turno->fecha_apertura)
+                ->when($turno->fecha_cierre, fn($q) => $q->where('fecha_devolucion', '<=', $turno->fecha_cierre))
+                ->where('estado', 'devuelto')
+                ->sum('monto_garantia') ?? 0;
+        }
+    } catch (\Throwable $e) {
+        $garantiasCobradas = 0;
+        $garantiasDevueltas = 0;
+    }
 
     $esperadoEnCaja = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
     $totalDigitalReal = $totalYapeReal + $totalPlinReal + $totalTarjetaReal + $totalTransfReal;

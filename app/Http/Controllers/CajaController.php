@@ -59,38 +59,43 @@ class CajaController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        $ventas = $turno->ventas;
+        $ventas = $turno->ventas ?? collect();
         $ventasEfectivoPuro = $ventas->where('forma_pago', 'efectivo')->sum('total');
         $mixtasEfectivo = 0;
 
         foreach ($ventas->where('forma_pago', 'mixto') as $v) {
             $dp = is_array($v->detalle_pago) ? $v->detalle_pago : (json_decode($v->detalle_pago, true) ?? []);
-            $m1 = $dp['metodo_1'] ?? 'efectivo';
-            $cant1 = floatval($dp['monto_1'] ?? 0);
-            $m2 = $dp['metodo_2'] ?? 'yape';
-            $cant2 = floatval($dp['monto_2'] ?? 0);
+            $m1 = $dp['metodo_1'] ?? $dp['metodo_efectivo'] ?? 'efectivo';
+            $cant1 = floatval($dp['monto_1'] ?? $dp['monto_efectivo'] ?? 0);
+            $m2 = $dp['metodo_2'] ?? $dp['metodo_digital'] ?? 'yape';
+            $cant2 = floatval($dp['monto_2'] ?? $dp['monto_digital'] ?? 0);
 
             if ($m1 === 'efectivo') $mixtasEfectivo += $cant1;
             if ($m2 === 'efectivo') $mixtasEfectivo += $cant2;
         }
         $totalEfectivoReal = $ventasEfectivoPuro + $mixtasEfectivo;
 
-        $totalIngresos = $turno->movimientos()->where('tipo', 'ingreso')->sum('monto');
-        $totalEgresos = $turno->movimientos()->where('tipo', 'egreso')->sum('monto');
+        $totalIngresos = ($turno->movimientos ?? collect())->where('tipo', 'ingreso')->sum('monto');
+        $totalEgresos = ($turno->movimientos ?? collect())->where('tipo', 'egreso')->sum('monto');
 
-        $garantiasCobradas = class_exists(\App\Models\EnvaseGarantia::class)
-            ? \App\Models\EnvaseGarantia::where('created_at', '>=', $turno->fecha_apertura)
-                ->where('created_at', '<=', now())
-                ->where('estado', 'prestado')
-                ->sum('monto_garantia')
-            : 0;
+        $garantiasCobradas = 0;
+        $garantiasDevueltas = 0;
+        try {
+            if (class_exists(\App\Models\EnvaseGarantia::class) && \Illuminate\Support\Facades\Schema::hasTable('envases_garantias')) {
+                $garantiasCobradas = \App\Models\EnvaseGarantia::where('created_at', '>=', $turno->fecha_apertura)
+                    ->where('created_at', '<=', now())
+                    ->where('estado', 'prestado')
+                    ->sum('monto_garantia') ?? 0;
 
-        $garantiasDevueltas = class_exists(\App\Models\EnvaseGarantia::class)
-            ? \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turno->fecha_apertura)
-                ->where('fecha_devolucion', '<=', now())
-                ->where('estado', 'devuelto')
-                ->sum('monto_garantia')
-            : 0;
+                $garantiasDevueltas = \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turno->fecha_apertura)
+                    ->where('fecha_devolucion', '<=', now())
+                    ->where('estado', 'devuelto')
+                    ->sum('monto_garantia') ?? 0;
+            }
+        } catch (\Throwable $e) {
+            $garantiasCobradas = 0;
+            $garantiasDevueltas = 0;
+        }
 
         $montoCalculado = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
         $diferencia = $data['monto_cierre'] - $montoCalculado;
@@ -133,16 +138,27 @@ class CajaController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        MovimientoCaja::create([
+        $movData = [
             'turno_caja_id' => $turno->id,
             'user_id' => auth()->id(),
             'tipo' => $data['tipo'],
-            'categoria' => $data['categoria'] ?? ($data['tipo'] === 'egreso' ? 'gastos_operativos' : 'general'),
             'concepto' => $data['concepto'],
-            'comprobante' => $data['comprobante'] ?? null,
             'monto' => $data['monto'],
             'observaciones' => $data['observaciones'] ?? null,
-        ]);
+        ];
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('movimientos_caja', 'categoria')) {
+                $movData['categoria'] = $data['categoria'] ?? ($data['tipo'] === 'egreso' ? 'gastos_operativos' : 'general');
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('movimientos_caja', 'comprobante')) {
+                $movData['comprobante'] = $data['comprobante'] ?? null;
+            }
+        } catch (\Throwable $e) {
+            // Seguir con los campos base si falla la verificación de esquema
+        }
+
+        MovimientoCaja::create($movData);
 
         return back()->with('success', 'Movimiento registrado correctamente');
     }

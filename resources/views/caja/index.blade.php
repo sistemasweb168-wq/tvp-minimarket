@@ -42,17 +42,22 @@
         $totalIngresos = $turnoActivo->movimientos->where('tipo', 'ingreso')->sum('monto');
         $totalEgresos = $turnoActivo->movimientos->where('tipo', 'egreso')->sum('monto');
 
-        $garantiasCobradas = class_exists(\App\Models\EnvaseGarantia::class)
-            ? \App\Models\EnvaseGarantia::where('created_at', '>=', $turnoActivo->fecha_apertura)
-                ->where('estado', 'prestado')
-                ->sum('monto_garantia')
-            : 0;
+        $garantiasCobradas = 0;
+        $garantiasDevueltas = 0;
+        try {
+            if (class_exists(\App\Models\EnvaseGarantia::class) && \Illuminate\Support\Facades\Schema::hasTable('envases_garantias')) {
+                $garantiasCobradas = \App\Models\EnvaseGarantia::where('created_at', '>=', $turnoActivo->fecha_apertura)
+                    ->where('estado', 'prestado')
+                    ->sum('monto_garantia') ?? 0;
 
-        $garantiasDevueltas = class_exists(\App\Models\EnvaseGarantia::class)
-            ? \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turnoActivo->fecha_apertura)
-                ->where('estado', 'devuelto')
-                ->sum('monto_garantia')
-            : 0;
+                $garantiasDevueltas = \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turnoActivo->fecha_apertura)
+                    ->where('estado', 'devuelto')
+                    ->sum('monto_garantia') ?? 0;
+            }
+        } catch (\Throwable $e) {
+            $garantiasCobradas = 0;
+            $garantiasDevueltas = 0;
+        }
 
         $efectivoEsperado = ($turnoActivo->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
     @endphp
