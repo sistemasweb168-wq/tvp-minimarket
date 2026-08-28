@@ -12,15 +12,15 @@ class CajaController extends Controller
 {
     public function index()
     {
-        $turnoActivo = TurnoCaja::with(['caja', 'user', 'movimientos'])
+        $turnoActivo = TurnoCaja::with(['caja', 'user', 'movimientos', 'ventas'])
             ->where('user_id', auth()->id())
             ->where('estado', 'abierto')
             ->first();
 
         $cajas = Caja::where('activo', true)->get();
-        $turnos = TurnoCaja::with(['caja', 'user'])
+        $turnos = TurnoCaja::with(['caja', 'user', 'ventas'])
             ->orderByDesc('fecha_apertura')
-            ->limit(10)->get();
+            ->limit(15)->get();
 
         return view('caja.index', compact('turnoActivo', 'cajas', 'turnos'));
     }
