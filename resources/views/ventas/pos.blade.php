@@ -61,6 +61,18 @@
                         <i class="fas fa-receipt text-rose-400"></i>
                         <span class="hidden md:inline">Gasto</span>
                     </button>
+                    <!-- Botón Abrir Gaveta Manual -->
+                    <button type="button" @click="abrirGavetaManual()" title="Abrir Gaveta de Dinero Físicamente"
+                            class="px-3 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
+                        <i class="fas fa-cash-register"></i>
+                        <span class="hidden md:inline">Caja</span>
+                    </button>
+
+                    <!-- Botón Configurar Gaveta (QZ) -->
+                    <button type="button" @click="configurarGaveta()" title="Configuración de Gaveta Automática (QZ Tray)"
+                            class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0 bg-slate-100 text-slate-400 hover:bg-slate-200">
+                        <i class="fas fa-cog"></i>
+                    </button>
                     
                     <button type="button" @click="toggleSonido()" :title="sonidoSilenciado ? 'Activar Sonidos POS' : 'Silenciar Sonidos POS'"
                             class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0"
@@ -729,6 +741,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
 <script>
 // =============================================================
 // 🔊 SINTETIZADOR DE EFECTOS DE AUDIO POS (WEB AUDIO API NATIVO)
@@ -816,6 +829,10 @@ function pos() {
         busqueda: '',
         categoriaActiva: null,
         carrito: [],
+        
+        // QZ Tray (Gaveta Automática)
+        qzActivo: localStorage.getItem('qz_activo') === 'true',
+        impresoraLocal: localStorage.getItem('impresora_gaveta') || '',
         
         // Escáner Cámara
         escanerAbierto: false,
@@ -1252,6 +1269,9 @@ function pos() {
                 if (result.success) {
                     // 🔊 Sonido de Éxito / Caja Registradora
                     AudioPOS.success();
+                    
+                    // 💸 Abrir Gaveta Automáticamente si QZ Tray está activado
+                    this.abrirGavetaFisica();
 
                     // Guardamos los valores de la venta ANTES de limpiar el carrito
                     const ventaTotal = parseFloat(this.total) || 0;
@@ -1335,6 +1355,84 @@ function pos() {
             const telefonoLimpio = this.telefonoWhatsApp.replace(/\D/g,'');
             const link = `https://api.whatsapp.com/send?phone=51${telefonoLimpio}&text=${encodeURIComponent(mensaje)}`;
             window.open(link, '_blank');
+        },
+
+        // =========================================================
+        // GAVETA AUTOMÁTICA (QZ TRAY)
+        // =========================================================
+        configurarGaveta() {
+            Swal.fire({
+                title: '<i class="fas fa-cash-register text-emerald-500 text-3xl mb-2"></i><br>Configurar Gaveta',
+                html: `
+                    <div class="text-left text-sm mb-4 text-slate-600">
+                        <p>Para abrir la gaveta sin imprimir ticket, necesitas tener <b>QZ Tray</b> instalado y ejecutándose en tu PC.</p>
+                    </div>
+                    <div class="mb-4 text-left">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Apertura Automática al Cobrar</label>
+                        <select id="swal-qz-activo" class="w-full border border-slate-300 rounded-xl p-2 text-sm font-semibold outline-none focus:border-emerald-500">
+                            <option value="true" ${this.qzActivo ? 'selected' : ''}>SÍ, abrir automáticamente</option>
+                            <option value="false" ${!this.qzActivo ? 'selected' : ''}>NO, desactivado</option>
+                        </select>
+                    </div>
+                    <div class="text-left">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre de la Impresora en Windows</label>
+                        <input id="swal-impresora" type="text" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500" 
+                               placeholder="Ej: POS-80, EPSON TM-T20" value="${this.impresoraLocal}">
+                        <p class="text-[10px] text-slate-500 mt-1">Escribe exactamente el nombre como aparece en Dispositivos e Impresoras.</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Guardar Configuración',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#10b981'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    this.qzActivo = document.getElementById('swal-qz-activo').value === 'true';
+                    this.impresoraLocal = document.getElementById('swal-impresora').value.trim();
+                    localStorage.setItem('qz_activo', this.qzActivo);
+                    localStorage.setItem('impresora_gaveta', this.impresoraLocal);
+                    Toast.fire({icon: 'success', title: 'Configuración de Gaveta guardada'});
+                }
+            });
+        },
+
+        abrirGavetaManual() {
+            if (!this.qzActivo || !this.impresoraLocal) {
+                this.configurarGaveta();
+                return;
+            }
+            this.abrirGavetaFisica();
+            Toast.fire({ icon: 'info', title: 'Enviando señal a la gaveta...' });
+        },
+
+        abrirGavetaFisica() {
+            if (!this.qzActivo || !this.impresoraLocal) return;
+            if (typeof qz === 'undefined') {
+                console.warn("QZ Tray no está cargado.");
+                return;
+            }
+
+            const patear = () => {
+                qz.printers.find(this.impresoraLocal).then((printer) => {
+                    let config = qz.configs.create(printer);
+                    // Código ESC/POS estándar para abrir gaveta
+                    // ESC p 0 25 250 (1B 70 00 19 FA)
+                    let data = ['\x1B\x70\x00\x19\xFA']; 
+                    return qz.print(config, data);
+                }).catch(err => {
+                    console.error("QZ Error impresora:", err);
+                    Toast.fire({ icon: 'error', title: 'Error QZ: Verifica el nombre de la impresora' });
+                });
+            };
+
+            if (!qz.websocket.isActive()) {
+                qz.websocket.connect().then(patear).catch(err => {
+                    console.error("QZ Error conexión:", err);
+                    Toast.fire({ icon: 'error', title: 'Error QZ: ¿Está QZ Tray abierto en tu PC?' });
+                });
+            } else {
+                patear();
+            }
         },
 
         cerrarPostVenta() {
