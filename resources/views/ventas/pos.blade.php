@@ -1243,10 +1243,14 @@ function pos() {
                     // 🔊 Sonido de Éxito / Caja Registradora
                     AudioPOS.success();
 
-                    // La apertura del ticket ahora es controlada por el Modal Post-Venta
-                    
+                    // Guardamos los valores de la venta ANTES de limpiar el carrito
+                    const ventaTotal = parseFloat(this.total) || 0;
+                    const ventaCambio = parseFloat(this.cambio) || 0;
+                    const clienteNom = this.clienteNombre;
+                    const clienteTel = this.clienteSeleccionado && this.clienteSeleccionado.telefono ? this.clienteSeleccionado.telefono : '';
+
                     this.carrito = [];
-            this.recalcularPrecios();
+                    this.recalcularPrecios();
                     this.descuento = 0;
                     this.montoRecibido = 0;
                     this.modalPago = false;
@@ -1261,11 +1265,11 @@ function pos() {
                         id: result.venta_id,
                         numero_ticket: result.numero_ticket,
                         url_ticket: result.redirect,
-                        cambio: this.cambio,
-                        total: this.total,
-                        cliente_nombre: this.clienteNombre
+                        cambio: ventaCambio,
+                        total: ventaTotal,
+                        cliente_nombre: clienteNom
                     };
-                    this.telefonoWhatsApp = this.clienteSeleccionado && this.clienteSeleccionado.telefono ? this.clienteSeleccionado.telefono : '';
+                    this.telefonoWhatsApp = clienteTel;
                     this.modalPostVenta = true;
                     
                     // Asegurar foco en ventana de post venta para cerrar con enter
@@ -1273,30 +1277,19 @@ function pos() {
                         window.focus();
                     }, 100);
                 } else {
-                    AudioPOS.warning();
-                    Swal.fire({
-                        title: 'No se pudo completar la venta',
-                        text: result.error || 'Error desconocido al registrar la venta.',
-                        icon: 'error',
-                        confirmButtonColor: '#ef4444',
-                        confirmButtonText: 'Cerrar'
-                    });
+                    AudioPOS.error();
+                    Toast.fire({ icon: 'error', title: result.message || 'Error al procesar la venta' });
                 }
-            } catch(e) {
-                AudioPOS.warning();
-                Swal.fire({
-                    title: 'Error de comunicación',
-                    text: 'Ocurrió un error al procesar la solicitud: ' + e.message,
-                    icon: 'error',
-                    confirmButtonColor: '#ef4444',
-                    confirmButtonText: 'Cerrar'
-                });
+            } catch (err) {
+                console.error(err);
+                AudioPOS.error();
+                Toast.fire({ icon: 'error', title: 'Error de conexión con el servidor' });
             } finally {
-                this.procesando = false;
+                this.procesandoVenta = false;
             }
         },
 
-        abrirTicket(formato) {
+        abrirComprobante(formato = 'ticket') {
             if (!this.ultimaVenta) return;
             let url = this.ultimaVenta.url_ticket;
             if (formato === 'a4') {
@@ -1307,17 +1300,29 @@ function pos() {
 
         enviarWhatsApp() {
             if (!this.telefonoWhatsApp || this.telefonoWhatsApp.length < 9) {
-                Toast.fire({ icon: 'warning', title: 'Ingrese un número válido' });
+                Toast.fire({ icon: 'warning', title: 'Ingrese un número de WhatsApp válido (9 dígitos)' });
                 return;
             }
             
-            // Enlace al ticket digital interactivo (con banner y descarga PDF)
-            let ticketUrl = this.ultimaVenta.url_ticket;
-            const url = ticketUrl.startsWith('http') ? ticketUrl : window.location.origin + ticketUrl;
+            let ticketUrl = this.ultimaVenta?.url_ticket || '';
+            const url = ticketUrl.startsWith('http') ? ticketUrl : (window.location.origin + ticketUrl);
             const nombreComercio = '{{ $empresaGlobal->nombre_comercial ?? $empresaGlobal->razon_social ?? "Mikito\'s Licorería" }}';
-            
-            const mensaje = `¡Hola! 👋 ¡Muchas gracias por tu compra en *${nombreComercio}*! 🐻🍻\n\nTu comprobante *${this.ultimaVenta.numero_ticket}* por el total de *S/ ${this.ultimaVenta.total.toFixed(2)}* está listo.\n\n📄 Puedes ver tu ticket digital y descargarlo aquí:\n${url}\n\n¡Salud, buenos momentos y que disfrutes tus productos! ✨`;
-            const link = `https://wa.me/51${this.telefonoWhatsApp.replace(/\s+/g,'')}?text=${encodeURIComponent(mensaje)}`;
+            const numTicket = this.ultimaVenta?.numero_ticket || 'Comprobante';
+            const totalStr = parseFloat(this.ultimaVenta?.total || 0).toFixed(2);
+
+            const lineas = [
+                `¡Hola! Muchas gracias por tu compra en *${nombreComercio}*.`,
+                '',
+                `Tu comprobante *${numTicket}* por el monto de *S/ ${totalStr}* está listo.`,
+                '',
+                `📄 Puedes ver tu ticket digital y descargarlo aquí:`,
+                url,
+                '',
+                `¡Salud y que disfrutes tus productos!`
+            ];
+
+            const mensaje = lineas.join('\n');
+            const link = `https://wa.me/51${this.telefonoWhatsApp.replace(/\D/g,'')}?text=${encodeURIComponent(mensaje)}`;
             window.open(link, '_blank');
         },
 

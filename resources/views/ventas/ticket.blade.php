@@ -3,17 +3,25 @@
     $esCPE = in_array($venta->tipo_comprobante, ['BOLETA', 'FACTURA']) || $venta->comprobanteElectronico;
     $numComprobante = $venta->comprobanteElectronico?->numero_completo ?? $venta->numero_ticket;
     $tipoLabel = $venta->tipo_comprobante === 'FACTURA' ? 'FACTURA ELECTRÓNICA' : ($venta->tipo_comprobante === 'BOLETA' ? 'BOLETA DE VENTA ELECTRÓNICA' : 'NOTA DE VENTA / TICKET');
+    
+    // Fecha segura
+    $fechaEmision = date('d/m/Y H:i');
+    if ($venta->fecha_venta) {
+        $fechaEmision = is_string($venta->fecha_venta) 
+            ? \Carbon\Carbon::parse($venta->fecha_venta)->format('d/m/Y H:i') 
+            : $venta->fecha_venta->format('d/m/Y H:i');
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $tipoLabel }} {{ $numComprobante }} - {{ $empresa->nombre_comercial ?? 'Mikito\'s Licorería' }}</title>
+    <title>{{ $tipoLabel }} {{ $numComprobante }} - {{ $empresa?->nombre_comercial ?? 'Mikito\'s Licorería' }}</title>
     
     <!-- OpenGraph Tags para vista previa de WhatsApp -->
-    <meta property="og:title" content="¡Gracias por tu compra en {{ $empresa->nombre_comercial ?? 'Mikito\'s Licorería' }}!">
-    <meta property="og:description" content="Comprobante Digital {{ $numComprobante }} por S/ {{ number_format($venta->total, 2) }}">
+    <meta property="og:title" content="¡Gracias por tu compra en {{ $empresa?->nombre_comercial ?? 'Mikito\'s Licorería' }}!">
+    <meta property="og:description" content="Comprobante Digital {{ $numComprobante }} por S/ {{ number_format($venta->total ?? 0, 2) }}">
     <meta property="og:image" content="{{ asset('img/banner_agradecimiento.jpg') }}">
     <meta property="og:type" content="website">
 
@@ -167,7 +175,7 @@
             @if($empresa && $empresa->logo_url)
                 <img src="{{ $empresa->logo_url }}" class="logo-ticket" alt="Logo">
             @endif
-            <h1>{{ $empresa->nombre_comercial ?? $empresa->razon_social ?? 'MIKITO\'S LICORERÍA' }}</h1>
+            <h1>{{ $empresa?->nombre_comercial ?? $empresa?->razon_social ?? 'MIKITO\'S LICORERÍA' }}</h1>
             @if($empresa && $empresa->razon_social)
                 <p>{{ $empresa->razon_social }}</p>
             @endif
@@ -186,9 +194,9 @@
         <div class="cpe-numero">{{ $numComprobante }}</div>
 
         <div class="info">
-            <p><strong>Fecha:</strong> {{ $venta->fecha_venta->format('d/m/Y H:i') }}</p>
-            <p><strong>Atendido por:</strong> {{ $venta->user->name ?? 'Cajero' }}</p>
-            <p><strong>Cliente:</strong> {{ $venta->cliente->nombre_completo ?? 'PÚBLICO GENERAL' }}</p>
+            <p><strong>Fecha:</strong> {{ $fechaEmision }}</p>
+            <p><strong>Atendido por:</strong> {{ $venta->user?->name ?? 'Cajero' }}</p>
+            <p><strong>Cliente:</strong> {{ $venta->cliente?->nombre_completo ?? $venta->cliente?->nombres ?? 'PÚBLICO GENERAL' }}</p>
             @if($venta->cliente && $venta->cliente->documento)
                 <p><strong>{{ $venta->cliente->tipo_documento ?? 'DOC' }}:</strong> {{ $venta->cliente->documento }}</p>
             @endif
@@ -207,21 +215,21 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($venta->detalles as $d)
+                @foreach($venta->detalles ?? [] as $d)
                     <tr>
                         <td>
-                            {{ $d->producto->nombre ?? $d->descripcion }}
-                            @if($d->descuento > 0)
+                            {{ $d->producto?->nombre ?? $d->descripcion ?? 'Producto' }}
+                            @if(($d->descuento ?? 0) > 0)
                                 <br><small style="color: #666;">(Desc. -S/ {{ number_format($d->descuento, 2) }})</small>
                             @endif
                         </td>
-                        <td style="text-align: center;">{{ number_format($d->cantidad, 0) }}</td>
-                        <td style="text-align: right;">{{ number_format($d->precio_unitario, 2) }}</td>
-                        <td style="text-align: right; font-weight: bold;">{{ number_format($d->subtotal, 2) }}</td>
+                        <td style="text-align: center;">{{ number_format($d->cantidad ?? 1, 0) }}</td>
+                        <td style="text-align: right;">{{ number_format($d->precio_unitario ?? 0, 2) }}</td>
+                        <td style="text-align: right; font-weight: bold;">{{ number_format($d->subtotal ?? 0, 2) }}</td>
                     </tr>
                 @endforeach
 
-                @if($venta->descuento > 0)
+                @if(($venta->descuento ?? 0) > 0)
                     <tr class="total-row">
                         <td colspan="3">Descuento Global:</td>
                         <td style="text-align: right;">-S/ {{ number_format($venta->descuento, 2) }}</td>
@@ -231,26 +239,26 @@
                 @if($esCPE)
                     <tr class="total-row">
                         <td colspan="3">Op. Gravada:</td>
-                        <td style="text-align: right;">S/ {{ number_format($venta->subtotal ?? ($venta->total / 1.18), 2) }}</td>
+                        <td style="text-align: right;">S/ {{ number_format($venta->subtotal ?? (($venta->total ?? 0) / 1.18), 2) }}</td>
                     </tr>
                     <tr>
                         <td colspan="3">I.G.V. (18%):</td>
-                        <td style="text-align: right;">S/ {{ number_format($venta->impuesto ?? ($venta->total - ($venta->total / 1.18)), 2) }}</td>
+                        <td style="text-align: right;">S/ {{ number_format($venta->impuesto ?? (($venta->total ?? 0) - (($venta->total ?? 0) / 1.18)), 2) }}</td>
                     </tr>
                 @endif
 
                 <tr class="total-final">
                     <td colspan="2" style="font-size: 13px;">TOTAL A PAGAR:</td>
-                    <td colspan="2" style="text-align: right; font-size: 14px;">S/ {{ number_format($venta->total, 2) }}</td>
+                    <td colspan="2" style="text-align: right; font-size: 14px;">S/ {{ number_format($venta->total ?? 0, 2) }}</td>
                 </tr>
             </tbody>
         </table>
 
         <!-- Métodos de Pago -->
         <div style="font-size: 10px; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px;">
-            <p style="margin: 2px 0;"><strong>Forma de Pago:</strong> {{ strtoupper($venta->metodo_pago ?? 'EFECTIVO') }}</p>
-            @if($venta->monto_recibido > 0)
-                <p style="margin: 2px 0;"><strong>Recibido:</strong> S/ {{ number_format($venta->monto_recibido, 2) }} | <strong>Vuelto:</strong> S/ {{ number_format($venta->cambio, 2) }}</p>
+            <p style="margin: 2px 0;"><strong>Forma de Pago:</strong> {{ strtoupper($venta->forma_pago ?? $venta->metodo_pago ?? 'EFECTIVO') }}</p>
+            @if(($venta->monto_recibido ?? 0) > 0)
+                <p style="margin: 2px 0;"><strong>Recibido:</strong> S/ {{ number_format($venta->monto_recibido, 2) }} | <strong>Vuelto:</strong> S/ {{ number_format($venta->cambio ?? 0, 2) }}</p>
             @endif
         </div>
 
@@ -262,8 +270,8 @@
         @endif
 
         <div class="footer">
-            <p>{{ $empresa->mensaje_ticket ?? '¡Gracias por su preferencia!' }}</p>
-            <p style="font-weight: bold;">{{ $empresa->nombre_comercial ?? 'Mikito\'s Licorería' }}</p>
+            <p>{{ $empresa?->mensaje_ticket ?? '¡Gracias por su preferencia!' }}</p>
+            <p style="font-weight: bold;">{{ $empresa?->nombre_comercial ?? 'Mikito\'s Licorería' }}</p>
             <p style="font-size: 8.5px; color: #555;">{{ date('d/m/Y H:i:s') }}</p>
         </div>
     </div>
