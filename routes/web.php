@@ -19,7 +19,6 @@ use App\Http\Controllers\FacturacionElectronicaController;
 use App\Http\Controllers\SunatApiController;
 use App\Http\Controllers\KardexController;
 use App\Http\Controllers\EnvaseGarantiaController;
-use App\Http\Controllers\ManualController;
 
 // Autenticación
 Route::get('/', function() {
@@ -143,9 +142,5 @@ Route::middleware('auth')->group(function () {
         Route::get('roles', [UsuarioController::class, 'roles'])->name('usuarios.roles');
         Route::post('roles', [UsuarioController::class, 'storeRol'])->name('roles.store');
         Route::put('roles/{rol}', [UsuarioController::class, 'updateRol'])->name('roles.update');
-
-        // Manual de Usuario & PDF
-        Route::get('manual', [ManualController::class, 'index'])->name('manual.index');
-        Route::get('manual/pdf', [ManualController::class, 'pdf'])->name('manual.pdf');
     });
 });
