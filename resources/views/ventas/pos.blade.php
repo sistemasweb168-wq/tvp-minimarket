@@ -1204,6 +1204,16 @@ function pos() {
                 }
             }
 
+            // Validación Pago Mixto
+            if (this.formaPago === 'mixto') {
+                const sumaMixta = parseFloat(this.montoEfectivo || 0) + parseFloat(this.montoDigital || 0);
+                if (sumaMixta < (this.total - 0.05)) {
+                    AudioPOS.warning();
+                    Toast.fire({ icon: 'warning', title: `La suma de pago (S/ ${sumaMixta.toFixed(2)}) es menor al total (S/ ${this.total.toFixed(2)})` });
+                    return;
+                }
+            }
+
             this.procesando = true;
 
             const payload = {
@@ -1213,12 +1223,12 @@ function pos() {
                 cliente_direccion: this.clienteDireccion || null,
                 forma_pago: this.formaPago,
                 referencia_pago: this.referenciaPago || null,
-                monto_recibido: this.formaPago === 'efectivo' ? this.montoRecibido : (this.formaPago === 'mixto' ? (this.montoEfectivo + this.montoDigital) : this.total),
-                monto_efectivo: this.formaPago === 'mixto' ? this.montoEfectivo : null,
-                monto_digital: this.formaPago === 'mixto' ? this.montoDigital : null,
+                monto_recibido: this.formaPago === 'efectivo' ? parseFloat(this.montoRecibido || 0) : (this.formaPago === 'mixto' ? (parseFloat(this.montoEfectivo || 0) + parseFloat(this.montoDigital || 0)) : parseFloat(this.total || 0)),
+                monto_efectivo: this.formaPago === 'mixto' ? parseFloat(this.montoEfectivo || 0) : null,
+                monto_digital: this.formaPago === 'mixto' ? parseFloat(this.montoDigital || 0) : null,
                 metodo_digital: this.formaPago === 'mixto' ? this.metodoDigital : null,
                 referencia_digital: this.formaPago === 'mixto' ? this.referenciaDigital : null,
-                descuento: this.descuento,
+                descuento: parseFloat(this.descuento || 0),
                 tipo_comprobante: this.tipoComprobante,
                 items: this.carrito.map(i => ({
                     producto_id: i.producto_id,
@@ -1278,14 +1288,14 @@ function pos() {
                     }, 100);
                 } else {
                     AudioPOS.error();
-                    Toast.fire({ icon: 'error', title: result.message || 'Error al procesar la venta' });
+                    Toast.fire({ icon: 'error', title: result.message || result.error || 'Error al procesar la venta' });
                 }
             } catch (err) {
                 console.error(err);
                 AudioPOS.error();
                 Toast.fire({ icon: 'error', title: 'Error de conexión con el servidor' });
             } finally {
-                this.procesandoVenta = false;
+                this.procesando = false;
             }
         },
 
