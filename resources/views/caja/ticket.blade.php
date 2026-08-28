@@ -1,38 +1,110 @@
+@php
+    $empresa = $empresa ?? $empresaGlobal ?? \App\Models\Empresa::first();
+    $moneda = $empresa->moneda ?? 'S/';
+    $ventas = $turno->ventas;
+    
+    $ventasEfectivoPuro = $ventas->where('forma_pago', 'efectivo')->sum('total');
+    $ventasYapePuro = $ventas->where('forma_pago', 'yape')->sum('total');
+    $ventasPlinPuro = $ventas->where('forma_pago', 'plin')->sum('total');
+    $ventasTarjetaPuro = $ventas->where('forma_pago', 'tarjeta')->sum('total');
+    $ventasTransfPuro = $ventas->where('forma_pago', 'transferencia')->sum('total');
+    
+    $mixtasEfectivo = 0;
+    $mixtasYape = 0;
+    $mixtasPlin = 0;
+    $mixtasTarjeta = 0;
+    $mixtasOtros = 0;
+    $cantMixtas = 0;
+
+    foreach ($ventas->where('forma_pago', 'mixto') as $v) {
+        $cantMixtas++;
+        $dp = is_array($v->detalle_pago) ? $v->detalle_pago : (json_decode($v->detalle_pago, true) ?? []);
+        
+        $m1 = $dp['metodo_1'] ?? 'efectivo';
+        $cant1 = floatval($dp['monto_1'] ?? 0);
+        $m2 = $dp['metodo_2'] ?? 'yape';
+        $cant2 = floatval($dp['monto_2'] ?? 0);
+
+        if ($m1 === 'efectivo') $mixtasEfectivo += $cant1;
+        elseif ($m1 === 'yape') $mixtasYape += $cant1;
+        elseif ($m1 === 'plin') $mixtasPlin += $cant1;
+        elseif ($m1 === 'tarjeta') $mixtasTarjeta += $cant1;
+        else $mixtasOtros += $cant1;
+
+        if ($m2 === 'efectivo') $mixtasEfectivo += $cant2;
+        elseif ($m2 === 'yape') $mixtasYape += $cant2;
+        elseif ($m2 === 'plin') $mixtasPlin += $cant2;
+        elseif ($m2 === 'tarjeta') $mixtasTarjeta += $cant2;
+        else $mixtasOtros += $cant2;
+    }
+
+    $totalEfectivoReal = $ventasEfectivoPuro + $mixtasEfectivo;
+    $totalYapeReal = $ventasYapePuro + $mixtasYape;
+    $totalPlinReal = $ventasPlinPuro + $mixtasPlin;
+    $totalTarjetaReal = $ventasTarjetaPuro + $mixtasTarjeta;
+    $totalTransfReal = $ventasTransfPuro + $mixtasOtros;
+    $totalVentas = $ventas->sum('total');
+
+    $egresosList = $turno->movimientos->where('tipo', 'egreso');
+    $totalEgresos = $egresosList->sum('monto');
+
+    $ingresosList = $turno->movimientos->where('tipo', 'ingreso');
+    $totalIngresos = $ingresosList->sum('monto');
+
+    // Garantías de envases
+    $garantiasCobradas = class_exists(\App\Models\EnvaseGarantia::class)
+        ? \App\Models\EnvaseGarantia::where('created_at', '>=', $turno->fecha_apertura)
+            ->when($turno->fecha_cierre, fn($q) => $q->where('created_at', '<=', $turno->fecha_cierre))
+            ->where('estado', 'prestado')
+            ->sum('monto_garantia')
+        : 0;
+
+    $garantiasDevueltas = class_exists(\App\Models\EnvaseGarantia::class)
+        ? \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turno->fecha_apertura)
+            ->when($turno->fecha_cierre, fn($q) => $q->where('fecha_devolucion', '<=', $turno->fecha_cierre))
+            ->where('estado', 'devuelto')
+            ->sum('monto_garantia')
+        : 0;
+
+    $esperadoEnCaja = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
+    $totalDigitalReal = $totalYapeReal + $totalPlinReal + $totalTarjetaReal + $totalTransfReal;
+@endphp
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cierre de Caja - Turno #{{ $turno->id }}</title>
+    <title>Arqueo de Caja - Turno #{{ $turno->id }}</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; padding: 0; margin: 0; background: #f5f5f5; }
+        body { font-family: 'Courier New', Courier, monospace; padding: 0; margin: 0; background: #f5f5f5; }
         .ticket {
             width: 80mm; max-width: 320px; margin: 20px auto; background: white;
             padding: 15px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            font-size: 11px; line-height: 1.35;
+            font-size: 11px; line-height: 1.35; color: #000;
         }
-        .header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 8px; margin-bottom: 8px; }
-        .header h1 { margin: 3px 0; font-size: 15px; font-weight: bold; }
+        .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+        .header img.logo-ticket { max-width: 85px; max-height: 55px; margin-bottom: 4px; object-fit: contain; }
+        .header h1 { margin: 2px 0; font-size: 14px; font-weight: bold; }
         .header p { margin: 1px 0; font-size: 10px; }
         
         .badge-title {
-            background: #0f172a; color: white;
+            background: #000; color: white;
             padding: 4px; text-align: center; font-weight: bold; font-size: 12px;
-            margin: 6px 0; border-radius: 4px;
+            margin: 6px 0; border-radius: 4px; text-transform: uppercase;
         }
         
-        .info { margin-bottom: 8px; font-size: 10.5px; }
+        .info { margin-bottom: 8px; font-size: 10.5px; border-bottom: 1px dashed #000; padding-bottom: 6px; }
         .info p { margin: 2px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 10.5px; }
-        th { border-bottom: 1px solid #333; text-align: left; padding: 4px 1px; }
-        td { padding: 3px 1px; vertical-align: top; }
-        .row-section { border-top: 1px dashed #333; font-weight: bold; }
-        .row-total { border-top: 2px solid #333; font-weight: bold; font-size: 13px; padding-top: 6px !important; }
+        table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 10.5px; }
+        th { border-bottom: 1px solid #000; text-align: left; padding: 3px 1px; }
+        td { padding: 2.5px 1px; vertical-align: top; }
+        .row-section { border-top: 1px dashed #000; font-weight: bold; }
+        .row-total { border-top: 2px solid #000; font-weight: bold; font-size: 12.5px; padding-top: 5px !important; }
         
-        .footer { text-align: center; margin-top: 15px; font-size: 9.5px; border-top: 2px dashed #333; padding-top: 8px; }
+        .footer { text-align: center; margin-top: 15px; font-size: 9.5px; border-top: 2px dashed #000; padding-top: 8px; }
         .actions { text-align: center; margin: 20px; }
         .actions button { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-        .btn-print { background: #10b981; color: white; }
+        .btn-print { background: #10b981; color: white; font-weight: bold; }
         .btn-close { background: #64748b; color: white; }
         @media print {
             body { background: white; padding: 0; }
@@ -49,47 +121,33 @@
 
 <div class="ticket">
     <div class="header">
-        @if($empresaGlobal && $empresaGlobal->logo_url)
-            <img src="{{ $empresaGlobal->logo_url }}" style="max-width: 65px; max-height: 55px; margin-bottom: 4px;" alt="logo">
+        @if($empresa && $empresa->logo_url)
+            <img src="{{ $empresa->logo_url }}" class="logo-ticket" alt="Logo"><br>
         @endif
-        <h1>{{ $empresaGlobal->nombre_comercial ?? 'MINIMARKET VALEZKA' }}</h1>
-        @if($empresaGlobal && $empresaGlobal->ruc_nit)
-            <p><strong>RUC: {{ $empresaGlobal->ruc_nit }}</strong></p>
+        <h1>{{ $empresa->nombre_comercial ?? $empresa->razon_social ?? 'MIKITO\'S LICORERÍA' }}</h1>
+        @if($empresa && $empresa->ruc_nit)
+            <p><strong>RUC: {{ $empresa->ruc_nit }}</strong></p>
         @endif
-        @if($empresaGlobal && $empresaGlobal->direccion)
-            <p>{{ $empresaGlobal->direccion }}</p>
+        @if($empresa && $empresa->direccion)
+            <p>{{ $empresa->direccion }}</p>
         @endif
     </div>
 
-    <div class="badge-title">CORTE DE CAJA / CIERRE Z</div>
+    <div class="badge-title">CORTE DE CAJA / ARQUEO Z</div>
 
     <div class="info">
         <p><strong>Turno N°:</strong> #{{ $turno->id }}</p>
         <p><strong>Caja:</strong> {{ $turno->caja->nombre ?? 'Caja Principal' }}</p>
         <p><strong>Cajero:</strong> {{ $turno->user->name ?? 'Usuario' }}</p>
-        <p><strong>Apertura:</strong> {{ $turno->fecha_apertura->format('d/m/Y H:i') }}</p>
+        <p><strong>Apertura:</strong> {{ $turno->fecha_apertura->format('d/m/Y H:i:s') }}</p>
         @if($turno->fecha_cierre)
-            <p><strong>Cierre:</strong> {{ $turno->fecha_cierre->format('d/m/Y H:i') }}</p>
+            <p><strong>Cierre:</strong> {{ $turno->fecha_cierre->format('d/m/Y H:i:s') }}</p>
         @else
-            <p><strong>Estado:</strong> <span style="color:#059669; font-weight:bold;">TURNO EN CURSO (CORTE X)</span></p>
+            <p><strong>Estado:</strong> <strong>EN OPERACIÓN (CORTE X)</strong></p>
         @endif
     </div>
 
-    @php
-        $moneda = $empresaGlobal->moneda ?? 'S/';
-        $ventasEfectivo = $turno->ventas()->where('forma_pago', 'efectivo')->sum('total');
-        $ventasYape = $turno->ventas()->where('forma_pago', 'yape')->sum('total');
-        $ventasPlin = $turno->ventas()->where('forma_pago', 'plin')->sum('total');
-        $ventasTarjeta = $turno->ventas()->where('forma_pago', 'tarjeta')->sum('total');
-        $ventasTransferencia = $turno->ventas()->where('forma_pago', 'transferencia')->sum('total');
-        $totalVentas = $turno->ventas()->sum('total');
-        $cantVentas = $turno->ventas()->count();
-        
-        $ingresosExtra = $turno->movimientos()->where('tipo', 'ingreso')->sum('monto');
-        $egresosExtra = $turno->movimientos()->where('tipo', 'egreso')->sum('monto');
-        $esperadoEnCaja = ($turno->monto_apertura + $ventasEfectivo + $ingresosExtra) - $egresosExtra;
-    @endphp
-
+    <!-- 1. DESGLOSE DE MÉTODOS DE PAGO -->
     <table>
         <thead>
             <tr>
@@ -99,86 +157,139 @@
         </thead>
         <tbody>
             <tr>
-                <td>Efectivo:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($ventasEfectivo, 2) }}</td>
+                <td>Efectivo Puro:</td>
+                <td style="text-align:right;">{{ $moneda }}{{ number_format($ventasEfectivoPuro, 2) }}</td>
+            </tr>
+            @if($cantMixtas > 0)
+            <tr>
+                <td>Pagos Mixtos (Efectivo):</td>
+                <td style="text-align:right;">{{ $moneda }}{{ number_format($mixtasEfectivo, 2) }}</td>
             </tr>
             <tr>
-                <td>Yape:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($ventasYape, 2) }}</td>
+                <td>Pagos Mixtos (Digital):</td>
+                <td style="text-align:right;">{{ $moneda }}{{ number_format($mixtasYape + $mixtasPlin + $mixtasTarjeta + $mixtasOtros, 2) }}</td>
+            </tr>
+            @endif
+            <tr>
+                <td>Yape Total:</td>
+                <td style="text-align:right;">{{ $moneda }}{{ number_format($totalYapeReal, 2) }}</td>
             </tr>
             <tr>
-                <td>Plin:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($ventasPlin, 2) }}</td>
+                <td>Plin Total:</td>
+                <td style="text-align:right;">{{ $moneda }}{{ number_format($totalPlinReal, 2) }}</td>
             </tr>
             <tr>
-                <td>Tarjeta:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($ventasTarjeta, 2) }}</td>
+                <td>Tarjeta POS:</td>
+                <td style="text-align:right;">{{ $moneda }}{{ number_format($totalTarjetaReal, 2) }}</td>
             </tr>
-            @if($ventasTransferencia > 0)
+            @if($totalTransfReal > 0)
             <tr>
                 <td>Transferencia:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($ventasTransferencia, 2) }}</td>
+                <td style="text-align:right;">{{ $moneda }}{{ number_format($totalTransfReal, 2) }}</td>
             </tr>
             @endif
             <tr class="row-section">
-                <td>TOTAL VENTAS ({{ $cantVentas }} tickets):</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($totalVentas, 2) }}</td>
+                <td>TOTAL VENTAS ({{ $ventas->count() }} tickets):</td>
+                <td style="text-align:right; font-size:12px;">{{ $moneda }}{{ number_format($totalVentas, 2) }}</td>
             </tr>
         </tbody>
     </table>
 
+    <!-- 2. EGRESOS / GASTOS DETALLADOS -->
+    @if($egresosList->count() > 0)
     <table>
         <thead>
             <tr>
-                <th>ARQUEO DE EFECTIVO</th>
+                <th>GASTOS / EGRESOS</th>
+                <th style="text-align:right;">MONTO</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($egresosList as $eg)
+            <tr>
+                <td>- {{ $eg->concepto }} <small>({{ $eg->categoria ?? 'gasto' }})</small>:</td>
+                <td style="text-align:right; color:#000;">-{{ $moneda }}{{ number_format($eg->monto, 2) }}</td>
+            </tr>
+            @endforeach
+            <tr class="row-section">
+                <td>TOTAL EGRESOS:</td>
+                <td style="text-align:right;">-{{ $moneda }}{{ number_format($totalEgresos, 2) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    @endif
+
+    <!-- 3. ARQUEO DE EFECTIVO EN CAJÓN -->
+    <table>
+        <thead>
+            <tr>
+                <th>ARQUEO EFECTIVO (CAJÓN)</th>
                 <th style="text-align:right;">MONTO</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>(+) Monto Apertura:</td>
+                <td>(+) Monto Apertura (Sencillo):</td>
                 <td style="text-align:right;">{{ $moneda }}{{ number_format($turno->monto_apertura, 2) }}</td>
             </tr>
             <tr>
-                <td>(+) Ventas en Efectivo:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($ventasEfectivo, 2) }}</td>
+                <td>(+) Total Ventas Efectivo:</td>
+                <td style="text-align:right;">+{{ $moneda }}{{ number_format($totalEfectivoReal, 2) }}</td>
             </tr>
             @if($ingresosExtra > 0)
             <tr>
-                <td>(+) Ingresos manuales:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($ingresosExtra, 2) }}</td>
+                <td>(+) Ingresos Manuales:</td>
+                <td style="text-align:right;">+{{ $moneda }}{{ number_format($ingresosExtra, 2) }}</td>
             </tr>
             @endif
-            @if($egresosExtra > 0)
+            @if($garantiasCobradas > 0)
             <tr>
-                <td>(-) Egresos / Gastos:</td>
-                <td style="text-align:right;">-{{ $moneda }}{{ number_format($egresosExtra, 2) }}</td>
+                <td>(+) Garantías Envases Cobradas:</td>
+                <td style="text-align:right;">+{{ $moneda }}{{ number_format($garantiasCobradas, 2) }}</td>
+            </tr>
+            @endif
+            @if($totalEgresos > 0)
+            <tr>
+                <td>(-) Gastos / Egresos de Caja:</td>
+                <td style="text-align:right;">-{{ $moneda }}{{ number_format($totalEgresos, 2) }}</td>
+            </tr>
+            @endif
+            @if($garantiasDevueltas > 0)
+            <tr>
+                <td>(-) Garantías Reembolsadas:</td>
+                <td style="text-align:right;">-{{ $moneda }}{{ number_format($garantiasDevueltas, 2) }}</td>
             </tr>
             @endif
             <tr class="row-section">
-                <td>Efectivo Esperado:</td>
-                <td style="text-align:right;">{{ $moneda }}{{ number_format($esperadoEnCaja, 2) }}</td>
+                <td>EFECTIVO ESPERADO:</td>
+                <td style="text-align:right; font-size:12px;">{{ $moneda }}{{ number_format($esperadoEnCaja, 2) }}</td>
             </tr>
             @if($turno->monto_cierre !== null)
             <tr class="row-total">
-                <td>EFECTIVO REAL:</td>
+                <td>EFECTIVO CONTADO:</td>
                 <td style="text-align:right;">{{ $moneda }}{{ number_format($turno->monto_cierre, 2) }}</td>
             </tr>
-            @php $diferencia = $turno->monto_cierre - $esperadoEnCaja; @endphp
+            @php $dif = $turno->monto_cierre - $esperadoEnCaja; @endphp
             <tr>
-                <td>Diferencia:</td>
-                <td style="text-align:right; font-weight:bold; color: {{ $diferencia >= 0 ? '#059669' : '#dc2626' }};">
-                    {{ $diferencia >= 0 ? '+' : '' }}{{ $moneda }}{{ number_format($diferencia, 2) }}
-                    ({{ $diferencia == 0 ? 'Exacto' : ($diferencia > 0 ? 'Sobrante' : 'Faltante') }})
+                <td>DIFERENCIA:</td>
+                <td style="text-align:right; font-weight:bold;">
+                    {{ $dif >= 0 ? '+' : '' }}{{ $moneda }}{{ number_format($dif, 2) }}
+                    ({{ abs($dif) < 0.01 ? 'Cuadrada' : ($dif > 0 ? 'Sobrante' : 'Faltante') }})
                 </td>
             </tr>
             @endif
         </tbody>
     </table>
 
-    <div style="margin-top: 30px; text-align: center;">
-        <p style="border-top: 1px dashed #333; width: 80%; margin: 25px auto 4px auto;"></p>
-        <p style="font-size: 10px; font-weight: bold;">Firma del Cajero</p>
+    <!-- 4. TOTAL DIGITAL EN CUENTAS -->
+    <div style="font-size:10px; border-top:1px dashed #000; padding-top:4px; margin-top:6px;">
+        <p style="margin:2px 0;"><strong>TOTAL DIGITAL (Bancos/Apps):</strong> {{ $moneda }}{{ number_format($totalDigitalReal, 2) }}</p>
+        <p style="margin:2px 0; color:#555;">(Yape: {{ $moneda }}{{ number_format($totalYapeReal, 2) }} | Plin: {{ $moneda }}{{ number_format($totalPlinReal, 2) }} | Tarjeta: {{ $moneda }}{{ number_format($totalTarjetaReal, 2) }})</p>
+    </div>
+
+    <div style="margin-top: 25px; text-align: center;">
+        <p style="border-top: 1px dashed #000; width: 80%; margin: 20px auto 4px auto;"></p>
+        <p style="font-size: 10px; font-weight: bold;">Firma del Cajero: {{ $turno->user->name ?? 'Usuario' }}</p>
     </div>
 
     <div class="footer">
@@ -186,6 +297,5 @@
         <p>--- Control Administrativo Interno ---</p>
     </div>
 </div>
-<script>setTimeout(() => window.print(), 600);</script>
 </body>
 </html>

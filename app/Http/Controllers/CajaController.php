@@ -59,9 +59,40 @@ class CajaController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
+        $ventas = $turno->ventas;
+        $ventasEfectivoPuro = $ventas->where('forma_pago', 'efectivo')->sum('total');
+        $mixtasEfectivo = 0;
+
+        foreach ($ventas->where('forma_pago', 'mixto') as $v) {
+            $dp = is_array($v->detalle_pago) ? $v->detalle_pago : (json_decode($v->detalle_pago, true) ?? []);
+            $m1 = $dp['metodo_1'] ?? 'efectivo';
+            $cant1 = floatval($dp['monto_1'] ?? 0);
+            $m2 = $dp['metodo_2'] ?? 'yape';
+            $cant2 = floatval($dp['monto_2'] ?? 0);
+
+            if ($m1 === 'efectivo') $mixtasEfectivo += $cant1;
+            if ($m2 === 'efectivo') $mixtasEfectivo += $cant2;
+        }
+        $totalEfectivoReal = $ventasEfectivoPuro + $mixtasEfectivo;
+
         $totalIngresos = $turno->movimientos()->where('tipo', 'ingreso')->sum('monto');
         $totalEgresos = $turno->movimientos()->where('tipo', 'egreso')->sum('monto');
-        $montoCalculado = $turno->monto_apertura + $turno->total_efectivo + $totalIngresos - $totalEgresos;
+
+        $garantiasCobradas = class_exists(\App\Models\EnvaseGarantia::class)
+            ? \App\Models\EnvaseGarantia::where('created_at', '>=', $turno->fecha_apertura)
+                ->where('created_at', '<=', now())
+                ->where('estado', 'prestado')
+                ->sum('monto_garantia')
+            : 0;
+
+        $garantiasDevueltas = class_exists(\App\Models\EnvaseGarantia::class)
+            ? \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turno->fecha_apertura)
+                ->where('fecha_devolucion', '<=', now())
+                ->where('estado', 'devuelto')
+                ->sum('monto_garantia')
+            : 0;
+
+        $montoCalculado = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
         $diferencia = $data['monto_cierre'] - $montoCalculado;
 
         $turno->update([
