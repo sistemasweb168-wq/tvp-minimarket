@@ -328,9 +328,12 @@ class VentaController extends Controller
                     $tipoSunat = $tipoComprobante === 'FACTURA' ? '01' : '03';
                     $cpe = $sunatService->emitirComprobante($venta, $tipoSunat);
 
-                    // Intentar enviar automáticamente a SUNAT
+                    // Intentar enviar automáticamente a SUNAT (Solo Facturas)
+                    // Las Boletas ('03') se enviarán agrupadas en el Resumen Diario nocturno
                     try {
-                        $resultEnvio = $sunatService->enviarASunat($cpe);
+                        if ($tipoSunat === '01') {
+                            $resultEnvio = $sunatService->enviarASunat($cpe);
+                        }
                         $cpe->refresh();
                     } catch (\Throwable $sunatError) {
                         // Si falla SUNAT, el CPE queda como 'pendiente' para reintento manual

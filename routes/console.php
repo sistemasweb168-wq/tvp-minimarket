@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('alertas:whatsapp')->dailyAt('08:00');
+Schedule::command('sunat:sync')->dailyAt('23:50')->appendOutputTo(storage_path('logs/sunat-cron.log'));

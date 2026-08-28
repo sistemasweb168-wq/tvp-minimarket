@@ -423,11 +423,11 @@ class SunatService
     {
         $boletas = ComprobanteElectronico::boletas()
             ->whereDate('fecha_emision', $fecha)
-            ->where('estado_sunat', 'aceptado')
+            ->whereIn('estado_sunat', ['pendiente', 'rechazado', 'excepcion'])
             ->get();
 
         if ($boletas->isEmpty()) {
-            throw new \Exception("No hay boletas aceptadas para la fecha {$fecha->toDateString()}");
+            throw new \Exception("No hay boletas pendientes para la fecha {$fecha->toDateString()}");
         }
 
         $correlativo   = ResumenDiario::whereDate('fecha_generacion', now())->count() + 1;
@@ -466,14 +466,37 @@ class SunatService
             }
             $summary->setDetails($detalles);
 
+            // Firmar y guardar XML
+            $xml = $see->getXmlSigned($summary);
+            $dir = 'sunat/xml/' . date('Y/m');
+            Storage::makeDirectory($dir);
+            $xmlPath = "$dir/{$this->empresa->ruc_nit}-{$identificador}.xml";
+            Storage::put($xmlPath, $xml);
+
             $result = $see->send($summary);
 
             if ($result->isSuccess()) {
+                $cdrZip = $result->getCdrZip();
+                $cdrPath = null;
+                if ($cdrZip) {
+                    $cdrPath = "$dir/R-{$this->empresa->ruc_nit}-{$identificador}.zip";
+                    Storage::put($cdrPath, $cdrZip);
+                }
+
                 $resumen->update([
                     'estado_sunat'          => 'enviado',
                     'codigo_respuesta_sunat' => $result->getCdrResponse()?->getCode(),
                     'mensaje_sunat'         => $result->getCdrResponse()?->getDescription(),
+                    'ticket_sunat'          => $result->getTicket(),
                 ]);
+
+                // Actualizar estado de las boletas a aceptado (En Resumen Diario en Perú UBL 2.1 el ticket de summary confirma la recepción)
+                foreach ($boletas as $b) {
+                    $b->update([
+                        'estado_sunat' => 'aceptado',
+                        'mensaje_sunat' => 'Aceptado mediante Resumen Diario ' . $identificador
+                    ]);
+                }
             } else {
                 $error = $result->getError();
                 $resumen->update([
