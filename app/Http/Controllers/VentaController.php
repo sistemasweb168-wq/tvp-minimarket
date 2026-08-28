@@ -61,10 +61,10 @@ class VentaController extends Controller
                 ->with('warning', 'Debe abrir un turno de caja antes de realizar ventas');
         }
 
-        $productos = Producto::with('categoria')
+        $productos = Producto::with(['categoria', 'componentesCombo'])
             ->where('activo', true)
             ->where('destacado', true)
-            ->limit(12)->get();
+            ->limit(24)->get();
 
         $categorias = \App\Models\Categoria::where('activo', true)->orderBy('nombre')->get();
         $clientes = Cliente::where('activo', true)->orderBy('nombres')->limit(50)->get();

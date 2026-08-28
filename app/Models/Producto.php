@@ -57,6 +57,39 @@ class Producto extends Model
         return $this->hasMany(MovimientoInventario::class);
     }
 
+    protected $appends = ['imagen_url', 'stock_calculado'];
+
+    public function getStockCalculadoAttribute()
+    {
+        if ($this->tipo_producto === 'combo') {
+            $componentes = $this->relationLoaded('componentesCombo') ? $this->componentesCombo : $this->componentesCombo()->get();
+            if ($componentes->isEmpty()) {
+                return 0;
+            }
+            $maxCombos = 999999;
+            foreach ($componentes as $comp) {
+                $cantRequerida = floatval($comp->pivot->cantidad ?? 1);
+                if ($cantRequerida > 0) {
+                    $stockComp = floatval($comp->getRawOriginal('stock') ?? $comp->stock ?? 0);
+                    $posibles = floor($stockComp / $cantRequerida);
+                    if ($posibles < $maxCombos) {
+                        $maxCombos = $posibles;
+                    }
+                }
+            }
+            return $maxCombos === 999999 ? 0 : max(0, $maxCombos);
+        }
+        return floatval($this->getRawOriginal('stock') ?? 0);
+    }
+
+    public function getStockAttribute($value)
+    {
+        if (isset($this->attributes['tipo_producto']) && $this->attributes['tipo_producto'] === 'combo') {
+            return $this->stock_calculado;
+        }
+        return $value;
+    }
+
     public function getImagenUrlAttribute()
     {
         if ($this->imagen) {
