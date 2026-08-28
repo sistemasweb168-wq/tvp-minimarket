@@ -111,13 +111,15 @@ class CajaController extends Controller
     public function cierre(TurnoCaja $turno)
     {
         $turno->load(['caja', 'user', 'movimientos.user', 'ventas']);
-        return view('caja.cierre', compact('turno'));
+        $empresa = \App\Models\Empresa::first();
+        return view('caja.cierre', compact('turno', 'empresa'));
     }
 
     public function ticket(TurnoCaja $turno)
     {
         $turno->load(['caja', 'user', 'movimientos.user', 'ventas']);
-        return view('caja.ticket', compact('turno'));
+        $empresa = \App\Models\Empresa::first();
+        return view('caja.ticket', compact('turno', 'empresa'));
     }
 
     public function movimiento(Request $request, TurnoCaja $turno)

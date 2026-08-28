@@ -144,7 +144,7 @@
             <div class="p-4 bg-slate-800/60 rounded-2xl border border-slate-700/80 flex items-center justify-between">
                 <div>
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Fecha y Hora Apertura</span>
-                    <strong class="text-white text-sm sm:text-base">{{ $turno->fecha_apertura->format('d/m/Y H:i:s') }}</strong>
+                    <strong class="text-white text-sm sm:text-base">{{ $fechaApStr }}</strong>
                 </div>
                 <div class="text-right">
                     <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">Monto Inicial</span>
@@ -155,7 +155,7 @@
             <div class="p-4 bg-slate-800/60 rounded-2xl border border-slate-700/80 flex items-center justify-between">
                 <div>
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Fecha y Hora Cierre</span>
-                    <strong class="text-white text-sm sm:text-base">{{ $turno->fecha_cierre?->format('d/m/Y H:i:s') ?? 'En operación activa' }}</strong>
+                    <strong class="text-white text-sm sm:text-base">{{ $fechaCiStr }}</strong>
                 </div>
                 <div class="text-right">
                     <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">Total Ventas</span>
@@ -381,7 +381,7 @@
                 <tbody class="divide-y divide-slate-800 text-slate-200">
                     @forelse($egresosList as $eg)
                         <tr>
-                            <td class="py-3 px-4 font-mono text-slate-400">{{ $eg->created_at->format('H:i') }}</td>
+                            <td class="py-3 px-4 font-mono text-slate-400">{{ $eg->created_at ? (is_string($eg->created_at) ? \Carbon\Carbon::parse($eg->created_at)->format('H:i') : $eg->created_at->format('H:i')) : '—' }}</td>
                             <td class="py-3 px-4">
                                 <span class="px-2 py-0.5 bg-rose-500/20 text-rose-300 rounded text-[10px] font-bold uppercase">
                                     {{ str_replace('_', ' ', $eg->categoria ?? 'gasto') }}
