@@ -58,7 +58,7 @@ class VentaController extends Controller
 
         if (!$turnoActivo) {
             return redirect()->route('caja.index')
-                ->with('warning', 'Debe abrir un turno de caja antes de realizar ventas');
+                ->with('warning', '⚠️ CAJA CERRADA: Debe abrir un turno de caja con su monto inicial antes de realizar ventas.');
         }
 
         $productos = Producto::with(['categoria', 'componentesCombo'])

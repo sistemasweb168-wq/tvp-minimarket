@@ -72,7 +72,37 @@
 
     $esperadoEnCaja = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
     $totalDigitalReal = $totalYapeReal + $totalPlinReal + $totalTarjetaReal + $totalTransfReal;
+@php
+    $fechaApStr = $turno->fecha_apertura ? (is_string($turno->fecha_apertura) ? \Carbon\Carbon::parse($turno->fecha_apertura)->format('d/m/Y H:i:s') : $turno->fecha_apertura->format('d/m/Y H:i:s')) : '—';
+    $fechaCiStr = $turno->fecha_cierre ? (is_string($turno->fecha_cierre) ? \Carbon\Carbon::parse($turno->fecha_cierre)->format('d/m/Y H:i:s') : $turno->fecha_cierre->format('d/m/Y H:i:s')) : 'En operación activa';
 @endphp
+
+@if(session('success'))
+<!-- MODAL DE CONFIRMACIÓN POST-CIERRE -->
+<div id="modal-post-cierre" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-emerald-500/50 rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl text-center space-y-5 transform transition-all">
+        <div class="w-16 h-16 rounded-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto shadow-lg shadow-emerald-500/20">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+            <h3 class="text-xl font-black text-white">¡Turno Cerrado Correctamente!</h3>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">El arqueo ha sido registrado con éxito. ¿Deseas imprimir el comprobante de cierre ahora?</p>
+        </div>
+
+        <div class="space-y-2.5 pt-2">
+            <a href="{{ route('caja.ticket', $turno->id) }}" target="_blank" onclick="document.getElementById('modal-post-cierre').remove()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-sm transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+                <i class="fas fa-receipt text-lg"></i> Imprimir Ticket 80mm
+            </a>
+            <button type="button" onclick="window.print(); document.getElementById('modal-post-cierre').remove()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs sm:text-sm border border-slate-700 transition flex items-center justify-center gap-2">
+                <i class="fas fa-file-pdf text-amber-400"></i> Imprimir Reporte A4
+            </button>
+            <button type="button" onclick="document.getElementById('modal-post-cierre').remove()" class="w-full py-2.5 bg-transparent hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-semibold rounded-xl text-xs transition">
+                No imprimir / Finalizar
+            </button>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="max-w-5xl mx-auto space-y-6">
 

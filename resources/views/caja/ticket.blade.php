@@ -1,7 +1,7 @@
 @php
     $empresa = $empresa ?? $empresaGlobal ?? \App\Models\Empresa::first();
-    $moneda = $empresa->moneda ?? 'S/';
-    $ventas = $turno->ventas;
+    $moneda = $empresa?->moneda ?? 'S/';
+    $ventas = $turno->ventas ?? collect();
     
     $ventasEfectivoPuro = $ventas->where('forma_pago', 'efectivo')->sum('total');
     $ventasYapePuro = $ventas->where('forma_pago', 'yape')->sum('total');
@@ -20,10 +20,10 @@
         $cantMixtas++;
         $dp = is_array($v->detalle_pago) ? $v->detalle_pago : (json_decode($v->detalle_pago, true) ?? []);
         
-        $m1 = $dp['metodo_1'] ?? 'efectivo';
-        $cant1 = floatval($dp['monto_1'] ?? 0);
-        $m2 = $dp['metodo_2'] ?? 'yape';
-        $cant2 = floatval($dp['monto_2'] ?? 0);
+        $m1 = $dp['metodo_1'] ?? $dp['metodo_efectivo'] ?? 'efectivo';
+        $cant1 = floatval($dp['monto_1'] ?? $dp['monto_efectivo'] ?? 0);
+        $m2 = $dp['metodo_2'] ?? $dp['metodo_digital'] ?? 'yape';
+        $cant2 = floatval($dp['monto_2'] ?? $dp['monto_digital'] ?? 0);
 
         if ($m1 === 'efectivo') $mixtasEfectivo += $cant1;
         elseif ($m1 === 'yape') $mixtasYape += $cant1;
@@ -45,10 +45,10 @@
     $totalTransfReal = $ventasTransfPuro + $mixtasOtros;
     $totalVentas = $ventas->sum('total');
 
-    $egresosList = $turno->movimientos->where('tipo', 'egreso');
+    $egresosList = ($turno->movimientos ?? collect())->where('tipo', 'egreso');
     $totalEgresos = $egresosList->sum('monto');
 
-    $ingresosList = $turno->movimientos->where('tipo', 'ingreso');
+    $ingresosList = ($turno->movimientos ?? collect())->where('tipo', 'ingreso');
     $totalIngresos = $ingresosList->sum('monto');
 
     // Garantías de envases
@@ -68,19 +68,34 @@
 
     $esperadoEnCaja = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
     $totalDigitalReal = $totalYapeReal + $totalPlinReal + $totalTarjetaReal + $totalTransfReal;
+
+    // Fechas seguras
+    $fechaApStr = '—';
+    if ($turno->fecha_apertura) {
+        $fechaApStr = is_string($turno->fecha_apertura) 
+            ? \Carbon\Carbon::parse($turno->fecha_apertura)->format('d/m/Y H:i:s') 
+            : $turno->fecha_apertura->format('d/m/Y H:i:s');
+    }
+
+    $fechaCiStr = null;
+    if ($turno->fecha_cierre) {
+        $fechaCiStr = is_string($turno->fecha_cierre) 
+            ? \Carbon\Carbon::parse($turno->fecha_cierre)->format('d/m/Y H:i:s') 
+            : $turno->fecha_cierre->format('d/m/Y H:i:s');
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Arqueo de Caja - Turno #{{ $turno->id }}</title>
+    <title>Corte de Caja - Turno #{{ $turno->id }}</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Courier New', Courier, monospace; padding: 0; margin: 0; background: #f5f5f5; }
+        body { font-family: 'Courier New', Courier, monospace; padding: 0; margin: 0; background: #f5f5f5; color: #000; }
         .ticket {
             width: 80mm; max-width: 320px; margin: 20px auto; background: white;
             padding: 15px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            font-size: 11px; line-height: 1.35; color: #000;
+            font-size: 11px; line-height: 1.35;
         }
         .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
         .header img.logo-ticket { max-width: 85px; max-height: 55px; margin-bottom: 4px; object-fit: contain; }
@@ -124,7 +139,7 @@
         @if($empresa && $empresa->logo_url)
             <img src="{{ $empresa->logo_url }}" class="logo-ticket" alt="Logo"><br>
         @endif
-        <h1>{{ $empresa->nombre_comercial ?? $empresa->razon_social ?? 'MIKITO\'S LICORERÍA' }}</h1>
+        <h1>{{ $empresa?->nombre_comercial ?? $empresa?->razon_social ?? 'MIKITO\'S LICORERÍA' }}</h1>
         @if($empresa && $empresa->ruc_nit)
             <p><strong>RUC: {{ $empresa->ruc_nit }}</strong></p>
         @endif
@@ -133,17 +148,17 @@
         @endif
     </div>
 
-    <div class="badge-title">CORTE DE CAJA / ARQUEO Z</div>
+    <div class="badge-title">{{ $turno->estado === 'cerrado' ? 'CORTE DE CAJA / CIERRE Z' : 'CORTE DE CAJA PROVISIONAL (X)' }}</div>
 
     <div class="info">
         <p><strong>Turno N°:</strong> #{{ $turno->id }}</p>
-        <p><strong>Caja:</strong> {{ $turno->caja->nombre ?? 'Caja Principal' }}</p>
-        <p><strong>Cajero:</strong> {{ $turno->user->name ?? 'Usuario' }}</p>
-        <p><strong>Apertura:</strong> {{ $turno->fecha_apertura->format('d/m/Y H:i:s') }}</p>
-        @if($turno->fecha_cierre)
-            <p><strong>Cierre:</strong> {{ $turno->fecha_cierre->format('d/m/Y H:i:s') }}</p>
+        <p><strong>Caja:</strong> {{ $turno->caja?->nombre ?? 'Caja Principal' }}</p>
+        <p><strong>Cajero:</strong> {{ $turno->user?->name ?? 'Usuario' }}</p>
+        <p><strong>Apertura:</strong> {{ $fechaApStr }}</p>
+        @if($fechaCiStr)
+            <p><strong>Cierre:</strong> {{ $fechaCiStr }}</p>
         @else
-            <p><strong>Estado:</strong> <strong>EN OPERACIÓN (CORTE X)</strong></p>
+            <p><strong>Estado:</strong> <strong>TURNO EN CURSO (CORTE X)</strong></p>
         @endif
     </div>
 
@@ -208,7 +223,7 @@
             @foreach($egresosList as $eg)
             <tr>
                 <td>- {{ $eg->concepto }} <small>({{ $eg->categoria ?? 'gasto' }})</small>:</td>
-                <td style="text-align:right; color:#000;">-{{ $moneda }}{{ number_format($eg->monto, 2) }}</td>
+                <td style="text-align:right;">-{{ $moneda }}{{ number_format($eg->monto, 2) }}</td>
             </tr>
             @endforeach
             <tr class="row-section">
@@ -236,10 +251,10 @@
                 <td>(+) Total Ventas Efectivo:</td>
                 <td style="text-align:right;">+{{ $moneda }}{{ number_format($totalEfectivoReal, 2) }}</td>
             </tr>
-            @if($ingresosExtra > 0)
+            @if($ingresosList->count() > 0)
             <tr>
                 <td>(+) Ingresos Manuales:</td>
-                <td style="text-align:right;">+{{ $moneda }}{{ number_format($ingresosExtra, 2) }}</td>
+                <td style="text-align:right;">+{{ $moneda }}{{ number_format($totalIngresos, 2) }}</td>
             </tr>
             @endif
             @if($garantiasCobradas > 0)
@@ -289,11 +304,11 @@
 
     <div style="margin-top: 25px; text-align: center;">
         <p style="border-top: 1px dashed #000; width: 80%; margin: 20px auto 4px auto;"></p>
-        <p style="font-size: 10px; font-weight: bold;">Firma del Cajero: {{ $turno->user->name ?? 'Usuario' }}</p>
+        <p style="font-size: 10px; font-weight: bold;">Firma del Cajero: {{ $turno->user?->name ?? 'Usuario' }}</p>
     </div>
 
     <div class="footer">
-        <p>Reporte generado el {{ now()->format('d/m/Y H:i:s') }}</p>
+        <p>Reporte generado el {{ date('d/m/Y H:i:s') }}</p>
         <p>--- Control Administrativo Interno ---</p>
     </div>
 </div>
