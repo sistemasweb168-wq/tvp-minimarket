@@ -65,12 +65,12 @@ class ProductoController extends Controller
 
     public function create()
     {
-        $productosList = Producto::where('tipo_producto', 'estandar')->get();
+        $productosList = Producto::where('tipo_producto', 'estandar')->where('activo', true)->orderBy('nombre')->get();
         $categorias = Categoria::where('activo', true)->orderBy('nombre')->get();
         $proveedores = Proveedor::where('activo', true)->orderBy('razon_social')->get();
         $codigo = 'P' . str_pad(Producto::count() + 1, 6, '0', STR_PAD_LEFT);
 
-        return view('productos.create', compact('categorias', 'proveedores', 'codigo'));
+        return view('productos.create', compact('categorias', 'proveedores', 'codigo', 'productosList'));
     }
 
     public function store(Request $request)
@@ -80,6 +80,7 @@ class ProductoController extends Controller
             'codigo_barras' => 'nullable|string|max:50',
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'tipo_producto' => 'required|in:estandar,combo',
             'categoria_id' => 'nullable|exists:categorias,id',
             'proveedor_id' => 'nullable|exists:proveedores,id',
             'unidad_medida' => 'required|string|max:20',
@@ -87,7 +88,7 @@ class ProductoController extends Controller
             'precio_venta' => 'required|numeric|min:0',
             'precio_mayoreo' => 'nullable|numeric|min:0',
             'cantidad_mayoreo' => 'nullable|integer|min:0',
-            'stock' => 'required|numeric|min:0',
+            'stock' => 'nullable|numeric|min:0',
             'stock_minimo' => 'required|numeric|min:0',
             'stock_maximo' => 'nullable|numeric|min:0',
             'controla_stock' => 'nullable|boolean',
@@ -98,7 +99,9 @@ class ProductoController extends Controller
             'destacado' => 'nullable|boolean',
         ]);
 
-        $data['controla_stock'] = $request->boolean('controla_stock', true);
+        $data['tipo_producto'] = $request->tipo_producto ?? 'estandar';
+        $data['stock'] = $data['tipo_producto'] === 'combo' ? 0 : ($data['stock'] ?? 0);
+        $data['controla_stock'] = $data['tipo_producto'] === 'combo' ? false : $request->boolean('controla_stock', true);
         $data['aplica_impuesto'] = $request->boolean('aplica_impuesto', true);
         $data['destacado'] = $request->boolean('destacado');
         $data['activo'] = true;
@@ -114,12 +117,13 @@ class ProductoController extends Controller
         if ($request->tipo_producto === 'combo' && $request->has('componente_id')) {
             $syncData = [];
             foreach ($request->componente_id as $index => $compId) {
-                $cant = $request->componente_cantidad[$index] ?? 1;
-                $syncData[$compId] = ['cantidad' => $cant];
+                if (!empty($compId)) {
+                    $cant = $request->componente_cantidad[$index] ?? 1;
+                    $syncData[$compId] = ['cantidad' => $cant];
+                }
             }
             $producto->componentesCombo()->sync($syncData);
         }
-
 
         if ($producto->stock > 0) {
             MovimientoInventario::create([
@@ -151,11 +155,11 @@ class ProductoController extends Controller
 
     public function edit(Producto $producto)
     {
-        $productosList = Producto::where('tipo_producto', 'estandar')->where('id', '!=', $producto->id)->get();
+        $productosList = Producto::where('tipo_producto', 'estandar')->where('id', '!=', $producto->id)->where('activo', true)->orderBy('nombre')->get();
         $producto->load('componentesCombo');
         $categorias = Categoria::where('activo', true)->orderBy('nombre')->get();
         $proveedores = Proveedor::where('activo', true)->orderBy('razon_social')->get();
-        return view('productos.edit', compact('producto', 'categorias', 'proveedores'));
+        return view('productos.edit', compact('producto', 'categorias', 'proveedores', 'productosList'));
     }
 
     public function update(Request $request, Producto $producto)
