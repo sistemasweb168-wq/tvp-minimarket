@@ -94,9 +94,17 @@ class CompraController extends Controller
                 if ($producto->controla_stock) {
                     $stockAnterior = $producto->stock;
                     $stockNuevo = $stockAnterior + $item['cantidad'];
+                    if ($stockNuevo > 0) {
+                        $costoAnteriorTotal = $stockAnterior * ($producto->precio_compra ?? 0);
+                        $costoNuevoTotal = $item['cantidad'] * $item['precio_unitario'];
+                        $costoPromedio = ($costoAnteriorTotal + $costoNuevoTotal) / $stockNuevo;
+                    } else {
+                        $costoPromedio = $item['precio_unitario'];
+                    }
+
                     $producto->update([
                         'stock' => $stockNuevo,
-                        'precio_compra' => $item['precio_unitario'],
+                        'precio_compra' => round($costoPromedio, 4),
                     ]);
 
                     MovimientoInventario::create([

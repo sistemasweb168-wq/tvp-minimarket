@@ -213,10 +213,11 @@
                 </button>
             </div>
 
-            <!-- CUADRO DE ARQUEO DESGLOSADO EN VIVO DENTRO DEL MODAL -->
+            <!-- CUADRO DE ARQUEO DESGLOSADO EN VIVO DENTRO DEL MODAL (CIERRE CIEGO PARA CAJEROS) -->
+            @if(auth()->user()->hasRole('admin'))
             <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 mb-4 space-y-2 text-xs">
                 <span class="text-[10px] font-black uppercase text-amber-400 tracking-wider block mb-1">
-                    <i class="fas fa-calculator mr-1"></i> Balance Matemático del Turno
+                    <i class="fas fa-calculator mr-1"></i> Balance Matemático del Turno (Solo visible para Admin)
                 </span>
                 
                 <div class="flex justify-between text-slate-300">
@@ -269,6 +270,11 @@
                     </div>
                 </div>
             </div>
+            @else
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 mb-4 text-xs text-amber-400">
+                <p><i class="fas fa-info-circle mr-1"></i> <strong>Modo Arqueo Ciego Activo:</strong> Ingresa la cantidad exacta de dinero en efectivo que cuentas físicamente en tu gaveta. El sistema validará internamente si hay un sobrante o faltante.</p>
+            </div>
+            @endif
 
             <!-- Formulario de Cierre -->
             <form method="POST" action="{{ route('caja.cerrar', $turnoActivo->id) }}" class="space-y-4">
