@@ -91,6 +91,8 @@ Route::middleware('auth')->group(function () {
     // Control de Envases Retornables & Garantías
     Route::get('envases', [EnvaseGarantiaController::class, 'index'])->name('envases.index');
     Route::post('envases', [EnvaseGarantiaController::class, 'store'])->name('envases.store');
+    Route::put('envases/{envase}', [EnvaseGarantiaController::class, 'update'])->name('envases.update');
+    Route::delete('envases/{envase}', [EnvaseGarantiaController::class, 'destroy'])->name('envases.destroy');
     Route::post('envases/{envase}/devolver', [EnvaseGarantiaController::class, 'devolver'])->name('envases.devolver');
 
     // Promociones

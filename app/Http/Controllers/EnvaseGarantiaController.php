@@ -140,4 +140,43 @@ class EnvaseGarantiaController extends Controller
             return back()->with('error', 'Error al devolver: ' . $e->getMessage());
         }
     }
+
+    public function update(Request $request, EnvaseGarantia $envase)
+    {
+        $data = $request->validate([
+            'cliente_id' => 'nullable|exists:clientes,id',
+            'cliente_nombre' => 'nullable|string|max:255',
+            'tipo_envase' => 'required|string|max:100',
+            'cantidad' => 'required|integer|min:1',
+            'monto_garantia' => 'required|numeric|min:0',
+            'observaciones' => 'nullable|string|max:255',
+        ]);
+
+        $nombreCliente = $data['cliente_nombre'];
+        if ($data['cliente_id']) {
+            $cliente = Cliente::find($data['cliente_id']);
+            $nombreCliente = $cliente ? ($cliente->nombres . ' ' . $cliente->apellidos) : $nombreCliente;
+        }
+
+        if (empty($nombreCliente)) {
+            $nombreCliente = 'Cliente Mostrador';
+        }
+
+        $envase->update([
+            'cliente_id' => $data['cliente_id'] ?? null,
+            'cliente_nombre' => $nombreCliente,
+            'tipo_envase' => $data['tipo_envase'],
+            'cantidad' => $data['cantidad'],
+            'monto_garantia' => $data['monto_garantia'],
+            'observaciones' => $data['observaciones'] ?? null,
+        ]);
+
+        return back()->with('success', 'Registro de envase actualizado correctamente.');
+    }
+
+    public function destroy(EnvaseGarantia $envase)
+    {
+        $envase->delete();
+        return back()->with('success', 'Registro eliminado correctamente.');
+    }
 }
