@@ -240,12 +240,12 @@
                         <i class="fas fa-box text-red-500"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-slate-100 truncate">{{ $p->nombre }}</p>
-                        <p class="text-xs text-slate-400">{{ $p->codigo }} • Mín: {{ number_format($p->stock_minimo, 2) }}</p>
+                        <p class="font-semibold text-slate-800 truncate">{{ $p->nombre }}</p>
+                        <p class="text-xs text-slate-600">{{ $p->codigo }} • Mín: {{ number_format($p->stock_minimo, 2) }}</p>
                     </div>
                     <div class="text-right flex-shrink-0">
                         <p class="text-2xl font-bold text-red-600">{{ number_format($p->stock, 2) }}</p>
-                        <p class="text-xs text-slate-400">{{ $p->unidad_medida }}</p>
+                        <p class="text-xs text-slate-600">{{ $p->unidad_medida }}</p>
                     </div>
                 </div>
             @empty
@@ -273,16 +273,16 @@
                         <i class="fas fa-hourglass-half text-{{$color}}-500"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-slate-100 truncate">{{ $p->nombre }}</p>
-                        <p class="text-xs text-slate-400">Lote: {{ $p->lote ?? 'N/A' }}</p>
+                        <p class="font-semibold text-slate-800 truncate">{{ $p->nombre }}</p>
+                        <p class="text-xs text-slate-600">Lote: {{ $p->lote ?? 'N/A' }}</p>
                     </div>
                     <div class="text-right flex-shrink-0">
                         @if($dias < 0)
                             <p class="text-sm font-bold text-red-600">Vencido</p>
-                            <p class="text-xs text-slate-400">Hace {{ abs(intval($dias)) }} días</p>
+                            <p class="text-xs text-slate-600">Hace {{ abs(intval($dias)) }} días</p>
                         @else
                             <p class="text-sm font-bold text-{{$color}}-600">En {{ intval($dias) }} días</p>
-                            <p class="text-[10px] text-slate-400">{{ $p->fecha_vencimiento->format('d/m/Y') }}</p>
+                            <p class="text-[10px] text-slate-600">{{ $p->fecha_vencimiento->format('d/m/Y') }}</p>
                         @endif
                     </div>
                 </div>
