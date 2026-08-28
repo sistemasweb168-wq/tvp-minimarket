@@ -5,57 +5,59 @@
 @section('content')
 @php
     $moneda = $empresaGlobal->moneda ?? 'S/';
-    $ventas = $turno->ventas;
-    
+    $ventas = $turno->ventas ?? collect();
+
     $ventasEfectivoPuro = $ventas->where('forma_pago', 'efectivo')->sum('total');
-    $ventasYapePuro = $ventas->where('forma_pago', 'yape')->sum('total');
-    $ventasPlinPuro = $ventas->where('forma_pago', 'plin')->sum('total');
-    $ventasTarjetaPuro = $ventas->where('forma_pago', 'tarjeta')->sum('total');
-    $ventasTransfPuro = $ventas->where('forma_pago', 'transferencia')->sum('total');
-    
+    $ventasYapePuro     = $ventas->where('forma_pago', 'yape')->sum('total');
+    $ventasPlinPuro     = $ventas->where('forma_pago', 'plin')->sum('total');
+    $ventasTarjetaPuro  = $ventas->where('forma_pago', 'tarjeta')->sum('total');
+    $ventasTransfPuro   = $ventas->where('forma_pago', 'transferencia')->sum('total');
+
     $mixtasEfectivo = 0;
-    $mixtasYape = 0;
-    $mixtasPlin = 0;
-    $mixtasTarjeta = 0;
-    $mixtasOtros = 0;
-    $cantMixtas = 0;
+    $mixtasYape     = 0;
+    $mixtasPlin     = 0;
+    $mixtasTarjeta  = 0;
+    $mixtasOtros    = 0;
+    $cantMixtas     = 0;
 
     foreach ($ventas->where('forma_pago', 'mixto') as $v) {
         $cantMixtas++;
         $dp = is_array($v->detalle_pago) ? $v->detalle_pago : (json_decode($v->detalle_pago, true) ?? []);
-        
-        $m1 = $dp['metodo_1'] ?? 'efectivo';
-        $cant1 = floatval($dp['monto_1'] ?? 0);
-        $m2 = $dp['metodo_2'] ?? 'yape';
-        $cant2 = floatval($dp['monto_2'] ?? 0);
 
-        if ($m1 === 'efectivo') $mixtasEfectivo += $cant1;
-        elseif ($m1 === 'yape') $mixtasYape += $cant1;
-        elseif ($m1 === 'plin') $mixtasPlin += $cant1;
-        elseif ($m1 === 'tarjeta') $mixtasTarjeta += $cant1;
-        else $mixtasOtros += $cant1;
+        $m1   = $dp['metodo_1'] ?? $dp['metodo_efectivo'] ?? 'efectivo';
+        $cant1 = floatval($dp['monto_1'] ?? $dp['monto_efectivo'] ?? 0);
+        $m2   = $dp['metodo_2'] ?? $dp['metodo_digital'] ?? 'yape';
+        $cant2 = floatval($dp['monto_2'] ?? $dp['monto_digital'] ?? 0);
 
-        if ($m2 === 'efectivo') $mixtasEfectivo += $cant2;
-        elseif ($m2 === 'yape') $mixtasYape += $cant2;
-        elseif ($m2 === 'plin') $mixtasPlin += $cant2;
-        elseif ($m2 === 'tarjeta') $mixtasTarjeta += $cant2;
-        else $mixtasOtros += $cant2;
+        if ($m1 === 'efectivo')        $mixtasEfectivo += $cant1;
+        elseif ($m1 === 'yape')        $mixtasYape     += $cant1;
+        elseif ($m1 === 'plin')        $mixtasPlin     += $cant1;
+        elseif ($m1 === 'tarjeta')     $mixtasTarjeta  += $cant1;
+        else                           $mixtasOtros    += $cant1;
+
+        if ($m2 === 'efectivo')        $mixtasEfectivo += $cant2;
+        elseif ($m2 === 'yape')        $mixtasYape     += $cant2;
+        elseif ($m2 === 'plin')        $mixtasPlin     += $cant2;
+        elseif ($m2 === 'tarjeta')     $mixtasTarjeta  += $cant2;
+        else                           $mixtasOtros    += $cant2;
     }
 
     $totalEfectivoReal = $ventasEfectivoPuro + $mixtasEfectivo;
-    $totalYapeReal = $ventasYapePuro + $mixtasYape;
-    $totalPlinReal = $ventasPlinPuro + $mixtasPlin;
-    $totalTarjetaReal = $ventasTarjetaPuro + $mixtasTarjeta;
-    $totalTransfReal = $ventasTransfPuro + $mixtasOtros;
-    $totalVentas = $ventas->sum('total');
+    $totalYapeReal     = $ventasYapePuro     + $mixtasYape;
+    $totalPlinReal     = $ventasPlinPuro     + $mixtasPlin;
+    $totalTarjetaReal  = $ventasTarjetaPuro  + $mixtasTarjeta;
+    $totalTransfReal   = $ventasTransfPuro   + $mixtasOtros;
+    $totalVentas       = $ventas->sum('total');
+    $totalDigitalReal  = $totalYapeReal + $totalPlinReal + $totalTarjetaReal + $totalTransfReal;
 
-    $egresosList = $turno->movimientos->where('tipo', 'egreso');
-    $totalEgresos = $egresosList->sum('monto');
+    $movimientos    = $turno->movimientos ?? collect();
+    $egresosList    = $movimientos->where('tipo', 'egreso');
+    $ingresosList   = $movimientos->where('tipo', 'ingreso');
+    $totalEgresos   = $egresosList->sum('monto');
+    $totalIngresos  = $ingresosList->sum('monto');
+    $ingresosExtra  = $totalIngresos; // alias descriptivo para la vista
 
-    $ingresosList = $turno->movimientos->where('tipo', 'ingreso');
-    $totalIngresos = $ingresosList->sum('monto');
-
-    $garantiasCobradas = 0;
+    $garantiasCobradas  = 0;
     $garantiasDevueltas = 0;
     try {
         if (class_exists(\App\Models\EnvaseGarantia::class) && \Illuminate\Support\Facades\Schema::hasTable('envases_garantias')) {
@@ -70,21 +72,32 @@
                 ->sum('monto_garantia') ?? 0;
         }
     } catch (\Throwable $e) {
-        $garantiasCobradas = 0;
+        $garantiasCobradas  = 0;
         $garantiasDevueltas = 0;
     }
 
-    $esperadoEnCaja = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
-    $totalDigitalReal = $totalYapeReal + $totalPlinReal + $totalTarjetaReal + $totalTransfReal;
-@php
-    $fechaApStr = $turno->fecha_apertura ? (is_string($turno->fecha_apertura) ? \Carbon\Carbon::parse($turno->fecha_apertura)->format('d/m/Y H:i:s') : $turno->fecha_apertura->format('d/m/Y H:i:s')) : '—';
-    $fechaCiStr = $turno->fecha_cierre ? (is_string($turno->fecha_cierre) ? \Carbon\Carbon::parse($turno->fecha_cierre)->format('d/m/Y H:i:s') : $turno->fecha_cierre->format('d/m/Y H:i:s')) : 'En operación activa';
+    $esperadoEnCaja = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas)
+                    - ($totalEgresos + $garantiasDevueltas);
+
+    // Fechas seguras
+    $fechaApStr = '—';
+    if ($turno->fecha_apertura) {
+        $fechaApStr = is_string($turno->fecha_apertura)
+            ? \Carbon\Carbon::parse($turno->fecha_apertura)->format('d/m/Y H:i:s')
+            : $turno->fecha_apertura->format('d/m/Y H:i:s');
+    }
+    $fechaCiStr = 'En operación activa';
+    if ($turno->fecha_cierre) {
+        $fechaCiStr = is_string($turno->fecha_cierre)
+            ? \Carbon\Carbon::parse($turno->fecha_cierre)->format('d/m/Y H:i:s')
+            : $turno->fecha_cierre->format('d/m/Y H:i:s');
+    }
 @endphp
 
 @if(session('success'))
 <!-- MODAL DE CONFIRMACIÓN POST-CIERRE -->
 <div id="modal-post-cierre" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border-2 border-emerald-500/50 rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl text-center space-y-5 transform transition-all">
+    <div class="bg-slate-900 border-2 border-emerald-500/50 rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl text-center space-y-5">
         <div class="w-16 h-16 rounded-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto shadow-lg shadow-emerald-500/20">
             <i class="fas fa-check-circle"></i>
         </div>
@@ -92,15 +105,18 @@
             <h3 class="text-xl font-black text-white">¡Turno Cerrado Correctamente!</h3>
             <p class="text-xs sm:text-sm text-slate-400 mt-1">El arqueo ha sido registrado con éxito. ¿Deseas imprimir el comprobante de cierre ahora?</p>
         </div>
-
         <div class="space-y-2.5 pt-2">
-            <a href="{{ route('caja.ticket', $turno->id) }}" target="_blank" onclick="document.getElementById('modal-post-cierre').remove()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-sm transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+            <a href="{{ route('caja.ticket', $turno->id) }}" target="_blank"
+               onclick="document.getElementById('modal-post-cierre').remove()"
+               class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-sm transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
                 <i class="fas fa-receipt text-lg"></i> Imprimir Ticket 80mm
             </a>
-            <button type="button" onclick="window.print(); document.getElementById('modal-post-cierre').remove()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs sm:text-sm border border-slate-700 transition flex items-center justify-center gap-2">
+            <button type="button" onclick="window.print(); document.getElementById('modal-post-cierre').remove()"
+                    class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs sm:text-sm border border-slate-700 transition flex items-center justify-center gap-2">
                 <i class="fas fa-file-pdf text-amber-400"></i> Imprimir Reporte A4
             </button>
-            <button type="button" onclick="document.getElementById('modal-post-cierre').remove()" class="w-full py-2.5 bg-transparent hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-semibold rounded-xl text-xs transition">
+            <button type="button" onclick="document.getElementById('modal-post-cierre').remove()"
+                    class="w-full py-2.5 bg-transparent hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-semibold rounded-xl text-xs transition">
                 No imprimir / Finalizar
             </button>
         </div>
@@ -125,8 +141,8 @@
                         </span>
                     </div>
                     <p class="text-xs sm:text-sm text-slate-400 mt-0.5">
-                        <i class="fas fa-store text-amber-500 mr-1"></i> {{ $turno->caja->nombre ?? 'Caja Principal' }} 
-                        <span class="mx-2">•</span> 
+                        <i class="fas fa-store text-amber-500 mr-1"></i> {{ $turno->caja->nombre ?? 'Caja Principal' }}
+                        <span class="mx-2">•</span>
                         <i class="fas fa-user text-emerald-400 mr-1"></i> Cajero: <strong class="text-slate-200">{{ $turno->user->name ?? 'Usuario' }}</strong>
                     </p>
                 </div>
@@ -134,10 +150,12 @@
 
             <!-- Acciones -->
             <div class="flex items-center gap-2.5 w-full sm:w-auto">
-                <a href="{{ route('caja.ticket', $turno->id) }}" target="_blank" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs sm:text-sm border border-slate-700 shadow transition flex items-center justify-center gap-2">
+                <a href="{{ route('caja.ticket', $turno->id) }}" target="_blank"
+                   class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs sm:text-sm border border-slate-700 shadow transition flex items-center justify-center gap-2">
                     <i class="fas fa-receipt text-amber-400"></i> Imprimir Ticket 80mm
                 </a>
-                <a href="{{ route('caja.index') }}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs sm:text-sm border border-slate-700 transition">
+                <a href="{{ route('caja.index') }}"
+                   class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs sm:text-sm border border-slate-700 transition">
                     Volver
                 </a>
             </div>
@@ -171,7 +189,7 @@
 
     <!-- Grid de Resumen: EFECTIVO vs DIGITAL vs GASTOS -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
+
         <!-- Tarjeta 1: Efectivo Físico -->
         <div class="bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border-2 border-emerald-500/40 rounded-3xl p-6 shadow-xl space-y-4">
             <div class="flex justify-between items-center pb-3 border-b border-slate-800">
@@ -180,7 +198,7 @@
                 </span>
                 <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-[10px] font-bold">Físico</span>
             </div>
-            
+
             <div class="space-y-2 text-xs text-slate-300">
                 <div class="flex justify-between">
                     <span>(+) Monto Inicial (Sencillo):</span>
@@ -226,7 +244,7 @@
             </div>
         </div>
 
-        <!-- Tarjeta 2: Cobros Digitales (Yape/Plin/Tarjeta) -->
+        <!-- Tarjeta 2: Cobros Digitales -->
         <div class="bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-900 border-2 border-purple-500/40 rounded-3xl p-6 shadow-xl space-y-4">
             <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                 <span class="text-xs font-black uppercase tracking-wider text-purple-400 flex items-center gap-2">
@@ -260,7 +278,7 @@
             </div>
         </div>
 
-        <!-- Tarjeta 3: Balance y Diferencia de Cierre -->
+        <!-- Tarjeta 3: Balance y Diferencia -->
         <div class="bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 shadow-xl space-y-4">
             <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                 <span class="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
@@ -299,7 +317,7 @@
         </div>
     </div>
 
-    <!-- TABLA 1: DESGLOSE DETALLADO DE MÉTODOS DE PAGO Y VENTAS MIXTAS -->
+    <!-- TABLA: DESGLOSE DETALLADO DE MÉTODOS DE PAGO -->
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
         <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <i class="fas fa-coins text-amber-400"></i> Desglose Detallado por Métodos de Pago
@@ -317,37 +335,37 @@
                 </thead>
                 <tbody class="divide-y divide-slate-800 text-slate-200">
                     <tr>
-                        <td class="py-3 px-4 font-bold flex items-center gap-2"><i class="fas fa-money-bill-wave text-emerald-400"></i> Efectivo Puro</td>
+                        <td class="py-3 px-4 font-bold"><i class="fas fa-money-bill-wave text-emerald-400 mr-1"></i> Efectivo Puro</td>
                         <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-[10px] font-bold">Cajón Físico</span></td>
                         <td class="py-3 px-4 text-center">{{ $ventas->where('forma_pago', 'efectivo')->count() }}</td>
                         <td class="py-3 px-4 text-right font-mono font-bold text-emerald-400">{{ $moneda }} {{ number_format($ventasEfectivoPuro, 2) }}</td>
                     </tr>
                     <tr>
-                        <td class="py-3 px-4 font-bold flex items-center gap-2"><i class="fas fa-layer-group text-amber-400"></i> Pagos Mixtos (Parte Efectivo)</td>
+                        <td class="py-3 px-4 font-bold"><i class="fas fa-layer-group text-amber-400 mr-1"></i> Pagos Mixtos (Parte Efectivo)</td>
                         <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded text-[10px] font-bold">Cajón Físico</span></td>
                         <td class="py-3 px-4 text-center">{{ $cantMixtas }}</td>
                         <td class="py-3 px-4 text-right font-mono font-bold text-amber-400">{{ $moneda }} {{ number_format($mixtasEfectivo, 2) }}</td>
                     </tr>
                     <tr>
-                        <td class="py-3 px-4 font-bold flex items-center gap-2"><i class="fas fa-layer-group text-purple-400"></i> Pagos Mixtos (Parte Digital)</td>
+                        <td class="py-3 px-4 font-bold"><i class="fas fa-layer-group text-purple-400 mr-1"></i> Pagos Mixtos (Parte Digital)</td>
                         <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-[10px] font-bold">Billetera / Banco</span></td>
                         <td class="py-3 px-4 text-center">{{ $cantMixtas }}</td>
                         <td class="py-3 px-4 text-right font-mono font-bold text-purple-400">{{ $moneda }} {{ number_format($mixtasYape + $mixtasPlin + $mixtasTarjeta + $mixtasOtros, 2) }}</td>
                     </tr>
                     <tr>
-                        <td class="py-3 px-4 font-bold flex items-center gap-2"><i class="fas fa-mobile-screen text-purple-400"></i> Yape Directo</td>
+                        <td class="py-3 px-4 font-bold"><i class="fas fa-mobile-screen text-purple-400 mr-1"></i> Yape Directo</td>
                         <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-[10px] font-bold">Billetera Digital</span></td>
                         <td class="py-3 px-4 text-center">{{ $ventas->where('forma_pago', 'yape')->count() }}</td>
                         <td class="py-3 px-4 text-right font-mono font-bold text-white">{{ $moneda }} {{ number_format($ventasYapePuro, 2) }}</td>
                     </tr>
                     <tr>
-                        <td class="py-3 px-4 font-bold flex items-center gap-2"><i class="fas fa-mobile-screen text-sky-400"></i> Plin Directo</td>
+                        <td class="py-3 px-4 font-bold"><i class="fas fa-mobile-screen text-sky-400 mr-1"></i> Plin Directo</td>
                         <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-sky-500/20 text-sky-300 rounded text-[10px] font-bold">Billetera Digital</span></td>
                         <td class="py-3 px-4 text-center">{{ $ventas->where('forma_pago', 'plin')->count() }}</td>
                         <td class="py-3 px-4 text-right font-mono font-bold text-white">{{ $moneda }} {{ number_format($ventasPlinPuro, 2) }}</td>
                     </tr>
                     <tr>
-                        <td class="py-3 px-4 font-bold flex items-center gap-2"><i class="fas fa-credit-card text-amber-400"></i> Tarjetas (POS Niubiz / Izipay)</td>
+                        <td class="py-3 px-4 font-bold"><i class="fas fa-credit-card text-amber-400 mr-1"></i> Tarjetas (POS Niubiz / Izipay)</td>
                         <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded text-[10px] font-bold">Cuenta Bancaria</span></td>
                         <td class="py-3 px-4 text-center">{{ $ventas->where('forma_pago', 'tarjeta')->count() }}</td>
                         <td class="py-3 px-4 text-right font-mono font-bold text-white">{{ $moneda }} {{ number_format($ventasTarjetaPuro, 2) }}</td>
@@ -362,7 +380,7 @@
         </div>
     </div>
 
-    <!-- TABLA 2: DESGLOSE DE GASTOS / EGRESOS DE CAJA -->
+    <!-- TABLA: GASTOS / EGRESOS DE CAJA -->
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
         <div class="flex justify-between items-center">
             <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
@@ -385,7 +403,17 @@
                 <tbody class="divide-y divide-slate-800 text-slate-200">
                     @forelse($egresosList as $eg)
                         <tr>
-                            <td class="py-3 px-4 font-mono text-slate-400">{{ $eg->created_at ? (is_string($eg->created_at) ? \Carbon\Carbon::parse($eg->created_at)->format('H:i') : $eg->created_at->format('H:i')) : '—' }}</td>
+                            <td class="py-3 px-4 font-mono text-slate-400">
+                                @php
+                                    $egHora = '—';
+                                    if ($eg->created_at) {
+                                        $egHora = is_string($eg->created_at)
+                                            ? \Carbon\Carbon::parse($eg->created_at)->format('H:i')
+                                            : $eg->created_at->format('H:i');
+                                    }
+                                @endphp
+                                {{ $egHora }}
+                            </td>
                             <td class="py-3 px-4">
                                 <span class="px-2 py-0.5 bg-rose-500/20 text-rose-300 rounded text-[10px] font-bold uppercase">
                                     {{ str_replace('_', ' ', $eg->categoria ?? 'gasto') }}
