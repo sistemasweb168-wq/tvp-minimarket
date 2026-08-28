@@ -163,7 +163,7 @@
             <button type="button" class="btn-action btn-print" onclick="window.print()">
                 🖨️ Imprimir Ticket
             </button>
-            <a href="{{ route('ventas.ticket.pdf', $venta->id) }}" class="btn-action btn-pdf">
+            <a href="{{ route('ventas.ticket-pdf', $venta->id) }}" class="btn-action btn-pdf">
                 📄 Descargar en PDF
             </a>
         </div>

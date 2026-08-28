@@ -35,6 +35,11 @@ Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
+// Comprobantes Digitales Públicos (Para clientes desde WhatsApp)
+Route::get('ventas/{venta}/ticket', [VentaController::class, 'ticket'])->name('ventas.ticket');
+Route::get('ventas/{venta}/ticket-pdf', [VentaController::class, 'ticketPdf'])->name('ventas.ticket-pdf');
+Route::get('ventas/{venta}/pdf', [VentaController::class, 'pdf'])->name('ventas.pdf');
+
 Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -59,9 +64,6 @@ Route::middleware('auth')->group(function () {
     // Ventas - POS
     Route::get('pos', [VentaController::class, 'pos'])->name('ventas.pos')->middleware('permission:pos');
     Route::resource('ventas', VentaController::class)->only(['index', 'store', 'show'])->middleware('permission:ventas');
-    Route::get('ventas/{venta}/ticket', [VentaController::class, 'ticket'])->name('ventas.ticket');
-    Route::get('ventas/{venta}/ticket-pdf', [VentaController::class, 'ticketPdf'])->name('ventas.ticket-pdf');
-    Route::get('ventas/{venta}/pdf', [VentaController::class, 'pdf'])->name('ventas.pdf');
     Route::post('ventas/{venta}/anular', [VentaController::class, 'anular'])->name('ventas.anular')->middleware('permission:ventas.anular');
 
     // Compras

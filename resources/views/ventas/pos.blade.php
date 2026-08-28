@@ -1311,18 +1311,19 @@ function pos() {
             const totalStr = parseFloat(this.ultimaVenta?.total || 0).toFixed(2);
 
             const lineas = [
-                `¡Hola! Muchas gracias por tu compra en *${nombreComercio}*.`,
+                `Hola! Muchas gracias por tu compra en *${nombreComercio}*.`,
                 '',
                 `Tu comprobante *${numTicket}* por el monto de *S/ ${totalStr}* está listo.`,
                 '',
-                `📄 Puedes ver tu ticket digital y descargarlo aquí:`,
+                `Puedes ver tu ticket digital y descargarlo aquí:`,
                 url,
                 '',
-                `¡Salud y que disfrutes tus productos!`
+                `Salud y que disfrutes tus productos!`
             ];
 
             const mensaje = lineas.join('\n');
-            const link = `https://wa.me/51${this.telefonoWhatsApp.replace(/\D/g,'')}?text=${encodeURIComponent(mensaje)}`;
+            const telefonoLimpio = this.telefonoWhatsApp.replace(/\D/g,'');
+            const link = `https://api.whatsapp.com/send?phone=51${telefonoLimpio}&text=${encodeURIComponent(mensaje)}`;
             window.open(link, '_blank');
         },
 

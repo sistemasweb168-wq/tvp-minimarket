@@ -355,8 +355,9 @@ class VentaController extends Controller
 
     public function ticket(Venta $venta)
     {
-        $venta->load(['cliente', 'user', 'detalles']);
-        return view('ventas.ticket', compact('venta'));
+        $venta->load(['cliente', 'user', 'detalles.producto', 'comprobanteElectronico']);
+        $empresa = \App\Models\Empresa::first();
+        return view('ventas.ticket', compact('venta', 'empresa'));
     }
 
     public function ticketPdf(Venta $venta)
