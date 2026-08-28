@@ -105,7 +105,23 @@ class VentaController extends Controller
         $tasaImpuesto = $empresa ? $empresa->impuesto / 100 : 0;
         $impuestoIncluido = $empresa ? $empresa->impuesto_incluido : true;
 
+        // ── Validar stock suficiente antes de procesar ───────────────
+        foreach ($data['items'] as $item) {
+            $producto = Producto::find($item['producto_id']);
+            if (!$producto) continue;
+
+            if ($producto->controla_stock && $producto->tipo_producto !== 'combo') {
+                $stockDisponible = floatval($producto->getRawOriginal('stock') ?? $producto->stock ?? 0);
+                if ($stockDisponible < $item['cantidad']) {
+                    return response()->json([
+                        'error' => "Stock insuficiente para \"{$producto->nombre}\". Disponible: {$stockDisponible}, Solicitado: {$item['cantidad']}",
+                    ], 400);
+                }
+            }
+        }
+
         DB::beginTransaction();
+
         try {
             // Resolver o auto-crear cliente si se enviaron datos desde el modal
             $clienteId = $data['cliente_id'] ?? null;

@@ -20,10 +20,12 @@ class Cliente extends Model
     protected $casts = [
         'fecha_nacimiento' => 'date',
         'puntos_fidelidad' => 'integer',
-        'credito_limite' => 'decimal:2',
-        'credito_usado' => 'decimal:2',
-        'activo' => 'boolean',
+        'credito_limite'   => 'decimal:2',
+        'credito_usado'    => 'decimal:2',
+        'activo'           => 'boolean',
     ];
+
+    /* ─── Relaciones ──────────────────────────────────────────── */
 
     public function ventas()
     {
@@ -34,6 +36,13 @@ class Cliente extends Model
     {
         return $this->hasMany(PuntoFidelidad::class);
     }
+
+    public function envasesGarantias()
+    {
+        return $this->hasMany(EnvaseGarantia::class);
+    }
+
+    /* ─── Accessors ───────────────────────────────────────────── */
 
     public function getNombreCompletoAttribute()
     {

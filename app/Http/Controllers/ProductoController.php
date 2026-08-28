@@ -21,12 +21,22 @@ class ProductoController extends Controller
     public function importarExcel(Request $request)
     {
         $request->validate([
-            'archivo_excel' => 'required|mimes:xlsx,xls,csv|max:2048',
+            'archivo_excel' => 'required|mimes:xlsx,xls,csv|max:5120',
         ]);
 
         try {
-            Excel::import(new ProductosImport, $request->file('archivo_excel'));
-            return redirect()->route('productos.index')->with('success', 'Inventario importado correctamente.');
+            $import = new ProductosImport();
+            $import->import($request->file('archivo_excel'));
+
+            $msg = "✅ Se importaron {$import->importados} producto(s) correctamente.";
+
+            if ($import->omitidos > 0) {
+                $erroresStr = implode(' | ', array_slice($import->errors, 0, 5));
+                $msg .= " ⚠️ {$import->omitidos} fila(s) omitidas: {$erroresStr}";
+                return redirect()->route('productos.index')->with('warning', $msg);
+            }
+
+            return redirect()->route('productos.index')->with('success', $msg);
         } catch (\Exception $e) {
             return redirect()->route('productos.index')->with('error', 'Error al importar: ' . $e->getMessage());
         }

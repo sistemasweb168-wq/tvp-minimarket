@@ -54,25 +54,39 @@ class SunatService
 
         $see = new See();
 
-        // Certificado digital (.pem)
+        // Certificado digital — acepta .pem directamente o convierte .pfx
         $certPath = $this->getCertificadoPath();
-        if (file_exists($certPath)) {
-            $see->setCertificate(file_get_contents($certPath));
-        } else {
+        if (!$certPath || !file_exists($certPath)) {
             throw new \Exception("No se encontró el certificado digital. Sube tu certificado en Configuración → SUNAT");
         }
 
-        // Servicio SOAP de SUNAT
+        $certContent = file_get_contents($certPath);
+
+        // Detectar si es .pfx binario y convertir a .pem en memoria
+        if ($this->esPfx($certContent)) {
+            $pemContent = $this->pfxToPem(
+                $certContent,
+                $this->empresa->sunat_certificado_password ?? ''
+            );
+            if (!$pemContent) {
+                throw new \Exception("No se pudo leer el certificado .pfx. Verifica que la contraseña sea correcta.");
+            }
+            $certContent = $pemContent;
+        }
+
+        $see->setCertificate($certContent);
+
+        // Servicio SOAP de SUNAT — Beta o Producción
         $endpoint = $this->empresa->sunat_modo === 'produccion'
             ? SunatEndpoints::FE_PRODUCCION
             : SunatEndpoints::FE_BETA;
         $see->setService($endpoint);
 
-        // Credenciales SOL
-        $usuario = $this->empresa->sunat_modo === 'beta'
-            ? $this->empresa->ruc_nit . 'MODDATOS'  // Usuario fijo de SUNAT en beta
+        // Credenciales SOL (en beta SUNAT usa MODDATOS fijo)
+        $usuario = ($this->empresa->sunat_modo !== 'produccion')
+            ? $this->empresa->ruc_nit . 'MODDATOS'
             : $this->empresa->sunat_usuario_sol;
-        $clave = $this->empresa->sunat_modo === 'beta'
+        $clave = ($this->empresa->sunat_modo !== 'produccion')
             ? 'MODDATOS'
             : $this->empresa->sunat_clave_sol;
 
@@ -116,30 +130,36 @@ class SunatService
         // Obtener serie y correlativo
         $numeracion = SerieDocumento::siguienteNumero($tipoDocumento);
 
+        // Calcular totales correctos usando la tasa de impuesto configurada
+        $tasaIgv  = $this->getTasaIgv();
+        $totales  = $this->calcularTotalesComprobante($venta, $tasaIgv);
+
         // Crear comprobante en BD
         $comprobante = ComprobanteElectronico::create([
-            'venta_id' => $venta->id,
-            'tipo_documento' => $tipoDocumento,
-            'serie' => $numeracion['serie'],
-            'numero' => $numeracion['numero'],
-            'numero_completo' => $numeracion['completo'],
-            'emisor_ruc' => $this->empresa->ruc_nit,
-            'emisor_razon_social' => $this->empresa->razon_social,
-            'receptor_tipo_doc' => $this->getReceptorTipoDoc($venta, $tipoDocumento),
-            'receptor_numero_doc' => $venta->cliente?->documento ?: '00000000',
+            'venta_id'              => $venta->id,
+            'tipo_documento'        => $tipoDocumento,
+            'serie'                 => $numeracion['serie'],
+            'numero'                => $numeracion['numero'],
+            'numero_completo'       => $numeracion['completo'],
+            'emisor_ruc'            => $this->empresa->ruc_nit,
+            'emisor_razon_social'   => $this->empresa->razon_social,
+            'receptor_tipo_doc'     => $this->getReceptorTipoDoc($venta, $tipoDocumento),
+            'receptor_numero_doc'   => $venta->cliente?->documento ?: '00000000',
             'receptor_razon_social' => $venta->cliente?->nombre_completo ?: 'CLIENTE GENERICO',
-            'receptor_direccion' => $venta->cliente?->direccion,
-            'receptor_email' => $venta->cliente?->email,
-            'fecha_emision' => $venta->fecha_venta->toDateString(),
-            'hora_emision' => $venta->fecha_venta->toTimeString(),
-            'moneda' => $this->empresa->codigo_moneda ?: 'PEN',
-            'total_gravadas' => $venta->subtotal,
-            'total_igv' => $venta->impuesto,
-            'total_descuentos' => $venta->descuento,
-            'importe_total' => $venta->total,
-            'importe_letras' => $this->numeroALetras($venta->total) . ' SOLES',
-            'estado_sunat' => 'pendiente',
-            'user_id' => auth()->id() ?? $venta->user_id,
+            'receptor_direccion'    => $venta->cliente?->direccion,
+            'receptor_email'        => $venta->cliente?->email,
+            'fecha_emision'         => $venta->fecha_venta->toDateString(),
+            'hora_emision'          => $venta->fecha_venta->toTimeString(),
+            'moneda'                => $this->empresa->codigo_moneda ?: 'PEN',
+            'total_gravadas'        => $totales['base_gravada'],
+            'total_exoneradas'      => $totales['base_exonerada'],
+            'total_inafectas'       => $totales['base_inafecta'],
+            'total_igv'             => $totales['total_igv'],
+            'total_descuentos'      => $venta->descuento,
+            'importe_total'         => $venta->total,
+            'importe_letras'        => $this->numeroALetras($venta->total) . ' SOLES',
+            'estado_sunat'          => 'pendiente',
+            'user_id'               => auth()->id() ?? $venta->user_id,
         ]);
 
         // Vincular la venta con el comprobante
@@ -154,7 +174,7 @@ class SunatService
     public function enviarASunat(ComprobanteElectronico $comprobante): array
     {
         try {
-            $see = $this->getSee();
+            $see   = $this->getSee();
             $venta = $comprobante->venta;
 
             // Construir la factura/boleta Greenter
@@ -162,7 +182,6 @@ class SunatService
 
             // Generar XML firmado
             $xml = $see->getXmlSigned($invoice);
-            $hash = $see->getFactory()->getLastXml();
             $comprobante->hash = $invoice->getFirma() ?? '';
 
             // Guardar XML
@@ -176,48 +195,46 @@ class SunatService
             $comprobante->intentos_envio++;
 
             if ($result->isSuccess()) {
-                // Guardar CDR
-                $cdrXml = $result->getCdrResponse() ? $result->getCdrZip() : null;
-                if ($cdrXml) {
-                    $cdrPath = $this->guardarCdr($comprobante, $cdrXml);
+                $cdrZip = $result->getCdrZip();
+                if ($cdrZip) {
+                    $cdrPath = $this->guardarCdr($comprobante, $cdrZip);
                     $comprobante->cdr_path = $cdrPath;
                 }
 
                 $cdr = $result->getCdrResponse();
-                $comprobante->estado_sunat = 'aceptado';
+                $comprobante->estado_sunat          = 'aceptado';
                 $comprobante->codigo_respuesta_sunat = $cdr->getCode();
-                $comprobante->mensaje_sunat = $cdr->getDescription();
-
-                $comprobante->qr_data = $this->buildQrData($comprobante);
+                $comprobante->mensaje_sunat          = $cdr->getDescription();
+                $comprobante->qr_data                = $this->buildQrData($comprobante);
                 $comprobante->save();
 
                 return [
                     'success' => true,
-                    'codigo' => $cdr->getCode(),
+                    'codigo'  => $cdr->getCode(),
                     'mensaje' => $cdr->getDescription(),
                 ];
             } else {
                 $error = $result->getError();
-                $comprobante->estado_sunat = 'rechazado';
-                $comprobante->codigo_respuesta_sunat = $error->getCode();
-                $comprobante->mensaje_sunat = $error->getMessage();
+                $comprobante->estado_sunat           = 'rechazado';
+                $comprobante->codigo_respuesta_sunat  = $error->getCode();
+                $comprobante->mensaje_sunat           = $error->getMessage();
                 $comprobante->save();
 
                 return [
                     'success' => false,
-                    'codigo' => $error->getCode(),
+                    'codigo'  => $error->getCode(),
                     'mensaje' => $error->getMessage(),
                 ];
             }
         } catch (\Throwable $e) {
-            $comprobante->estado_sunat = 'excepcion';
-            $comprobante->mensaje_sunat = $e->getMessage();
+            $comprobante->estado_sunat   = 'excepcion';
+            $comprobante->mensaje_sunat  = $e->getMessage();
             $comprobante->intentos_envio++;
             $comprobante->save();
 
             return [
                 'success' => false,
-                'codigo' => 'EXC',
+                'codigo'  => 'EXC',
                 'mensaje' => $e->getMessage(),
             ];
         }
@@ -225,6 +242,7 @@ class SunatService
 
     /**
      * Construye la entidad Invoice (Factura/Boleta) de Greenter
+     * CORREGIDO: IGV dinámico, tipo de afectación por producto, forma de pago, redondeo correcto
      */
     protected function buildInvoice(ComprobanteElectronico $comprobante, Venta $venta): Invoice
     {
@@ -237,6 +255,8 @@ class SunatService
             $client->setAddress((new Address())->setDireccion($comprobante->receptor_direccion));
         }
 
+        $tasaIgv = $this->getTasaIgv();
+
         $invoice = (new Invoice())
             ->setUblVersion('2.1')
             ->setTipoOperacion('0101') // Venta interna
@@ -246,38 +266,104 @@ class SunatService
             ->setFechaEmision(Carbon::parse($comprobante->fecha_emision)->setTimeFromTimeString($comprobante->hora_emision))
             ->setTipoMoneda($comprobante->moneda)
             ->setCompany($this->buildCompany())
-            ->setClient($client)
-            ->setMtoOperGravadas((float) $comprobante->total_gravadas)
-            ->setMtoIGV((float) $comprobante->total_igv)
-            ->setTotalImpuestos((float) $comprobante->total_igv)
-            ->setValorVenta((float) $comprobante->total_gravadas)
-            ->setSubTotal((float) ($comprobante->total_gravadas + $comprobante->total_igv))
-            ->setMtoImpVenta((float) $comprobante->importe_total);
+            ->setClient($client);
 
-        // Detalles
-        $details = [];
-        foreach ($venta->detalles as $d) {
-            $valorUnitario = round((float) $d->precio_unitario / 1.18, 4);
-            $valorVenta = round($valorUnitario * (float) $d->cantidad, 2);
-            $igv = round($valorVenta * 0.18, 2);
-
-            $details[] = (new SaleDetail())
-                ->setCodProducto($d->codigo)
-                ->setUnidad('NIU') // Unidad
-                ->setDescripcion($d->descripcion)
-                ->setCantidad((float) $d->cantidad)
-                ->setMtoValorUnitario($valorUnitario)
-                ->setMtoValorVenta($valorVenta)
-                ->setMtoBaseIgv($valorVenta)
-                ->setPorcentajeIgv(18.00)
-                ->setIgv($igv)
-                ->setTipAfeIgv('10') // Gravado
-                ->setTotalImpuestos($igv)
-                ->setMtoPrecioUnitario((float) $d->precio_unitario);
+        // ── FORMA DE PAGO (campo obligatorio UBL 2.1) ────────────────
+        try {
+            $formaPago = new \Greenter\Model\Sale\FormaPago\FormaPagoContado();
+            $invoice->setFormaPago($formaPago);
+        } catch (\Throwable $e) {
+            // En versiones muy antiguas de Greenter puede no existir — continuar sin él
         }
-        $invoice->setDetails($details);
 
-        // Leyenda (importe en letras)
+        // ── DETALLES — con IGV dinámico y tipo de afectación correcto ──
+        $details         = [];
+        $sumBaseGravada  = 0;
+        $sumBaseExonera  = 0;
+        $sumBaseInafecta = 0;
+        $sumIgv          = 0;
+
+        foreach ($venta->detalles as $d) {
+            $tipoAfec = $d->producto?->tipo_afectacion_igv ?? '10'; // 10=Gravado, 20=Exon, 30=Inafecto
+            $unidad   = $this->mapUnidadMedida($d->producto?->unidad_medida ?? 'UND');
+            $precio   = (float) $d->precio_unitario;
+            $cantidad = (float) $d->cantidad;
+
+            if ($tipoAfec === '10') {
+                // Gravado — descontar IGV del precio (si impuesto incluido)
+                $valorUnitario = round($precio / (1 + $tasaIgv), 10);
+                $valorVenta    = round($valorUnitario * $cantidad, 2);
+                $igvItem       = round($valorVenta * $tasaIgv, 2);
+                $sumBaseGravada += $valorVenta;
+                $sumIgv         += $igvItem;
+
+                $details[] = (new SaleDetail())
+                    ->setCodProducto($d->codigo ?: (string) $d->producto_id)
+                    ->setUnidad($unidad)
+                    ->setDescripcion($d->descripcion)
+                    ->setCantidad($cantidad)
+                    ->setMtoValorUnitario($valorUnitario)
+                    ->setMtoValorVenta($valorVenta)
+                    ->setMtoBaseIgv($valorVenta)
+                    ->setPorcentajeIgv($tasaIgv * 100)
+                    ->setIgv($igvItem)
+                    ->setTipAfeIgv('10')
+                    ->setTotalImpuestos($igvItem)
+                    ->setMtoPrecioUnitario($precio);
+
+            } elseif ($tipoAfec === '20') {
+                // Exonerado — sin IGV
+                $valorVenta = round($precio * $cantidad, 2);
+                $sumBaseExonera += $valorVenta;
+
+                $details[] = (new SaleDetail())
+                    ->setCodProducto($d->codigo ?: (string) $d->producto_id)
+                    ->setUnidad($unidad)
+                    ->setDescripcion($d->descripcion)
+                    ->setCantidad($cantidad)
+                    ->setMtoValorUnitario($precio)
+                    ->setMtoValorVenta($valorVenta)
+                    ->setMtoBaseIgv($valorVenta)
+                    ->setPorcentajeIgv(0)
+                    ->setIgv(0)
+                    ->setTipAfeIgv('20')
+                    ->setTotalImpuestos(0)
+                    ->setMtoPrecioUnitario($precio);
+
+            } else {
+                // Inafecto (30) — sin IGV
+                $valorVenta = round($precio * $cantidad, 2);
+                $sumBaseInafecta += $valorVenta;
+
+                $details[] = (new SaleDetail())
+                    ->setCodProducto($d->codigo ?: (string) $d->producto_id)
+                    ->setUnidad($unidad)
+                    ->setDescripcion($d->descripcion)
+                    ->setCantidad($cantidad)
+                    ->setMtoValorUnitario($precio)
+                    ->setMtoValorVenta($valorVenta)
+                    ->setMtoBaseIgv($valorVenta)
+                    ->setPorcentajeIgv(0)
+                    ->setIgv(0)
+                    ->setTipAfeIgv('30')
+                    ->setTotalImpuestos(0)
+                    ->setMtoPrecioUnitario($precio);
+            }
+        }
+
+        // ── TOTALES calculados desde los ítems (coherencia matemática) ──
+        $invoice
+            ->setMtoOperGravadas(round($sumBaseGravada, 2))
+            ->setMtoOperExoneradas(round($sumBaseExonera, 2))
+            ->setMtoOperInafectas(round($sumBaseInafecta, 2))
+            ->setMtoIGV(round($sumIgv, 2))
+            ->setTotalImpuestos(round($sumIgv, 2))
+            ->setValorVenta(round($sumBaseGravada + $sumBaseExonera + $sumBaseInafecta, 2))
+            ->setSubTotal(round($sumBaseGravada + $sumIgv + $sumBaseExonera + $sumBaseInafecta, 2))
+            ->setMtoImpVenta((float) $comprobante->importe_total)
+            ->setDetails($details);
+
+        // ── LEYENDA (importe en letras) ──────────────────────────────
         $invoice->setLegends([
             (new Legend())->setCode('1000')->setValue($comprobante->importe_letras),
         ]);
@@ -301,36 +387,37 @@ class SunatService
             $comprobanteOrigen->tipo_documento === '01' ? 'FC01' : 'BC01');
 
         $nc = ComprobanteElectronico::create([
-            'venta_id' => $venta->id,
-            'tipo_documento' => $tipoNota,
-            'serie' => $numeracion['serie'],
-            'numero' => $numeracion['numero'],
-            'numero_completo' => $numeracion['completo'],
-            'emisor_ruc' => $this->empresa->ruc_nit,
-            'emisor_razon_social' => $this->empresa->razon_social,
-            'receptor_tipo_doc' => $comprobanteOrigen->receptor_tipo_doc,
-            'receptor_numero_doc' => $comprobanteOrigen->receptor_numero_doc,
-            'receptor_razon_social' => $comprobanteOrigen->receptor_razon_social,
-            'fecha_emision' => now()->toDateString(),
-            'hora_emision' => now()->toTimeString(),
-            'moneda' => $comprobanteOrigen->moneda,
-            'total_gravadas' => $comprobanteOrigen->total_gravadas,
-            'total_igv' => $comprobanteOrigen->total_igv,
-            'importe_total' => $comprobanteOrigen->importe_total,
-            'importe_letras' => $comprobanteOrigen->importe_letras,
-            'doc_referencia_tipo' => $comprobanteOrigen->tipo_documento,
+            'venta_id'                    => $venta->id,
+            'tipo_documento'              => $tipoNota,
+            'serie'                       => $numeracion['serie'],
+            'numero'                      => $numeracion['numero'],
+            'numero_completo'             => $numeracion['completo'],
+            'emisor_ruc'                  => $this->empresa->ruc_nit,
+            'emisor_razon_social'         => $this->empresa->razon_social,
+            'receptor_tipo_doc'           => $comprobanteOrigen->receptor_tipo_doc,
+            'receptor_numero_doc'         => $comprobanteOrigen->receptor_numero_doc,
+            'receptor_razon_social'       => $comprobanteOrigen->receptor_razon_social,
+            'fecha_emision'               => now()->toDateString(),
+            'hora_emision'                => now()->toTimeString(),
+            'moneda'                      => $comprobanteOrigen->moneda,
+            'total_gravadas'              => $comprobanteOrigen->total_gravadas,
+            'total_igv'                   => $comprobanteOrigen->total_igv,
+            'importe_total'               => $comprobanteOrigen->importe_total,
+            'importe_letras'              => $comprobanteOrigen->importe_letras,
+            'doc_referencia_tipo'         => $comprobanteOrigen->tipo_documento,
             'doc_referencia_serie_numero' => $comprobanteOrigen->numero_completo,
-            'codigo_motivo_nc' => $codigoMotivo,
-            'motivo_referencia' => $motivo,
-            'estado_sunat' => 'pendiente',
-            'user_id' => auth()->id(),
+            'codigo_motivo_nc'            => $codigoMotivo,
+            'motivo_referencia'           => $motivo,
+            'estado_sunat'                => 'pendiente',
+            'user_id'                     => auth()->id(),
         ]);
 
         return $nc;
     }
 
     /**
-     * Genera un resumen diario de boletas y comunicaciones de baja
+     * Genera y envía el Resumen Diario de Boletas a SUNAT
+     * (necesario para boletas que no se enviaron en tiempo real)
      */
     public function generarResumenDiario(Carbon $fecha): ResumenDiario
     {
@@ -343,69 +430,185 @@ class SunatService
             throw new \Exception("No hay boletas aceptadas para la fecha {$fecha->toDateString()}");
         }
 
-        $correlativo = ResumenDiario::whereDate('fecha_generacion', now())->count() + 1;
+        $correlativo   = ResumenDiario::whereDate('fecha_generacion', now())->count() + 1;
         $identificador = 'RC-' . now()->format('Ymd') . '-' . str_pad($correlativo, 3, '0', STR_PAD_LEFT);
 
         $resumen = ResumenDiario::create([
-            'identificador' => $identificador,
-            'fecha_resumen' => $fecha->toDateString(),
-            'fecha_generacion' => now()->toDateString(),
-            'cantidad_comprobantes' => $boletas->count(),
-            'total_general' => $boletas->sum('importe_total'),
-            'estado_sunat' => 'pendiente',
-            'user_id' => auth()->id(),
+            'identificador'        => $identificador,
+            'fecha_resumen'        => $fecha->toDateString(),
+            'fecha_generacion'     => now()->toDateString(),
+            'cantidad_comprobantes'=> $boletas->count(),
+            'total_general'        => $boletas->sum('importe_total'),
+            'estado_sunat'         => 'pendiente',
+            'user_id'              => auth()->id(),
         ]);
 
-        // TODO: enviar resumen a SUNAT vía Greenter Summary
+        // ── Enviar el resumen a SUNAT via Greenter ───────────────────
+        try {
+            $see = $this->getSee();
+
+            $summary = new Summary();
+            $summary
+                ->setFechaEmision(now())
+                ->setFechaReferencia($fecha)
+                ->setCompany($this->buildCompany())
+                ->setCorrelativo($correlativo);
+
+            $detalles = [];
+            foreach ($boletas as $b) {
+                $detalles[] = (new SummaryDetail())
+                    ->setTipoDoc($b->tipo_documento)
+                    ->setSerie($b->serie)
+                    ->setCorrelativoInicio((int) $b->numero)
+                    ->setCorrelativoFin((int) $b->numero)
+                    ->setTotalVenta((float) $b->importe_total)
+                    ->setEstado('1'); // 1 = Adicionado
+            }
+            $summary->setDetails($detalles);
+
+            $result = $see->send($summary);
+
+            if ($result->isSuccess()) {
+                $resumen->update([
+                    'estado_sunat'          => 'enviado',
+                    'codigo_respuesta_sunat' => $result->getCdrResponse()?->getCode(),
+                    'mensaje_sunat'         => $result->getCdrResponse()?->getDescription(),
+                ]);
+            } else {
+                $error = $result->getError();
+                $resumen->update([
+                    'estado_sunat'  => 'error',
+                    'mensaje_sunat' => $error->getMessage(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            $resumen->update([
+                'estado_sunat'  => 'error',
+                'mensaje_sunat' => $e->getMessage(),
+            ]);
+        }
 
         return $resumen;
     }
 
-    // ============= Métodos utilitarios =============
+    // ===================== Métodos Utilitarios =====================
+
+    /** Obtiene la tasa de IGV configurada en empresa (ej: 0.18) */
+    protected function getTasaIgv(): float
+    {
+        $tasa = (float) ($this->empresa->impuesto ?? 18);
+        return $tasa > 1 ? $tasa / 100 : $tasa; // Soporta 18 o 0.18
+    }
+
+    /** Calcula correctamente las bases gravada/exonerada/inafecta e IGV */
+    protected function calcularTotalesComprobante(Venta $venta, float $tasaIgv): array
+    {
+        $baseGravada  = 0;
+        $baseExonera  = 0;
+        $baseInafecta = 0;
+        $totalIgv     = 0;
+
+        foreach ($venta->detalles as $d) {
+            $tipoAfec = $d->producto?->tipo_afectacion_igv ?? '10';
+            $precio   = (float) $d->precio_unitario;
+            $cantidad = (float) $d->cantidad;
+
+            if ($tipoAfec === '10') {
+                $base = round($precio / (1 + $tasaIgv) * $cantidad, 2);
+                $igv  = round($base * $tasaIgv, 2);
+                $baseGravada += $base;
+                $totalIgv    += $igv;
+            } elseif ($tipoAfec === '20') {
+                $baseExonera += round($precio * $cantidad, 2);
+            } else {
+                $baseInafecta += round($precio * $cantidad, 2);
+            }
+        }
+
+        return [
+            'base_gravada'   => round($baseGravada, 2),
+            'base_exonerada' => round($baseExonera, 2),
+            'base_inafecta'  => round($baseInafecta, 2),
+            'total_igv'      => round($totalIgv, 2),
+        ];
+    }
 
     protected function getReceptorTipoDoc(Venta $venta, string $tipoDoc): string
     {
         if ($tipoDoc === '01') return '6'; // Factura → RUC
-        if (!$venta->cliente) return '0'; // sin identificación
+        if (!$venta->cliente) return '0';
         return match(strtoupper($venta->cliente->tipo_documento)) {
-            'RUC' => '6',
-            'DNI' => '1',
-            'CE' => '4',
+            'RUC'       => '6',
+            'DNI'       => '1',
+            'CE'        => '4',
             'PASAPORTE' => '7',
-            default => '0',
+            default     => '0',
         };
     }
 
     protected function getCertificadoPath(): string
     {
-        $path = $this->empresa->sunat_certificado_path;
+        $path = $this->empresa->sunat_certificado_path ?? '';
         if (!$path) return '';
         return storage_path('app/' . $path);
     }
 
+    /** Detecta si el contenido es un archivo PFX binario */
+    protected function esPfx(string $contenido): bool
+    {
+        // Los archivos PFX/P12 empiezan con la secuencia de bytes 0x30 0x82 (ASN.1 SEQUENCE)
+        return strlen($contenido) > 4 &&
+               ord($contenido[0]) === 0x30 &&
+               ord($contenido[1]) === 0x82;
+    }
+
+    /** Convierte PFX a PEM en memoria */
+    protected function pfxToPem(string $pfxContent, string $password): ?string
+    {
+        $certs = [];
+        if (!openssl_pkcs12_read($pfxContent, $certs, $password)) {
+            return null;
+        }
+        // Greenter espera: clave privada + certificado concatenados en PEM
+        return ($certs['pkey'] ?? '') . ($certs['cert'] ?? '');
+    }
+
+    /** Mapea unidad de medida del sistema al código SUNAT/UBL */
+    protected function mapUnidadMedida(?string $unidad): string
+    {
+        $mapa = [
+            'UND' => 'NIU', 'UNIDAD' => 'NIU', 'UNIT' => 'NIU',
+            'KG'  => 'KGM', 'KILO'   => 'KGM', 'KGM' => 'KGM',
+            'LT'  => 'LTR', 'LITRO'  => 'LTR', 'LTR' => 'LTR',
+            'M'   => 'MTR', 'METRO'  => 'MTR', 'MTR' => 'MTR',
+            'DOC' => 'DZN', 'DOCENA' => 'DZN',
+            'PAQ' => 'PK',  'PAQUE'  => 'PK',
+        ];
+        return $mapa[strtoupper(trim($unidad ?? 'UND'))] ?? 'NIU';
+    }
+
     protected function guardarXml(ComprobanteElectronico $c, string $xml): string
     {
-        $dir = 'sunat/xml/' . date('Y/m');
+        $dir      = 'sunat/xml/' . date('Y/m');
         Storage::makeDirectory($dir);
         $filename = "{$c->emisor_ruc}-{$c->tipo_documento}-{$c->numero_completo}.xml";
-        $path = "$dir/$filename";
+        $path     = "$dir/$filename";
         Storage::put($path, $xml);
         return $path;
     }
 
     protected function guardarCdr(ComprobanteElectronico $c, string $cdrZip): string
     {
-        $dir = 'sunat/cdr/' . date('Y/m');
+        $dir      = 'sunat/cdr/' . date('Y/m');
         Storage::makeDirectory($dir);
         $filename = "R-{$c->emisor_ruc}-{$c->tipo_documento}-{$c->numero_completo}.zip";
-        $path = "$dir/$filename";
+        $path     = "$dir/$filename";
         Storage::put($path, $cdrZip);
         return $path;
     }
 
     protected function buildQrData(ComprobanteElectronico $c): string
     {
-        // Formato SUNAT: RUC | TipoDoc | Serie | Numero | IGV | Total | FechaEmision | TipoDocReceptor | NumDocReceptor
         return implode('|', [
             $c->emisor_ruc,
             $c->tipo_documento,
@@ -422,10 +625,9 @@ class SunatService
     /** Convierte un número decimal a letras en español */
     public function numeroALetras(float $numero): string
     {
-        $entero = (int) floor($numero);
+        $entero    = (int) floor($numero);
         $decimales = (int) round(($numero - $entero) * 100);
-
-        $letras = $this->convertirEntero($entero);
+        $letras    = $this->convertirEntero($entero);
         return trim($letras) . ' CON ' . str_pad((string)$decimales, 2, '0', STR_PAD_LEFT) . '/100';
     }
 
@@ -434,28 +636,28 @@ class SunatService
         if ($n === 0) return 'CERO';
         if ($n === 1) return 'UN';
 
-        $unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
-        $decenas = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
+        $unidades  = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+        $decenas   = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
         $veintenas = ['VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
-        $centenas = ['CIEN', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+        $centenas  = ['CIEN', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
 
         if ($n >= 1000000) {
             $millones = intdiv($n, 1000000);
-            $resto = $n % 1000000;
-            $prefix = $millones === 1 ? 'UN MILLON' : $this->convertirEntero($millones) . ' MILLONES';
+            $resto    = $n % 1000000;
+            $prefix   = $millones === 1 ? 'UN MILLON' : $this->convertirEntero($millones) . ' MILLONES';
             return trim($prefix . ' ' . ($resto > 0 ? $this->convertirEntero($resto) : ''));
         }
 
         if ($n >= 1000) {
-            $miles = intdiv($n, 1000);
-            $resto = $n % 1000;
+            $miles  = intdiv($n, 1000);
+            $resto  = $n % 1000;
             $prefix = $miles === 1 ? 'MIL' : $this->convertirEntero($miles) . ' MIL';
             return trim($prefix . ' ' . ($resto > 0 ? $this->convertirEntero($resto) : ''));
         }
 
         if ($n >= 100) {
             if ($n === 100) return 'CIEN';
-            $c = intdiv($n, 100);
+            $c     = intdiv($n, 100);
             $resto = $n % 100;
             $prefix = $c === 1 ? 'CIENTO' : $centenas[$c - 1];
             return trim($prefix . ' ' . ($resto > 0 ? $this->convertirEntero($resto) : ''));

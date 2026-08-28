@@ -65,9 +65,9 @@ class CajaController extends Controller
 
         foreach ($ventas->where('forma_pago', 'mixto') as $v) {
             $dp = is_array($v->detalle_pago) ? $v->detalle_pago : (json_decode($v->detalle_pago, true) ?? []);
-            $m1 = $dp['metodo_1'] ?? $dp['metodo_efectivo'] ?? 'efectivo';
+            $m1   = $dp['metodo_1'] ?? $dp['metodo_efectivo'] ?? 'efectivo';
             $cant1 = floatval($dp['monto_1'] ?? $dp['monto_efectivo'] ?? 0);
-            $m2 = $dp['metodo_2'] ?? $dp['metodo_digital'] ?? 'yape';
+            $m2   = $dp['metodo_2'] ?? $dp['metodo_digital'] ?? 'yape';
             $cant2 = floatval($dp['monto_2'] ?? $dp['monto_digital'] ?? 0);
 
             if ($m1 === 'efectivo') $mixtasEfectivo += $cant1;
@@ -76,37 +76,37 @@ class CajaController extends Controller
         $totalEfectivoReal = $ventasEfectivoPuro + $mixtasEfectivo;
 
         $totalIngresos = ($turno->movimientos ?? collect())->where('tipo', 'ingreso')->sum('monto');
-        $totalEgresos = ($turno->movimientos ?? collect())->where('tipo', 'egreso')->sum('monto');
+        $totalEgresos  = ($turno->movimientos ?? collect())->where('tipo', 'egreso')->sum('monto');
 
-        $garantiasCobradas = 0;
+        // ── Garantías filtradas por este turno específico ────────────
+        $garantiasCobradas  = 0;
         $garantiasDevueltas = 0;
         try {
             if (class_exists(\App\Models\EnvaseGarantia::class) && \Illuminate\Support\Facades\Schema::hasTable('envases_garantias')) {
-                $garantiasCobradas = \App\Models\EnvaseGarantia::where('created_at', '>=', $turno->fecha_apertura)
-                    ->where('created_at', '<=', now())
+                $garantiasCobradas = \App\Models\EnvaseGarantia::where('turno_caja_id', $turno->id)
                     ->where('estado', 'prestado')
                     ->sum('monto_garantia') ?? 0;
 
-                $garantiasDevueltas = \App\Models\EnvaseGarantia::where('fecha_devolucion', '>=', $turno->fecha_apertura)
-                    ->where('fecha_devolucion', '<=', now())
+                $garantiasDevueltas = \App\Models\EnvaseGarantia::where('turno_caja_id', $turno->id)
                     ->where('estado', 'devuelto')
                     ->sum('monto_garantia') ?? 0;
             }
         } catch (\Throwable $e) {
-            $garantiasCobradas = 0;
+            $garantiasCobradas  = 0;
             $garantiasDevueltas = 0;
         }
 
-        $montoCalculado = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas) - ($totalEgresos + $garantiasDevueltas);
+        $montoCalculado = ($turno->monto_apertura + $totalEfectivoReal + $totalIngresos + $garantiasCobradas)
+                        - ($totalEgresos + $garantiasDevueltas);
         $diferencia = $data['monto_cierre'] - $montoCalculado;
 
         $turno->update([
-            'fecha_cierre' => now(),
-            'monto_cierre' => $data['monto_cierre'],
+            'fecha_cierre'    => now(),
+            'monto_cierre'    => $data['monto_cierre'],
             'monto_calculado' => $montoCalculado,
-            'diferencia' => $diferencia,
-            'observaciones' => trim(($turno->observaciones ?? '') . "\n" . ($data['observaciones'] ?? '')),
-            'estado' => 'cerrado',
+            'diferencia'      => $diferencia,
+            'observaciones'   => trim(($turno->observaciones ?? '') . "\n" . ($data['observaciones'] ?? '')),
+            'estado'          => 'cerrado',
         ]);
 
         return redirect()->route('caja.cierre', $turno->id)

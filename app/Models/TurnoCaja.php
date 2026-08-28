@@ -19,17 +19,20 @@ class TurnoCaja extends Model
     ];
 
     protected $casts = [
-        'fecha_apertura' => 'datetime',
-        'fecha_cierre' => 'datetime',
-        'monto_apertura' => 'decimal:2',
-        'monto_cierre' => 'decimal:2',
+        'fecha_apertura'  => 'datetime',
+        'fecha_cierre'    => 'datetime',
+        'monto_apertura'  => 'decimal:2',
+        'monto_cierre'    => 'decimal:2',
         'monto_calculado' => 'decimal:2',
-        'diferencia' => 'decimal:2',
-        'total_ventas' => 'decimal:2',
-        'total_efectivo' => 'decimal:2',
-        'total_tarjeta' => 'decimal:2',
-        'total_otros' => 'decimal:2',
+        'diferencia'      => 'decimal:2',
+        'total_ventas'    => 'decimal:2',
+        'total_efectivo'  => 'decimal:2',
+        'total_tarjeta'   => 'decimal:2',
+        'total_otros'     => 'decimal:2',
+        'cantidad_ventas' => 'integer',
     ];
+
+    /* ─── Relaciones ──────────────────────────────────────────── */
 
     public function caja()
     {
@@ -50,4 +53,15 @@ class TurnoCaja extends Model
     {
         return $this->hasMany(MovimientoCaja::class);
     }
+
+    public function envasesGarantias()
+    {
+        return $this->hasMany(EnvaseGarantia::class);
+    }
+
+    /* ─── Scopes ──────────────────────────────────────────────── */
+
+    public function scopeAbierto($q)             { return $q->where('estado', 'abierto'); }
+    public function scopeCerrado($q)             { return $q->where('estado', 'cerrado'); }
+    public function scopeDelUsuario($q, $userId) { return $q->where('user_id', $userId); }
 }

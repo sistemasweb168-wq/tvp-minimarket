@@ -17,18 +17,22 @@ class Venta extends Model
         'subtotal', 'descuento', 'impuesto', 'total', 'monto_recibido', 'cambio',
         'forma_pago', 'detalle_pago', 'estado', 'observaciones',
         'comprobante_electronico_id',
+        // Campos adicionales de métodos de pago
+        'metodo_pago_id', 'numero_operacion', 'estado_entrega',
     ];
 
     protected $casts = [
-        'fecha_venta' => 'datetime',
-        'subtotal' => 'decimal:2',
-        'descuento' => 'decimal:2',
-        'impuesto' => 'decimal:2',
-        'total' => 'decimal:2',
+        'fecha_venta'    => 'datetime',
+        'subtotal'       => 'decimal:2',
+        'descuento'      => 'decimal:2',
+        'impuesto'       => 'decimal:2',
+        'total'          => 'decimal:2',
         'monto_recibido' => 'decimal:2',
-        'cambio' => 'decimal:2',
-        'detalle_pago' => 'array',
+        'cambio'         => 'decimal:2',
+        'detalle_pago'   => 'array',
     ];
+
+    /* ─── Relaciones ──────────────────────────────────────────── */
 
     public function cliente()
     {
@@ -54,4 +58,20 @@ class Venta extends Model
     {
         return $this->belongsTo(ComprobanteElectronico::class, 'comprobante_electronico_id');
     }
+
+    public function metodoPago()
+    {
+        return $this->belongsTo(MetodoPago::class, 'metodo_pago_id');
+    }
+
+    public function puntosFidelidad()
+    {
+        return $this->hasMany(PuntoFidelidad::class);
+    }
+
+    /* ─── Scopes ──────────────────────────────────────────────── */
+
+    public function scopeCompletadas($q)  { return $q->where('estado', 'completada'); }
+    public function scopeAnuladas($q)     { return $q->where('estado', 'anulada'); }
+    public function scopeDelTurno($q, $turnoId) { return $q->where('turno_caja_id', $turnoId); }
 }
