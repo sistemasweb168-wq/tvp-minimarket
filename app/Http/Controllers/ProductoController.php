@@ -80,7 +80,7 @@ class ProductoController extends Controller
             'codigo_barras' => 'nullable|string|max:50',
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'tipo_producto' => 'required|in:estandar,combo',
+            'tipo_producto' => 'required|in:estandar,paquete,combo',
             'categoria_id' => 'nullable|exists:categorias,id',
             'proveedor_id' => 'nullable|exists:proveedores,id',
             'unidad_medida' => 'required|string|max:20',
@@ -99,7 +99,8 @@ class ProductoController extends Controller
             'destacado' => 'nullable|boolean',
         ]);
 
-        $data['tipo_producto'] = $request->tipo_producto ?? 'estandar';
+        $modoProducto = $data['tipo_producto'];
+        $data['tipo_producto'] = in_array($modoProducto, ['combo', 'paquete']) ? 'combo' : 'estandar';
         $data['stock'] = $data['tipo_producto'] === 'combo' ? 0 : ($data['stock'] ?? 0);
         $data['controla_stock'] = $data['tipo_producto'] === 'combo' ? false : $request->boolean('controla_stock', true);
         $data['aplica_impuesto'] = $request->boolean('aplica_impuesto', true);
@@ -114,7 +115,14 @@ class ProductoController extends Controller
         }
 
         $producto = Producto::create($data);
-        if ($request->tipo_producto === 'combo' && $request->has('componente_id')) {
+
+        // Si es paquete estilo Abarrotes (1 solo producto con N unidades)
+        if ($modoProducto === 'paquete' && $request->filled('paquete_producto_id')) {
+            $cant = floatval($request->paquete_cantidad ?? 6);
+            $producto->componentesCombo()->sync([
+                $request->paquete_producto_id => ['cantidad' => $cant > 0 ? $cant : 6]
+            ]);
+        } elseif ($modoProducto === 'combo' && $request->has('componente_id')) {
             $syncData = [];
             foreach ($request->componente_id as $index => $compId) {
                 if (!empty($compId)) {
@@ -169,7 +177,7 @@ class ProductoController extends Controller
             'codigo_barras' => 'nullable|string|max:50',
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'tipo_producto' => 'required|in:estandar,combo',
+            'tipo_producto' => 'required|in:estandar,paquete,combo',
             'categoria_id' => 'nullable|exists:categorias,id',
             'proveedor_id' => 'nullable|exists:proveedores,id',
             'unidad_medida' => 'required|string|max:20',
@@ -185,7 +193,8 @@ class ProductoController extends Controller
             'ubicacion' => 'nullable|string|max:100',
         ]);
 
-        $data['tipo_producto'] = $request->tipo_producto ?? 'estandar';
+        $modoProducto = $data['tipo_producto'];
+        $data['tipo_producto'] = in_array($modoProducto, ['combo', 'paquete']) ? 'combo' : 'estandar';
         $data['controla_stock'] = $data['tipo_producto'] === 'combo' ? false : $request->boolean('controla_stock', true);
         $data['aplica_impuesto'] = $request->boolean('aplica_impuesto', true);
         $data['destacado'] = $request->boolean('destacado');
@@ -222,7 +231,14 @@ class ProductoController extends Controller
         }
 
         $producto->update($data);
-        if ($request->tipo_producto === 'combo' && $request->has('componente_id')) {
+
+        // Sincronizar componentes
+        if ($modoProducto === 'paquete' && $request->filled('paquete_producto_id')) {
+            $cant = floatval($request->paquete_cantidad ?? 6);
+            $producto->componentesCombo()->sync([
+                $request->paquete_producto_id => ['cantidad' => $cant > 0 ? $cant : 6]
+            ]);
+        } elseif ($modoProducto === 'combo' && $request->has('componente_id')) {
             $syncData = [];
             foreach ($request->componente_id as $index => $compId) {
                 if (!empty($compId)) {

@@ -7,29 +7,70 @@
     @csrf @method('PUT')
 
     <div class="lg:col-span-2 space-y-5">
+        
+        <!-- SELECTOR PRINCIPAL DE MODO DE PRODUCTO (ESTILO ABARROTES / ELEVENTA) -->
+        <div class="bg-slate-900 border-2 border-amber-500/40 rounded-2xl p-5 shadow-xl">
+            <label class="block text-xs font-black uppercase tracking-wider text-amber-400 mb-2">
+                Tipo de Producto
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                
+                <!-- 1. Producto Estándar -->
+                <button type="button" @click="tipo_producto = 'estandar'"
+                        :class="tipo_producto === 'estandar' ? 'bg-emerald-600 text-white border-emerald-400 shadow-lg' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+                        class="p-3 rounded-xl border text-left transition flex flex-col justify-between gap-1 cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-box text-base sm:text-lg"></i>
+                        <span class="font-bold text-xs sm:text-sm">1. Estándar</span>
+                    </div>
+                    <p class="text-[11px] opacity-80 leading-tight">Producto individual con stock propio.</p>
+                </button>
+
+                <!-- 2. Paquete / Six-Pack (Estilo Abarrotes) -->
+                <button type="button" @click="tipo_producto = 'paquete'"
+                        :class="tipo_producto === 'paquete' ? 'bg-amber-600 text-white border-amber-400 shadow-lg' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+                        class="p-3 rounded-xl border text-left transition flex flex-col justify-between gap-1 cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-beer-mug-empty text-base sm:text-lg"></i>
+                        <span class="font-bold text-xs sm:text-sm">2. Paquete / Six-Pack</span>
+                    </div>
+                    <p class="text-[11px] opacity-80 leading-tight">Sixpack o Caja que descuenta N unidades.</p>
+                </button>
+
+                <!-- 3. Combo Mixto -->
+                <button type="button" @click="tipo_producto = 'combo'"
+                        :class="tipo_producto === 'combo' ? 'bg-purple-600 text-white border-purple-400 shadow-lg' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'"
+                        class="p-3 rounded-xl border text-left transition flex flex-col justify-between gap-1 cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-layer-group text-base sm:text-lg"></i>
+                        <span class="font-bold text-xs sm:text-sm">3. Combo Mixto</span>
+                    </div>
+                    <p class="text-[11px] opacity-80 leading-tight">Pack variado de varios productos.</p>
+                </button>
+            </div>
+            <input type="hidden" name="tipo_producto" :value="tipo_producto">
+        </div>
+
         <!-- 1. Información General -->
         <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
             <h3 class="font-bold text-slate-100 mb-4 pb-3 border-b border-slate-800 flex items-center justify-between">
-                <span><i class="fas fa-info-circle text-amber-500 mr-2"></i>Información General</span>
-                <span x-show="tipo_producto === 'combo'" class="px-2.5 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-wider">
-                    <i class="fas fa-layer-group mr-1"></i> Modo Combo / Pack
-                </span>
+                <span><i class="fas fa-info-circle text-emerald-500 mr-2"></i>Información del Producto</span>
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-bold text-slate-200 mb-1">Tipo de Producto <span class="text-amber-500">*</span></label>
-                    <select name="tipo_producto" x-model="tipo_producto" class="w-full px-3 py-2.5 bg-slate-800 border-2 border-amber-500/40 text-white rounded-xl focus:outline-none focus:border-amber-500 font-bold">
-                        <option value="estandar">📦 Producto Estándar (Individual con Stock Propio)</option>
-                        <option value="combo">🍸 Combo / Pack Promocional (Pack compuesto de varios productos)</option>
-                    </select>
-                </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-200 mb-1">Código del Sistema</label>
                     <input type="text" name="codigo" value="{{ old('codigo', $producto->codigo) }}" required class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-200 mb-1">Código de Barras (Escaner)</label>
+                    <label class="block text-sm font-semibold text-slate-200 mb-1">
+                        Código de Barras 
+                        <span x-show="tipo_producto === 'paquete'" class="text-amber-400 font-bold text-xs">(Código del cartón del Sixpack)</span>
+                    </label>
                     <input type="text" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras) }}" placeholder="Opcional" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-white mb-1">Nombre del Producto / Paquete <span class="text-red-500">*</span></label>
+                    <input type="text" name="nombre" value="{{ old('nombre', $producto->nombre) }}" required class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-amber-500 font-bold text-base">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-200 mb-1">Categoría</label>
@@ -39,14 +80,6 @@
                             <option value="{{ $c->id }}" {{ $producto->categoria_id == $c->id ? 'selected' : '' }}>{{ $c->nombre }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-white mb-1">Nombre del Producto o Combo <span class="text-red-500">*</span></label>
-                    <input type="text" name="nombre" value="{{ old('nombre', $producto->nombre) }}" required placeholder="Ej. Whisky Red Label 750ml o Pack Fiestero" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-amber-500 font-bold text-base">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-slate-200 mb-1">Descripción / Notas</label>
-                    <textarea name="descripcion" rows="2" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-amber-500">{{ old('descripcion', $producto->descripcion) }}</textarea>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-200 mb-1">Proveedor</label>
@@ -60,58 +93,108 @@
                 <div>
                     <label class="block text-sm font-semibold text-slate-200 mb-1">Unidad de Medida</label>
                     <select name="unidad_medida" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-amber-500">
-                        @foreach(['UND'=>'Unidad / Botella','CAJA'=>'Caja','PAQ'=>'Pack / Paquete','LT'=>'Litro','KG'=>'Kilogramo','GR'=>'Gramo','ML'=>'Mililitro'] as $k=>$v)
+                        @foreach(['UND'=>'Unidad / Botella','PAQ'=>'Pack / Paquete','CAJA'=>'Caja','LT'=>'Litro','KG'=>'Kilogramo','GR'=>'Gramo','ML'=>'Mililitro'] as $k=>$v)
                             <option value="{{ $k }}" {{ $producto->unidad_medida == $k ? 'selected' : '' }}>{{ $v }}</option>
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-200 mb-1">Ubicación</label>
+                    <input type="text" name="ubicacion" value="{{ $producto->ubicacion }}" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-amber-500">
+                </div>
             </div>
         </div>
 
-        <!-- 2. SECCIÓN COMPONENTES DEL COMBO (Visible cuando es Combo) -->
-        <div x-show="tipo_producto === 'combo'" x-cloak class="bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-900 border-2 border-amber-500/50 rounded-2xl shadow-xl p-6 relative">
+        <!-- =================================================================== -->
+        <!-- MODO 2: PAQUETE / SIX-PACK (CONFIGURACIÓN ESTILO SISTEMA ABARROTES) -->
+        <!-- =================================================================== -->
+        <div x-show="tipo_producto === 'paquete'" x-cloak class="bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-900 border-2 border-amber-500/60 rounded-2xl shadow-xl p-6 relative">
+            <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold">
+                    <i class="fas fa-beer-mug-empty"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-base sm:text-lg">Configuración del Paquete / Six-Pack</h3>
+                    <p class="text-xs text-slate-400">Indica de qué producto proviene y cuántas unidades contiene este paquete.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- 1. Producto Individual -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">1. Producto Individual que Contiene <span class="text-red-500">*</span></label>
+                    <select name="paquete_producto_id" x-model="paqueteProductoId" @change="recalcularPaquete()" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm font-bold focus:border-amber-500 outline-none">
+                        <option value="">— Seleccionar Producto Individual —</option>
+                        <template x-for="p in productosDisponibles" :key="p.id">
+                            <option :value="p.id" x-text="`${p.nombre} (Stock: ${p.stock} unids) - Costo: S/ ${parseFloat(p.precio_compra).toFixed(2)}`"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- 2. Cantidad en el Paquete -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">2. Unidades que contiene este Paquete <span class="text-red-500">*</span></label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" name="paquete_cantidad" x-model.number="paqueteCantidad" @input="recalcularPaquete()" min="1" step="1" class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 text-amber-400 font-black text-lg text-center rounded-xl focus:border-amber-500 outline-none">
+                    </div>
+                    <!-- Botones rápidos comunes -->
+                    <div class="flex gap-1.5 mt-1.5">
+                        <button type="button" @click="paqueteCantidad = 4; recalcularPaquete()" class="px-2 py-0.5 bg-slate-800 text-[10px] text-slate-300 hover:text-white rounded border border-slate-700">4-pack</button>
+                        <button type="button" @click="paqueteCantidad = 6; recalcularPaquete()" class="px-2 py-0.5 bg-amber-500/20 text-[10px] text-amber-400 font-bold rounded border border-amber-500/30">Six-Pack (6)</button>
+                        <button type="button" @click="paqueteCantidad = 12; recalcularPaquete()" class="px-2 py-0.5 bg-slate-800 text-[10px] text-slate-300 hover:text-white rounded border border-slate-700">Caja 12</button>
+                        <button type="button" @click="paqueteCantidad = 24; recalcularPaquete()" class="px-2 py-0.5 bg-slate-800 text-[10px] text-slate-300 hover:text-white rounded border border-slate-700">Plancha 24</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen Informativo del Paquete -->
+            <div x-show="paqueteProductoId" class="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-950/40 p-3 rounded-xl">
+                <div class="text-xs text-slate-300 space-y-0.5">
+                    <p>Costo Total del Paquete: <strong class="text-amber-400 font-mono text-sm" x-text="`S/ ${paqueteCostoTotal.toFixed(2)}`"></strong></p>
+                    <p class="text-emerald-400 font-bold"><i class="fas fa-boxes mr-1"></i> Stock Disponible para Vender: <span class="text-white text-sm" x-text="`${paqueteStockDisponible} paquetes`"></span></p>
+                </div>
+                <button type="button" @click="precioCompra = paqueteCostoTotal.toFixed(2)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl text-xs font-bold border border-amber-500/30 transition cursor-pointer">
+                    <i class="fas fa-magic mr-1"></i> Copiar a Costo de Compra
+                </button>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- MODO 3: COMBO MIXTO (VARIOS PRODUCTOS DISTINTOS)                    -->
+        <!-- =================================================================== -->
+        <div x-show="tipo_producto === 'combo'" x-cloak class="bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-900 border-2 border-purple-500/60 rounded-2xl shadow-xl p-6 relative">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-slate-800">
                 <div>
                     <h3 class="font-bold text-white text-base sm:text-lg flex items-center gap-2">
-                        <i class="fas fa-layer-group text-amber-400"></i>
-                        <span>Armar Componentes del Combo / Pack</span>
+                        <i class="fas fa-layer-group text-purple-400"></i>
+                        <span>Armar Combo Mixto Promocional</span>
                     </h3>
-                    <p class="text-xs text-slate-400">Selecciona qué licores/insumos componen este pack y qué cantidad de cada uno se descontará del stock al venderlo.</p>
+                    <p class="text-xs text-slate-400">Agrega varios productos diferentes (ej. Whisky + Coca Cola + Hielo).</p>
                 </div>
-                <button type="button" @click="addComponent()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-xs shadow-lg transition flex items-center gap-1.5 cursor-pointer">
-                    <i class="fas fa-plus"></i> + Agregar Producto al Pack
+                <button type="button" @click="addComponent()" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fas fa-plus"></i> + Agregar Producto al Combo
                 </button>
             </div>
 
-            <!-- Lista de Componentes -->
+            <!-- Lista de Componentes del Combo -->
             <div class="space-y-3">
                 <template x-for="(comp, index) in componentes" :key="index">
-                    <div class="p-3.5 bg-slate-800 border border-slate-700 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shadow-sm">
-                        
-                        <!-- Selector del Producto -->
+                    <div class="p-3.5 bg-slate-800 border border-slate-700 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         <div class="flex-1">
-                            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">Producto a Incluir</label>
-                            <select :name="`componente_id[${index}]`" x-model="comp.id" @change="recalcularCosto()" required class="w-full px-3 py-2 bg-slate-900 border border-slate-600 text-white rounded-xl text-xs sm:text-sm font-bold focus:border-amber-500 outline-none">
-                                <option value="">— Seleccionar Producto de la Tienda —</option>
+                            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">Producto</label>
+                            <select :name="`componente_id[${index}]`" x-model="comp.id" @change="recalcularCombo()" required class="w-full px-3 py-2 bg-slate-900 border border-slate-600 text-white rounded-xl text-xs sm:text-sm font-bold focus:border-purple-500 outline-none">
+                                <option value="">— Seleccionar Producto —</option>
                                 <template x-for="p in productosDisponibles" :key="p.id">
-                                    <option :value="p.id" x-text="`${p.nombre} (Stock actual: ${p.stock} unids) - Costo: S/ ${parseFloat(p.precio_compra).toFixed(2)}`"></option>
+                                    <option :value="p.id" x-text="`${p.nombre} (Stock: ${p.stock}) - Costo: S/ ${parseFloat(p.precio_compra).toFixed(2)}`"></option>
                                 </template>
                             </select>
                         </div>
-
-                        <!-- Stepper de Cantidad -->
-                        <div class="w-full sm:w-44">
-                            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">Cantidad en el Pack</label>
-                            <div class="flex items-center bg-slate-900 border border-slate-600 rounded-xl p-0.5">
-                                <button type="button" @click="if(comp.cantidad > 1) { comp.cantidad--; recalcularCosto(); }" class="px-2.5 py-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg text-xs font-bold transition">-</button>
-                                <input type="number" :name="`componente_cantidad[${index}]`" x-model.number="comp.cantidad" @input="recalcularCosto()" min="1" step="1" required class="w-full text-center bg-transparent text-amber-400 font-black text-sm outline-none">
-                                <button type="button" @click="comp.cantidad++; recalcularCosto();" class="px-2.5 py-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg text-xs font-bold transition">+</button>
-                            </div>
+                        <div class="w-full sm:w-36">
+                            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">Cantidad</label>
+                            <input type="number" :name="`componente_cantidad[${index}]`" x-model.number="comp.cantidad" @input="recalcularCombo()" min="1" step="1" required class="w-full px-3 py-2 bg-slate-900 border border-slate-600 text-purple-400 font-black text-center rounded-xl text-sm focus:border-purple-500 outline-none">
                         </div>
-
-                        <!-- Botón Eliminar -->
                         <div class="flex items-center justify-end sm:pt-4">
-                            <button type="button" @click="removeComponent(index)" title="Quitar este producto del pack" class="p-2 text-slate-400 hover:text-rose-400 rounded-xl hover:bg-rose-500/20 transition cursor-pointer">
+                            <button type="button" @click="removeComponent(index)" class="p-2 text-slate-400 hover:text-rose-400 rounded-xl hover:bg-rose-500/20 transition cursor-pointer">
                                 <i class="fas fa-trash text-sm"></i>
                             </button>
                         </div>
@@ -120,23 +203,18 @@
 
                 <div x-show="componentes.length === 0" class="text-center py-8 border-2 border-dashed border-slate-800 rounded-2xl text-slate-500 text-xs">
                     <i class="fas fa-wine-bottle text-3xl mb-2 block text-slate-600"></i>
-                    Aún no has agregado productos a este combo. Presiona <strong>"+ Agregar Producto al Pack"</strong> para empezar a armarlo.
+                    Aún no has agregado productos a este combo. Presiona <strong>"+ Agregar Producto al Combo"</strong>.
                 </div>
             </div>
 
-            <!-- Resumen Informativo del Pack -->
-            <div x-show="componentes.length > 0" class="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-xs text-slate-300">
-                    <div>
-                        <span>Costo Total de los Componentes: </span>
-                        <strong class="text-amber-400 text-sm font-mono font-bold" x-text="`S/ ${costoTotalComponentes.toFixed(2)}`"></strong>
-                    </div>
-                    <div class="px-2.5 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-300 font-bold text-xs">
-                        <i class="fas fa-boxes mr-1"></i> Puedes armar hasta: <span class="text-white text-sm" x-text="`${combosDisponibles} packs`"></span>
-                    </div>
+            <!-- Resumen Informativo del Combo -->
+            <div x-show="componentes.length > 0" class="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="text-xs text-slate-300 space-y-0.5">
+                    <p>Costo Total del Combo: <strong class="text-purple-400 font-mono font-bold" x-text="`S/ ${comboCostoTotal.toFixed(2)}`"></strong></p>
+                    <p class="text-emerald-400 font-bold"><i class="fas fa-boxes mr-1"></i> Puedes armar hasta: <span class="text-white" x-text="`${comboStockDisponible} combos`"></span></p>
                 </div>
-                <button type="button" @click="aplicarCostoSugerido()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl text-xs font-bold border border-amber-500/30 transition flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fas fa-magic"></i> Copiar a Precio de Compra
+                <button type="button" @click="precioCompra = comboCostoTotal.toFixed(2)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-purple-400 rounded-xl text-xs font-bold border border-purple-500/30 transition cursor-pointer">
+                    <i class="fas fa-magic mr-1"></i> Copiar a Costo de Compra
                 </button>
             </div>
         </div>
@@ -173,11 +251,10 @@
             </div>
         </div>
 
-        <!-- 4. CONTROL DE STOCK E INVENTARIO (SIEMPRE VISIBLE) -->
+        <!-- 4. CONTROL DE STOCK E INVENTARIO -->
         <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
             <h3 class="font-bold text-slate-100 mb-4 pb-3 border-b border-slate-800 flex items-center justify-between">
                 <span><i class="fas fa-warehouse text-emerald-500 mr-2"></i>Control de Stock e Inventario</span>
-                <span x-show="tipo_producto === 'combo'" class="text-xs text-amber-400 font-semibold">Descuento dinámico por componentes</span>
             </h3>
 
             <!-- Si es Producto Estándar: Permite modificar el Stock Actual -->
@@ -212,22 +289,18 @@
                 </div>
             </div>
 
-            <!-- Si es Combo: Muestra explicación y stock disponible según ingredientes -->
-            <div x-show="tipo_producto === 'combo'" class="bg-amber-950/20 border border-amber-500/30 p-4 rounded-xl space-y-2">
+            <!-- Si es Paquete o Combo: Muestra explicación y stock dinámico -->
+            <div x-show="tipo_producto !== 'estandar'" class="bg-amber-950/20 border border-amber-500/30 p-4 rounded-xl space-y-2">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-bold">
                         <i class="fas fa-boxes-stacked"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-white">Stock Dinámico Automatizado</h4>
+                        <h4 class="text-sm font-bold text-white">Stock Dinámico Automático</h4>
                         <p class="text-xs text-slate-300">
-                            El stock de este combo se calcula en tiempo real a partir del stock disponible de cada uno de sus productos individuales.
+                            El stock de este paquete se calcula automáticamente y se descuenta directamente de tu inventario de productos individuales al vender en el POS.
                         </p>
                     </div>
-                </div>
-                <div class="pt-2 flex justify-between items-center border-t border-amber-500/20 text-xs">
-                    <span class="text-slate-400">Disponibilidad para vender en POS:</span>
-                    <span class="font-bold text-emerald-400 text-sm font-mono" x-text="`${combosDisponibles} combos disponibles`"></span>
                 </div>
             </div>
         </div>
@@ -279,25 +352,53 @@
 <script>
     function comboForm() {
         const compsInit = @json($producto->componentesCombo->map(fn($c) => ['id' => $c->id, 'cantidad' => $c->pivot->cantidad]));
+        const isCombo = '{{ $producto->tipo_producto }}' === 'combo';
+        const isSinglePackage = isCombo && compsInit.length === 1;
+
         return {
-            tipo_producto: '{{ $producto->tipo_producto ?? "estandar" }}',
+            tipo_producto: isSinglePackage ? 'paquete' : (isCombo ? 'combo' : 'estandar'),
             productosDisponibles: @json($productosList),
-            componentes: compsInit.length > 0 ? compsInit : [],
+            
+            // Para Paquete (Six-pack / Caja)
+            paqueteProductoId: isSinglePackage ? compsInit[0].id : '',
+            paqueteCantidad: isSinglePackage ? compsInit[0].cantidad : 6,
+            paqueteCostoTotal: 0,
+            paqueteStockDisponible: 0,
+
+            // Para Combo Mixto
+            componentes: (!isSinglePackage && isCombo) ? compsInit : [],
+            comboCostoTotal: 0,
+            comboStockDisponible: 0,
+
             precioCompra: {{ $producto->precio_compra ?? 0 }},
-            costoTotalComponentes: 0,
-            combosDisponibles: 0,
 
             init() {
-                this.recalcularCosto();
+                if (this.tipo_producto === 'paquete') {
+                    this.recalcularPaquete();
+                } else if (this.tipo_producto === 'combo') {
+                    this.recalcularCombo();
+                }
             },
+
+            recalcularPaquete() {
+                if (this.paqueteProductoId) {
+                    const prod = this.productosDisponibles.find(p => p.id == this.paqueteProductoId);
+                    if (prod) {
+                        const cant = parseInt(this.paqueteCantidad) || 1;
+                        this.paqueteCostoTotal = (parseFloat(prod.precio_compra) || 0) * cant;
+                        this.paqueteStockDisponible = Math.floor((parseFloat(prod.stock) || 0) / cant);
+                    }
+                }
+            },
+
             addComponent() {
                 this.componentes.push({ id: '', cantidad: 1 });
             },
             removeComponent(index) {
                 this.componentes.splice(index, 1);
-                this.recalcularCosto();
+                this.recalcularCombo();
             },
-            recalcularCosto() {
+            recalcularCombo() {
                 let totalCosto = 0;
                 let maxCombos = 999999;
 
@@ -307,21 +408,14 @@
                         if (prod) {
                             const cant = parseInt(c.cantidad) || 1;
                             totalCosto += (parseFloat(prod.precio_compra) || 0) * cant;
-                            
-                            const stockProd = parseFloat(prod.stock) || 0;
-                            const posibleConEste = Math.floor(stockProd / cant);
-                            if (posibleConEste < maxCombos) {
-                                maxCombos = posibleConEste;
-                            }
+                            const posibleConEste = Math.floor((parseFloat(prod.stock) || 0) / cant);
+                            if (posibleConEste < maxCombos) maxCombos = posibleConEste;
                         }
                     }
                 });
 
-                this.costoTotalComponentes = totalCosto;
-                this.combosDisponibles = (this.componentes.length > 0 && maxCombos !== 999999) ? Math.max(0, maxCombos) : 0;
-            },
-            aplicarCostoSugerido() {
-                this.precioCompra = this.costoTotalComponentes.toFixed(2);
+                this.comboCostoTotal = totalCosto;
+                this.comboStockDisponible = (this.componentes.length > 0 && maxCombos !== 999999) ? Math.max(0, maxCombos) : 0;
             }
         }
     }
