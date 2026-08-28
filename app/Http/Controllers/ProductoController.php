@@ -169,6 +169,7 @@ class ProductoController extends Controller
             'codigo_barras' => 'nullable|string|max:50',
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'tipo_producto' => 'required|in:estandar,combo',
             'categoria_id' => 'nullable|exists:categorias,id',
             'proveedor_id' => 'nullable|exists:proveedores,id',
             'unidad_medida' => 'required|string|max:20',
@@ -176,6 +177,7 @@ class ProductoController extends Controller
             'precio_venta' => 'required|numeric|min:0',
             'precio_mayoreo' => 'nullable|numeric|min:0',
             'cantidad_mayoreo' => 'nullable|integer|min:0',
+            'stock' => 'nullable|numeric|min:0',
             'stock_minimo' => 'required|numeric|min:0',
             'stock_maximo' => 'nullable|numeric|min:0',
             'fecha_vencimiento' => 'nullable|date',
@@ -183,10 +185,31 @@ class ProductoController extends Controller
             'ubicacion' => 'nullable|string|max:100',
         ]);
 
-        $data['controla_stock'] = $request->boolean('controla_stock', true);
+        $data['tipo_producto'] = $request->tipo_producto ?? 'estandar';
+        $data['controla_stock'] = $data['tipo_producto'] === 'combo' ? false : $request->boolean('controla_stock', true);
         $data['aplica_impuesto'] = $request->boolean('aplica_impuesto', true);
         $data['destacado'] = $request->boolean('destacado');
         $data['activo'] = $request->boolean('activo', true);
+
+        // Si es estándar y cambió el stock manualmente
+        if ($data['tipo_producto'] === 'estandar' && isset($data['stock'])) {
+            $stockAnterior = $producto->stock;
+            $stockNuevo = floatval($data['stock']);
+            if ($stockAnterior != $stockNuevo) {
+                MovimientoInventario::create([
+                    'producto_id' => $producto->id,
+                    'user_id' => auth()->id(),
+                    'tipo' => 'ajuste',
+                    'motivo' => 'Edición directa de stock',
+                    'cantidad' => abs($stockNuevo - $stockAnterior),
+                    'stock_anterior' => $stockAnterior,
+                    'stock_nuevo' => $stockNuevo,
+                    'fecha' => now(),
+                ]);
+            }
+        } elseif ($data['tipo_producto'] === 'combo') {
+            $data['stock'] = 0;
+        }
 
         if ($request->hasFile('imagen')) {
             if ($producto->imagen && file_exists(public_path('uploads/productos/' . $producto->imagen))) {
@@ -202,8 +225,10 @@ class ProductoController extends Controller
         if ($request->tipo_producto === 'combo' && $request->has('componente_id')) {
             $syncData = [];
             foreach ($request->componente_id as $index => $compId) {
-                $cant = $request->componente_cantidad[$index] ?? 1;
-                $syncData[$compId] = ['cantidad' => $cant];
+                if (!empty($compId)) {
+                    $cant = $request->componente_cantidad[$index] ?? 1;
+                    $syncData[$compId] = ['cantidad' => $cant];
+                }
             }
             $producto->componentesCombo()->sync($syncData);
         } else {
