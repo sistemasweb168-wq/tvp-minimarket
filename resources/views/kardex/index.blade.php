@@ -6,34 +6,34 @@
 <div x-data="{ modalMerma: false, productoId: '', cantidad: 1, motivo: 'Rotura de botella en mostrador', observaciones: '' }">
 
     <!-- Tarjetas de Resumen Superior -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-md flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold border border-emerald-500/30">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-4 sm:mb-5">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-5 shadow-md flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-base sm:text-xl font-bold border border-emerald-500/30 flex-shrink-0">
                 <i class="fas fa-arrow-down"></i>
             </div>
-            <div>
-                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Entradas (Compras/Ajustes)</p>
-                <h3 class="text-xl sm:text-2xl font-black text-white">{{ number_format($totalEntradas, 0) }} <span class="text-xs font-normal text-slate-400">unids</span></h3>
+            <div class="min-w-0">
+                <p class="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase tracking-wider truncate">Entradas (Compras)</p>
+                <h3 class="text-lg sm:text-2xl font-black text-white">{{ number_format($totalEntradas, 0) }} <span class="text-xs font-normal text-slate-400">unids</span></h3>
             </div>
         </div>
 
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-md flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl font-bold border border-blue-500/30">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-5 shadow-md flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-base sm:text-xl font-bold border border-blue-500/30 flex-shrink-0">
                 <i class="fas fa-arrow-up"></i>
             </div>
-            <div>
-                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Salidas (Ventas POS)</p>
-                <h3 class="text-xl sm:text-2xl font-black text-white">{{ number_format($totalSalidas, 0) }} <span class="text-xs font-normal text-slate-400">unids</span></h3>
+            <div class="min-w-0">
+                <p class="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase tracking-wider truncate">Salidas (Ventas POS)</p>
+                <h3 class="text-lg sm:text-2xl font-black text-white">{{ number_format($totalSalidas, 0) }} <span class="text-xs font-normal text-slate-400">unids</span></h3>
             </div>
         </div>
 
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-md flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl font-bold border border-rose-500/30">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-5 shadow-md flex items-center gap-3 sm:gap-4">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-base sm:text-xl font-bold border border-rose-500/30 flex-shrink-0">
                 <i class="fas fa-wine-glass-crack"></i>
             </div>
-            <div>
-                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Mermas / Botellas Rotas</p>
-                <h3 class="text-xl sm:text-2xl font-black text-rose-400">{{ number_format($totalMermas, 0) }} <span class="text-xs font-normal text-slate-400">unids</span></h3>
+            <div class="min-w-0">
+                <p class="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase tracking-wider truncate">Mermas / Roturas</p>
+                <h3 class="text-lg sm:text-2xl font-black text-rose-400">{{ number_format($totalMermas, 0) }} <span class="text-xs font-normal text-slate-400">unids</span></h3>
             </div>
         </div>
     </div>
@@ -41,14 +41,16 @@
     <!-- Barra de Filtros & Acción (Collapsible en móvil) -->
     <div x-data="{ showFiltros: false }" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-5 mb-4 sm:mb-5 shadow-md">
         <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4">
-            <div class="flex items-center justify-between gap-2">
-                <button type="button" @click="showFiltros = !showFiltros" class="md:hidden flex-1 px-3.5 py-2 bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+            <div class="grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-2 w-full">
+                <!-- Botón Filtros (Solo Móvil) -->
+                <button type="button" @click="showFiltros = !showFiltros" class="md:hidden w-full px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
                     <i class="fas fa-filter text-amber-400"></i>
-                    <span x-text="showFiltros ? 'Ocultar Filtros' : 'Filtrar Movimientos'"></span>
+                    <span x-text="showFiltros ? 'Ocultar' : 'Filtros'"></span>
                 </button>
-                <button type="button" @click="modalMerma = true" class="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition flex-shrink-0">
+                <!-- Botón Registrar Merma -->
+                <button type="button" @click="modalMerma = true" class="w-full sm:w-auto px-3 sm:px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-rose-600/30 transition">
                     <i class="fas fa-wine-glass-crack"></i>
-                    <span class="sm:inline">Registrar Merma</span>
+                    <span>+ Merma</span>
                 </button>
             </div>
         </div>
