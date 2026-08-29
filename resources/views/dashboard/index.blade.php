@@ -184,14 +184,14 @@
                     {{ ['bg-yellow-500', 'bg-slate-400', 'bg-orange-600', 'bg-blue-500', 'bg-emerald-500'][$i] }}">
                     {{ $i + 1 }}
                 </div>
-                <div class="w-12 h-12 gradient-primary rounded-full flex items-center justify-center text-white font-bold text-lg mb-2">
+                <div class="w-12 h-12 gradient-primary rounded-full flex items-center justify-center text-white font-bold text-lg mb-2 shadow-sm">
                     {{ strtoupper(substr($cl->nombres, 0, 1)) }}
                 </div>
-                <p class="font-semibold text-slate-100 text-sm truncate">{{ $cl->nombres }} {{ $cl->apellidos }}</p>
-                <p class="text-xl font-bold text-emerald-600 mt-1">{{ $moneda }}{{ number_format($cl->total_gastado, 0) }}</p>
+                <p class="font-bold text-slate-800 text-sm truncate">{{ $cl->nombres }} {{ $cl->apellidos }}</p>
+                <p class="text-xl font-black text-emerald-600 mt-1">{{ $moneda }}{{ number_format($cl->total_gastado, 0) }}</p>
                 <div class="flex items-center justify-between mt-2 text-xs">
-                    <span class="text-slate-400"><i class="fas fa-shopping-bag mr-1"></i>{{ $cl->cantidad_compras }}</span>
-                    <span class="text-yellow-600"><i class="fas fa-star mr-1"></i>{{ $cl->puntos_fidelidad }}</span>
+                    <span class="text-slate-600 font-semibold"><i class="fas fa-shopping-bag mr-1"></i>{{ $cl->cantidad_compras }} compras</span>
+                    <span class="text-amber-600 font-semibold"><i class="fas fa-star mr-1"></i>{{ $cl->puntos_fidelidad }} pts</span>
                 </div>
             </div>
         @empty
