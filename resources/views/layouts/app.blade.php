@@ -316,7 +316,7 @@
                               </div>
                               @if($totalAlertas > 0)
                                   @if($alertasStock > 0)
-                                      <a href="{{ route('reportes.inventario') }}" class="block px-4 py-2 hover:bg-slate-800 text-sm">
+                                      <a href="{{ route('productos.index', ['estado' => 'stock_bajo']) }}" class="block px-4 py-2 hover:bg-slate-800 text-sm">
                                           <div class="flex items-start gap-3">
                                               <div class="w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center flex-shrink-0"><i class="fas fa-exclamation-triangle"></i></div>
                                               <div>
