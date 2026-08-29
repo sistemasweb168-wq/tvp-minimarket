@@ -80,6 +80,9 @@ class CompraController extends Controller
                 $producto = Producto::find($item['producto_id']);
                 $itemTotal = $item['cantidad'] * $item['precio_unitario'];
 
+                $fechaVencimiento = !empty($item['fecha_vencimiento']) ? $item['fecha_vencimiento'] : null;
+                $lote = !empty($item['lote']) ? $item['lote'] : null;
+
                 CompraDetalle::create([
                     'compra_id' => $compra->id,
                     'producto_id' => $producto->id,
@@ -89,7 +92,17 @@ class CompraController extends Controller
                     'precio_unitario' => $item['precio_unitario'],
                     'subtotal' => $itemTotal,
                     'total' => $itemTotal,
+                    'fecha_vencimiento' => $fechaVencimiento,
+                    'lote' => $lote,
                 ]);
+
+                // Si hay fecha de vencimiento, actualizar el producto (el lote más próximo)
+                if ($fechaVencimiento) {
+                    if (empty($producto->fecha_vencimiento) || $fechaVencimiento < $producto->fecha_vencimiento) {
+                        $producto->fecha_vencimiento = $fechaVencimiento;
+                        $producto->lote = $lote;
+                    }
+                }
 
                 if ($producto->controla_stock) {
                     $stockAnterior = $producto->stock;
@@ -102,10 +115,9 @@ class CompraController extends Controller
                         $costoPromedio = $item['precio_unitario'];
                     }
 
-                    $producto->update([
-                        'stock' => $stockNuevo,
-                        'precio_compra' => round($costoPromedio, 4),
-                    ]);
+                    $producto->stock = $stockNuevo;
+                    $producto->precio_compra = round($costoPromedio, 4);
+                    $producto->save();
 
                     MovimientoInventario::create([
                         'producto_id' => $producto->id,
@@ -117,8 +129,10 @@ class CompraController extends Controller
                         'stock_nuevo' => $stockNuevo,
                         'referencia_tipo' => 'compra',
                         'referencia_id' => $compra->id,
-                        'fecha' => now(),
+                        'fecha' => $data['fecha_compra'],
                     ]);
+                } else {
+                    $producto->save(); // Guardar cambios de lote/fecha si no controla stock
                 }
             }
 
