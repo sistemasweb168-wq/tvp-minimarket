@@ -954,12 +954,15 @@ function pos() {
             } catch(e) { console.error(e); }
         },
 
-        filtrarCategoria(catId) {
+        async filtrarCategoria(catId) {
             this.categoriaActiva = catId;
             if (!catId) {
                 this.productosFiltrados = this.productosDestacados;
             } else {
-                this.productosFiltrados = this.productosDestacados.filter(p => p.categoria_id === catId);
+                try {
+                    const res = await fetch(`/api/productos/buscar?categoria=${catId}`);
+                    this.productosFiltrados = await res.json();
+                } catch(e) { console.error(e); }
             }
         },
 

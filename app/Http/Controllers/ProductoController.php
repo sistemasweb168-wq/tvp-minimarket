@@ -309,17 +309,22 @@ class ProductoController extends Controller
 
     public function buscarApi(Request $request)
     {
-        $b = $request->q;
-        $productos = Producto::with(['categoria', 'componentesCombo'])
-            ->where('activo', true)
-            ->where(function($q) use ($b) {
+        $query = Producto::with(['categoria', 'componentesCombo'])->where('activo', true);
+
+        if ($request->filled('q')) {
+            $b = $request->q;
+            $query->where(function($q) use ($b) {
                 $q->where('nombre', 'LIKE', "%$b%")
                   ->orWhere('codigo', 'LIKE', "%$b%")
                   ->orWhere('codigo_barras', 'LIKE', "%$b%");
-            })
-            ->limit(20)
-            ->get();
+            });
+        }
 
+        if ($request->filled('categoria')) {
+            $query->where('categoria_id', $request->categoria);
+        }
+
+        $productos = $query->limit(50)->get();
         return response()->json($productos);
     }
 }
