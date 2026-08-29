@@ -61,13 +61,16 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
             ['codigo' => $codigo],
             [
                 'nombre'          => mb_strtoupper($nombre),
+                'precio_compra'   => floatval($row['precio_compra']   ?? 0),
                 'precio_venta'    => floatval($row['precio_venta']    ?? 0),
                 'precio_mayoreo'  => floatval($row['precio_por_mayor'] ?? 0),
                 'cantidad_mayoreo'=> intval($row['cantidad_al_por_mayor'] ?? 0),
                 'stock'           => floatval($row['stock_inicial']    ?? 0),
+                'stock_minimo'    => floatval($row['stock_minimo']     ?? 5),
                 'categoria_id'    => $categoria->id,
                 'codigo_interno'  => trim($row['codigo_interno']       ?? ''),
                 'unidad_medida'   => strtoupper(trim($row['unidad_medida'] ?? 'UND')),
+                'controla_stock'  => 1,
                 'activo'          => 1,
             ]
         );
@@ -78,7 +81,9 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
         return [
             'nombre_producto' => 'required|string|max:255',
             'precio_venta'    => 'required|numeric|min:0',
+            'precio_compra'   => 'nullable|numeric|min:0',
             'stock_inicial'   => 'nullable|numeric|min:0',
+            'stock_minimo'    => 'nullable|numeric|min:0',
             'precio_por_mayor'=> 'nullable|numeric|min:0',
         ];
     }
