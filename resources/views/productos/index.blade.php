@@ -83,6 +83,9 @@
 
                 <!-- Acciones Rápidas -->
                 <div class="flex flex-col gap-1 pl-1 flex-shrink-0">
+                    <button type="button" onclick="abrirReposicion({{ $p->id }}, '{{ addslashes($p->nombre) }}')" class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shadow-xs" title="Reposición Rápida">
+                        <i class="fas fa-box-open"></i>
+                    </button>
                     <a href="{{ route('productos.edit', $p->id) }}" class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs shadow-xs" title="Editar">
                         <i class="fas fa-edit"></i>
                     </a>
@@ -156,6 +159,7 @@
                         </td>
                         <td class="py-3.5 px-4 text-right whitespace-nowrap">
                             <div class="flex justify-end gap-1.5">
+                                <button type="button" onclick="abrirReposicion({{ $p->id }}, '{{ addslashes($p->nombre) }}')" class="p-2 hover:bg-emerald-50 text-emerald-600 rounded-lg text-sm" title="Reposición Rápida"><i class="fas fa-box-open"></i></button>
                                 <a href="{{ route('productos.show', $p->id) }}" class="p-2 hover:bg-blue-50 text-blue-600 rounded-lg text-sm" title="Ver"><i class="fas fa-eye"></i></a>
                                 <a href="{{ route('productos.edit', $p->id) }}" class="p-2 hover:bg-yellow-50 text-yellow-600 rounded-lg text-sm" title="Editar"><i class="fas fa-edit"></i></a>
                                 <form method="POST" action="{{ route('productos.destroy', $p->id) }}" class="inline" onsubmit="return confirm('¿Desactivar producto?')">
@@ -206,5 +210,41 @@
         </form>
     </div>
 </div>
+
+<!-- Modal Reposición Rápida -->
+<div id="modal-reposicion" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 backdrop-blur-sm hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 relative">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-slate-100"><i class="fas fa-box-open mr-2 text-emerald-500"></i>Reposición</h3>
+            <button onclick="document.getElementById('modal-reposicion').classList.add('hidden')" class="text-slate-400 hover:text-slate-300"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <p class="text-sm font-bold text-emerald-400 mb-4 truncate" id="repo-producto-nombre"></p>
+        
+        <form id="repo-form" method="POST" action="">
+            @csrf
+            <input type="hidden" name="tipo" value="entrada">
+            <input type="hidden" name="motivo" value="Reposición rápida de almacén">
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-slate-300 mb-1">Cantidad a sumar *</label>
+                <input type="number" step="0.001" name="cantidad" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white rounded-xl text-xl font-bold text-center focus:border-emerald-500 outline-none" placeholder="0">
+            </div>
+            
+            <div class="flex justify-end gap-2 border-t border-slate-800 pt-4 mt-2">
+                <button type="button" onclick="document.getElementById('modal-reposicion').classList.add('hidden')" class="px-5 py-2.5 bg-slate-800 text-slate-300 rounded-xl font-bold hover:bg-slate-700 transition w-full">Cancelar</button>
+                <button type="submit" class="px-5 py-2.5 gradient-primary text-white rounded-xl font-bold hover:shadow-lg transition shadow-md w-full">Sumar Stock</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirReposicion(id, nombre) {
+    document.getElementById('repo-producto-nombre').innerText = nombre;
+    document.getElementById('repo-form').action = `/productos/${id}/ajuste-stock`;
+    document.getElementById('modal-reposicion').classList.remove('hidden');
+    setTimeout(() => document.querySelector('#modal-reposicion input[name="cantidad"]').focus(), 100);
+}
+</script>
 
 @endsection
