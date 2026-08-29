@@ -85,8 +85,9 @@
             padding: 16px 14px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 12px;
+            font-weight: 700;
             line-height: 1.35;
             color: #000000;
         }
@@ -105,7 +106,7 @@
             margin: 0 auto 6px auto;
         }
         .header h1 { margin: 2px 0; font-size: 15px; font-weight: bold; }
-        .header p { margin: 1px 0; font-size: 10px; }
+        .header p { margin: 1px 0; font-size: 11px; font-weight: 700; }
         
         .cpe-badge {
             background: #f1f5f9; 
@@ -114,29 +115,29 @@
             padding: 4px; 
             text-align: center; 
             font-weight: bold; 
-            font-size: 11px;
+            font-size: 12px;
             margin: 8px 0 4px 0;
             text-transform: uppercase;
         }
-        .cpe-numero { font-size: 13px; text-align: center; font-weight: bold; margin-bottom: 8px; }
+        .cpe-numero { font-size: 14px; text-align: center; font-weight: bold; margin-bottom: 8px; }
 
-        .info { margin-bottom: 8px; font-size: 10.5px; }
+        .info { margin-bottom: 8px; font-size: 11px; font-weight: 700; }
         .info p { margin: 2px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 10.5px; }
-        th { border-bottom: 1px solid #000; text-align: left; padding: 4px 1px; }
-        td { padding: 3px 1px; vertical-align: top; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; font-weight: 700; }
+        th { border-bottom: 1px solid #000; text-align: left; padding: 4px 1px; font-weight: 900; }
+        td { padding: 3px 1px; vertical-align: top; font-weight: 700; }
         .total-row { border-top: 1px dashed #000; padding-top: 4px; }
         .total-row td { padding: 2px 1px; }
-        .total-final { font-size: 13px; font-weight: bold; border-top: 2px solid #000; padding-top: 6px !important; }
+        .total-final { font-size: 14px; font-weight: 900; border-top: 2px solid #000; padding-top: 6px !important; }
         
         .qr-box { text-align: center; margin: 10px 0; padding-top: 8px; border-top: 1px dashed #999; }
         .qr-img { width: 115px; height: 115px; }
         
-        .footer { text-align: center; margin-top: 10px; font-size: 9.5px; border-top: 2px dashed #000; padding-top: 8px; }
+        .footer { text-align: center; margin-top: 10px; font-size: 10px; font-weight: 700; border-top: 2px dashed #000; padding-top: 8px; }
 
         /* ================= IMPRESIÓN (OCULTA BANNER Y DEJA TICKET LIMPIO) ================= */
         @media print {
-            body { background: white !important; padding: 0 !important; }
+            body { background: white !important; padding: 0 !important; font-weight: 700 !important; color: #000 !important; }
             .no-print { display: none !important; }
             .digital-wrapper { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
             .ticket { 
@@ -220,7 +221,7 @@
                         <td>
                             {{ $d->producto?->nombre ?? $d->descripcion ?? 'Producto' }}
                             @if(($d->descuento ?? 0) > 0)
-                                <br><small style="color: #666;">(Desc. -S/ {{ number_format($d->descuento, 2) }})</small>
+                                <br><small style="color: #000;">(Desc. -S/ {{ number_format($d->descuento, 2) }})</small>
                             @endif
                         </td>
                         <td style="text-align: center;">{{ number_format($d->cantidad ?? 1, 0) }}</td>
