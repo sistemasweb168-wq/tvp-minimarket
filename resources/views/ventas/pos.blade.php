@@ -57,25 +57,25 @@
                     <!-- Toggle Sonido -->
                     <!-- Botón Registrar Gasto Rápido -->
                     <button type="button" @click="modalGasto = true" title="Registrar Salida de Dinero / Gasto de Caja"
-                            class="px-3 py-2.5 sm:py-3 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
+                            class="px-3 py-2.5 sm:py-3 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0 cursor-pointer hidden sm:flex">
                         <i class="fas fa-receipt text-rose-400"></i>
                         <span class="hidden md:inline">Gasto</span>
                     </button>
-                    <!-- Botón Abrir Gaveta Manual -->
+                    <!-- Botón Abrir Gaveta Manual (Solo Desktop) -->
                     <button type="button" @click="abrirGavetaManual()" title="Abrir Gaveta de Dinero Físicamente"
-                            class="px-3 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
+                            class="px-3 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl transition text-xs sm:text-sm font-bold items-center gap-1.5 flex-shrink-0 cursor-pointer hidden md:flex">
                         <i class="fas fa-cash-register"></i>
                         <span class="hidden md:inline">Caja</span>
                     </button>
 
-                    <!-- Botón Configurar Gaveta (QZ) -->
+                    <!-- Botón Configurar Gaveta (QZ) (Solo Desktop) -->
                     <button type="button" @click="configurarGaveta()" title="Configuración de Gaveta Automática (QZ Tray)"
-                            class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0 bg-slate-100 text-slate-400 hover:bg-slate-200">
+                            class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold items-center gap-1.5 flex-shrink-0 bg-slate-100 text-slate-400 hover:bg-slate-200 hidden md:flex">
                         <i class="fas fa-cog"></i>
                     </button>
                     
                     <button type="button" @click="toggleSonido()" :title="sonidoSilenciado ? 'Activar Sonidos POS' : 'Silenciar Sonidos POS'"
-                            class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-shrink-0"
+                            class="px-3 py-2.5 sm:py-3 rounded-xl transition text-xs sm:text-sm font-bold items-center gap-1.5 flex-shrink-0 hidden md:flex"
                             :class="sonidoSilenciado ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-amber-400 border border-emerald-200'">
                         <i :class="sonidoSilenciado ? 'fas fa-volume-mute' : 'fas fa-volume-up'"></i>
                     </button>
