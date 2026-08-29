@@ -571,10 +571,10 @@
 
                 <!-- Formats -->
                 <div class="grid grid-cols-2 gap-3 mb-6">
-                    <button type="button" @click="abrirTicket('a4')" class="py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-2xl font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                    <button type="button" @click="abrirComprobante('a4')" class="py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-2xl font-bold transition flex items-center justify-center gap-2 shadow-sm">
                         <i class="fas fa-file-pdf text-lg"></i>Formato A4
                     </button>
-                    <button type="button" @click="abrirTicket('ticket')" class="py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold transition flex items-center justify-center gap-2 shadow-sm shadow-blue-500/30">
+                    <button type="button" @click="abrirComprobante('ticket')" class="py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold transition flex items-center justify-center gap-2 shadow-sm shadow-blue-500/30">
                         <i class="fas fa-receipt text-lg"></i>Ticket 80MM
                     </button>
                 </div>
