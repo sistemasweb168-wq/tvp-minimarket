@@ -484,10 +484,10 @@ class SunatService
                 }
 
                 $resumen->update([
-                    'estado_sunat'          => 'enviado',
-                    'codigo_respuesta_sunat' => $result->getCdrResponse()?->getCode(),
-                    'mensaje_sunat'         => $result->getCdrResponse()?->getDescription(),
-                    'ticket_sunat'          => $result->getTicket(),
+                    'estado_sunat'      => 'enviado',
+                    'codigo_respuesta'  => $result->getCdrResponse() ? $result->getCdrResponse()->getCode() : null,
+                    'mensaje_respuesta' => $result->getCdrResponse() ? $result->getCdrResponse()->getDescription() : 'Enviado y con Ticket',
+                    'ticket_sunat'      => $result->getTicket(),
                 ]);
 
                 // Actualizar estado de las boletas a aceptado (En Resumen Diario en Perú UBL 2.1 el ticket de summary confirma la recepción)
@@ -500,14 +500,15 @@ class SunatService
             } else {
                 $error = $result->getError();
                 $resumen->update([
-                    'estado_sunat'  => 'error',
-                    'mensaje_sunat' => $error->getMessage(),
+                    'estado_sunat'      => 'rechazado',
+                    'codigo_respuesta'  => $error->getCode(),
+                    'mensaje_respuesta' => $error->getMessage(),
                 ]);
             }
         } catch (\Throwable $e) {
             $resumen->update([
-                'estado_sunat'  => 'error',
-                'mensaje_sunat' => $e->getMessage(),
+                'estado_sunat'      => 'pendiente', // 'error' is not in enum, 'pendiente' allows retry
+                'mensaje_respuesta' => $e->getMessage(),
             ]);
         }
 
