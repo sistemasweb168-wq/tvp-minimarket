@@ -82,7 +82,7 @@
     </div>
 
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($ventas as $v)
             <div class="p-3.5 hover:bg-slate-800 transition">
                 <div class="flex items-center justify-between mb-1">
@@ -115,7 +115,7 @@
                     <th class="py-3 px-4 text-right">Total</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
             @forelse($ventas as $v)
                 <tr class="hover:bg-slate-800/80 transition">
                     <td class="py-3 px-4 font-mono text-xs font-bold text-slate-100">{{ $v->numero_ticket }}</td>

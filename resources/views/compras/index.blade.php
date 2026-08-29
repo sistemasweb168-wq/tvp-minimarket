@@ -5,27 +5,36 @@
 @section('content')
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
-<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-5 mb-5">
-    <div class="flex flex-col md:flex-row gap-3 justify-between">
-        <form method="GET" class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
-            <select name="proveedor_id" class="px-3 py-2.5 border border-slate-600 rounded-lg">
-                <option value="">Todos los proveedores</option>
-                @foreach($proveedores as $p)
-                    <option value="{{ $p->id }}" {{ request('proveedor_id') == $p->id ? 'selected' : '' }}>{{ $p->razon_social }}</option>
-                @endforeach
-            </select>
-            <input type="date" name="fecha_desde" value="{{ request('fecha_desde') }}" class="px-3 py-2.5 border border-slate-600 rounded-lg">
-            <input type="date" name="fecha_hasta" value="{{ request('fecha_hasta') }}" class="px-3 py-2.5 border border-slate-600 rounded-lg">
-        </form>
-        <a href="{{ route('compras.create') }}" class="gradient-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2"><i class="fas fa-plus"></i>Nueva Compra</a>
+<!-- Barra de Filtros (Collapsible en móvil) -->
+<div x-data="{ showFiltros: false }" class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-3.5 sm:p-5 mb-4 sm:mb-5">
+    <div class="flex items-center justify-between gap-2">
+        <button type="button" @click="showFiltros = !showFiltros" class="md:hidden flex-1 px-3.5 py-2.5 bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+            <i class="fas fa-filter text-amber-400"></i>
+            <span x-text="showFiltros ? 'Ocultar Filtros' : 'Filtrar Compras'"></span>
+        </button>
+        <a href="{{ route('compras.create') }}" class="gradient-primary text-white px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md flex-shrink-0">
+            <i class="fas fa-plus"></i><span>Nueva Compra</span>
+        </a>
     </div>
+
+    <form method="GET" :class="showFiltros ? 'grid' : 'hidden md:grid'" class="grid-cols-1 md:grid-cols-4 gap-2.5 mt-3 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800">
+        <select name="proveedor_id" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm outline-none focus:border-amber-500">
+            <option value="">Todos los proveedores</option>
+            @foreach($proveedores as $p)
+                <option value="{{ $p->id }}" {{ request('proveedor_id') == $p->id ? 'selected' : '' }}>{{ $p->razon_social }}</option>
+            @endforeach
+        </select>
+        <input type="date" name="fecha_desde" value="{{ request('fecha_desde') }}" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm outline-none focus:border-amber-500">
+        <input type="date" name="fecha_hasta" value="{{ request('fecha_hasta') }}" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm outline-none focus:border-amber-500">
+        <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5"><i class="fas fa-filter"></i>Filtrar</button>
+    </form>
 </div>
 
 <!-- Vista de Compras (Tarjetas en Móvil / Tabla en Desktop) -->
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($compras as $c)
             <div class="p-3.5 hover:bg-slate-800 transition">
                 <div class="flex items-center justify-between mb-1.5">
@@ -69,7 +78,7 @@
                     <th class="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
             @forelse($compras as $c)
                 <tr class="hover:bg-slate-800/80 transition">
                     <td class="py-3.5 px-4 font-mono text-sm font-bold text-slate-100">{{ $c->numero }}</td>

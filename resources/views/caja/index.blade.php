@@ -390,7 +390,57 @@
         <i class="fas fa-history text-amber-400"></i><span>Historial de Turnos y Cierres Z</span>
     </h3>
 
-    <div class="overflow-x-auto">
+    <!-- 📱 VISTA MÓVIL (LISTA MINIMALISTA DE TURNOS < md) -->
+    <div class="md:hidden divide-y divide-slate-800">
+        @forelse($turnos as $t)
+            @php
+                $tVentas = $t->ventas ? $t->ventas->sum('total') : $t->total_ventas;
+            @endphp
+            <div class="py-3 hover:bg-slate-800/40 transition">
+                <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono text-xs font-black text-white bg-slate-800 px-2 py-0.5 rounded-md">#{{ $t->id }}</span>
+                        <span class="text-xs font-bold text-slate-200">{{ $t->user->name ?? '—' }}</span>
+                    </div>
+                    @if($t->estado === 'cerrado')
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono {{ abs($t->diferencia) < 0.01 ? 'bg-emerald-500/20 text-emerald-400' : ($t->diferencia > 0 ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400') }}">
+                            Dif: {{ $t->diferencia >= 0 ? '+' : '' }}{{ number_format($t->diferencia, 2) }}
+                        </span>
+                    @else
+                        <span class="px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-[10px] font-bold">En curso</span>
+                    @endif
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs text-slate-400 mb-2">
+                    <div>
+                        <span class="text-[10px] text-slate-500 block">Ventas Turno</span>
+                        <span class="font-mono font-bold text-amber-400">{{ $moneda }} {{ number_format($tVentas, 2) }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-500 block">Efectivo Cierre</span>
+                        <span class="font-mono font-bold text-emerald-400">{{ $t->monto_cierre !== null ? $moneda . ' ' . number_format($t->monto_cierre, 2) : '—' }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1.5 border-t border-slate-800/60">
+                    <span>{{ $t->fecha_apertura->format('d/m H:i') }} → {{ $t->fecha_cierre ? $t->fecha_cierre->format('d/m H:i') : 'Abierto' }}</span>
+                    <div class="flex items-center gap-1.5">
+                        <a href="{{ route('caja.cierre', $t->id) }}" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold border border-slate-700 transition">
+                            <i class="fas fa-eye mr-1"></i> Arqueo
+                        </a>
+                        <a href="{{ route('caja.ticket', $t->id) }}" target="_blank" class="p-1 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg text-xs border border-slate-700 transition">
+                            <i class="fas fa-receipt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <p class="py-8 text-center text-slate-500 text-xs">No hay historial de turnos</p>
+        @endforelse
+    </div>
+
+    <!-- 💻 VISTA ESCRITORIO (TABLA COMPLETA >= md) -->
+    <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left text-xs sm:text-sm">
             <thead class="bg-slate-800/80 text-slate-400 uppercase text-[11px] border-b border-slate-700">
                 <tr>

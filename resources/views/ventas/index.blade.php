@@ -5,38 +5,48 @@
 @section('content')
 @php $moneda = $empresaGlobal->moneda ?? 'S/'; @endphp
 
-<!-- Barra Superior con Filtros -->
-<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 sm:p-5 mb-4 sm:mb-5 border border-slate-800">
-    <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2.5 sm:gap-3">
-        <input name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por N°, DNI o Cliente" class="px-3 py-2 border border-slate-600 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
+<!-- Barra Superior con Filtros (Collapsible en móvil) -->
+<div x-data="{ showFiltros: false }" class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-3.5 sm:p-5 mb-4 sm:mb-5">
+    <div class="flex items-center justify-between gap-2 md:hidden">
+        <button type="button" @click="showFiltros = !showFiltros" class="flex-1 px-3.5 py-2.5 bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+            <i class="fas fa-filter text-amber-400"></i>
+            <span x-text="showFiltros ? 'Ocultar Filtros' : 'Filtrar Ventas / Fechas'"></span>
+        </button>
+        <a href="{{ route('ventas.pos') }}" class="gradient-primary text-white px-4 py-2.5 rounded-xl flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0">
+            <i class="fas fa-cash-register mr-1"></i>POS
+        </a>
+    </div>
+
+    <form method="GET" :class="showFiltros ? 'grid' : 'hidden md:grid'" class="grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2.5 sm:gap-3 mt-3 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800">
+        <input name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por N°, DNI o Cliente" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
         
-        <select name="tipo_comprobante" class="px-3 py-2 border border-slate-600 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-amber-500">
+        <select name="tipo_comprobante" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-amber-500">
             <option value="">Todos los Comprobantes</option>
             <option value="BOLETA" {{ request('tipo_comprobante')=='BOLETA'?'selected':'' }}>📄 Boletas</option>
             <option value="FACTURA" {{ request('tipo_comprobante')=='FACTURA'?'selected':'' }}>🏢 Facturas</option>
             <option value="TICKET" {{ request('tipo_comprobante')=='TICKET'?'selected':'' }}>🧾 Tickets / Notas</option>
         </select>
 
-        <input type="date" name="fecha_desde" value="{{ request('fecha_desde') }}" class="px-3 py-2 border border-slate-600 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
-        <input type="date" name="fecha_hasta" value="{{ request('fecha_hasta') }}" class="px-3 py-2 border border-slate-600 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
+        <input type="date" name="fecha_desde" value="{{ request('fecha_desde') }}" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
+        <input type="date" name="fecha_hasta" value="{{ request('fecha_hasta') }}" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
         
-        <select name="estado" class="px-3 py-2 border border-slate-600 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
+        <select name="estado" class="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm focus:outline-none focus:border-amber-500">
             <option value="">Todos los estados</option>
             <option value="completada" {{ request('estado')=='completada'?'selected':'' }}>Completadas</option>
             <option value="anulada" {{ request('estado')=='anulada'?'selected':'' }}>Anuladas</option>
         </select>
 
         <div class="flex gap-2">
-            <button class="flex-1 bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5"><i class="fas fa-filter"></i>Filtrar</button>
-            <a href="{{ route('ventas.pos') }}" class="gradient-primary text-white px-4 py-2 rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm"><i class="fas fa-cash-register mr-1"></i>POS</a>
+            <button class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5"><i class="fas fa-filter"></i>Filtrar</button>
+            <a href="{{ route('ventas.pos') }}" class="hidden md:flex gradient-primary text-white px-4 py-2 rounded-xl items-center justify-center font-bold text-xs sm:text-sm shadow-sm"><i class="fas fa-cash-register mr-1"></i>POS</a>
         </div>
     </form>
 </div>
 
 <!-- Banner de Acceso Rápido a Facturación SUNAT -->
-<div class="mb-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200/70 p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+<div class="mb-4 bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
     <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-lg flex-shrink-0 shadow-sm">
             <i class="fas fa-file-invoice"></i>
         </div>
         <div>
@@ -50,10 +60,10 @@
 </div>
 
 <!-- Vista de Ventas (Tarjetas en Móvil / Tabla en Desktop) -->
-<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden border border-slate-800">
+<div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($ventas as $v)
             @php
                 $numDoc = $v->comprobanteElectronico?->numero_completo ?? $v->numero_ticket;
@@ -135,7 +145,7 @@
                     <th class="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
             @forelse($ventas as $v)
                 @php
                     $numDoc = $v->comprobanteElectronico?->numero_completo ?? $v->numero_ticket;

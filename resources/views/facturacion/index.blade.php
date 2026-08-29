@@ -85,7 +85,7 @@
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden border border-slate-800">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($comprobantes as $c)
             @php
                 $tipoColor = ['01'=>'purple', '03'=>'blue', '07'=>'amber', '08'=>'indigo'][$c->tipo_documento] ?? 'slate';
@@ -149,7 +149,7 @@
                     <th class="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
             @forelse($comprobantes as $c)
                 <tr class="hover:bg-slate-800/80 transition">
                     <td class="py-3.5 px-4 font-mono text-xs font-bold text-slate-100">{{ $c->numero_completo }}</td>

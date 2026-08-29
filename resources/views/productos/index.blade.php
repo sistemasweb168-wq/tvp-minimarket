@@ -42,7 +42,7 @@
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS NATIVAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($productos as $p)
             <div class="p-3.5 flex items-start gap-3 hover:bg-slate-800 transition">
                 <!-- Imagen -->
@@ -115,7 +115,7 @@
                     <th class="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
                 @forelse($productos as $p)
                     <tr class="hover:bg-slate-800/80 transition">
                         <td class="py-3.5 px-4">

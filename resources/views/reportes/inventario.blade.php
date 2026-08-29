@@ -29,7 +29,7 @@
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden border border-slate-800">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($productos as $p)
             <div class="p-3.5 hover:bg-slate-800 transition">
                 <div class="flex items-center justify-between mb-1">
@@ -85,7 +85,7 @@
                     <th class="py-3 px-4 text-center">Estado</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
             @foreach($productos as $p)
                 <tr class="hover:bg-slate-800/80 transition">
                     <td class="py-3 px-4 font-mono text-xs">{{ $p->codigo }}</td>

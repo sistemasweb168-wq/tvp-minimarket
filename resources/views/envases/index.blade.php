@@ -154,9 +154,74 @@
         </div>
     </div>
 
-    <!-- Tabla de Envases y Garantías -->
+    <!-- Tabla / Lista de Envases y Garantías -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
-        <div class="overflow-x-auto">
+        
+        <!-- 📱 VISTA MÓVIL (LISTA MINIMALISTA DE ENVASES < md) -->
+        <div class="md:hidden divide-y divide-slate-800">
+            @forelse($envases as $e)
+                <div class="p-3 hover:bg-slate-800/40 transition">
+                    <div class="flex items-start justify-between gap-2 mb-1">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-bold text-slate-100 text-xs truncate">
+                                {{ $e->cliente_nombre ?? ($e->cliente->nombres ?? 'Cliente Mostrador') }}
+                            </p>
+                            <p class="text-[11px] text-slate-400 font-medium">{{ $e->tipo_envase }}</p>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="font-mono font-black text-sm text-amber-400">{{ $e->cantidad }} und(s)</span>
+                            <span class="text-[10px] text-slate-400 block font-mono">Garantía: S/ {{ number_format($e->monto_garantia, 2) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60">
+                        <div class="flex items-center gap-2">
+                            @if($e->estado === 'prestado')
+                                <span class="px-2 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-md text-[9px] font-black uppercase">
+                                    En Calle
+                                </span>
+                            @else
+                                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md text-[9px] font-black uppercase">
+                                    Devuelto
+                                </span>
+                            @endif
+                            <span class="text-[10px] text-slate-500 font-mono">{{ $e->fecha_prestamo ? $e->fecha_prestamo->format('d/m/Y') : '' }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" @click="abrirEdicion({{ $e->id }})" title="Editar"
+                                    class="p-1.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-xs font-bold transition">
+                                <i class="fas fa-edit"></i>
+                            </button>
+
+                            @if($e->estado === 'prestado')
+                                <form action="{{ route('envases.devolver', $e->id) }}" method="POST" onsubmit="return confirm('¿Confirmas devolución de envases y reembolso de garantía?')">
+                                    @csrf
+                                    <button type="submit" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1">
+                                        <i class="fas fa-undo"></i> Recibir
+                                    </button>
+                                </form>
+                            @endif
+
+                            <form action="{{ route('envases.destroy', $e->id) }}" method="POST" onsubmit="return confirm('¿Eliminar registro?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg text-xs">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-10 text-slate-500 text-xs">
+                    <i class="fas fa-box-open text-3xl mb-2 block text-slate-600"></i>
+                    No hay registros de envases
+                </div>
+            @endforelse
+        </div>
+
+        <!-- 💻 VISTA ESCRITORIO (TABLA COMPLETA >= md) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                     <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[11px]">

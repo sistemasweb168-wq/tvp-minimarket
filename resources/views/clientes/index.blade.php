@@ -22,7 +22,7 @@
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
     
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($clientes as $c)
             <div class="p-3.5 flex items-start gap-3 hover:bg-slate-800 transition">
                 <div class="w-12 h-12 gradient-primary rounded-2xl flex items-center justify-center text-white font-bold text-base flex-shrink-0 shadow-xs">
@@ -68,7 +68,7 @@
                     <th class="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
                 @forelse($clientes as $c)
                     <tr class="hover:bg-slate-800/80 transition">
                         <td class="py-3.5 px-4">

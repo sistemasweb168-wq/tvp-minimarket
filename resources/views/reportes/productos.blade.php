@@ -26,7 +26,7 @@
     </div>
 
     <!-- 📱 VISTA MÓVIL (TARJETAS < md) -->
-    <div class="md:hidden divide-y divide-slate-100">
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($productos as $i => $p)
             <div class="p-3.5 hover:bg-slate-800 transition flex items-center gap-3">
                 <span class="w-8 h-8 rounded-xl inline-flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-xs
@@ -62,7 +62,7 @@
                     <th class="py-3 px-4 text-right">Total</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-800">
             @forelse($productos as $i => $p)
                 <tr class="hover:bg-slate-800/80 transition">
                     <td class="py-3 px-4">

@@ -24,38 +24,69 @@
 </div>
 
 <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
-    <table class="w-full">
-        <thead class="bg-slate-800 text-xs uppercase text-slate-400">
-            <tr>
-                <th class="text-left py-3 px-4">Identificador</th>
-                <th class="text-left py-3 px-4">Fecha resumen</th>
-                <th class="text-right py-3 px-4">Boletas</th>
-                <th class="text-right py-3 px-4">Total</th>
-                <th class="text-center py-3 px-4">Estado SUNAT</th>
-                <th class="text-left py-3 px-4 hide-mobile">Ticket SUNAT</th>
-            </tr>
-        </thead>
-        <tbody>
+    <!-- 📱 VISTA MÓVIL (LISTA MINIMALISTA < md) -->
+    <div class="md:hidden divide-y divide-slate-800">
         @forelse($resumenes as $r)
-            <tr class="border-b border-slate-800 hover:bg-slate-800">
-                <td class="py-3 px-4 font-mono text-xs font-bold">{{ $r->identificador }}</td>
-                <td class="py-3 px-4 text-sm">{{ $r->fecha_resumen->format('d/m/Y') }}</td>
-                <td class="py-3 px-4 text-right font-semibold">{{ $r->cantidad_comprobantes }}</td>
-                <td class="py-3 px-4 text-right font-bold text-emerald-600">{{ $moneda }}{{ number_format($r->total_general, 2) }}</td>
-                <td class="py-3 px-4 text-center">
-                    @php $colors = ['pendiente'=>'yellow','enviado'=>'blue','aceptado'=>'green','rechazado'=>'red']; $c = $colors[$r->estado_sunat] ?? 'slate'; @endphp
-                    <span class="px-2 py-1 bg-{{ $c }}-100 text-{{ $c }}-700 rounded-full text-xs font-semibold">{{ ucfirst($r->estado_sunat) }}</span>
-                </td>
-                <td class="py-3 px-4 text-xs font-mono hide-mobile">{{ $r->ticket_sunat ?: '—' }}</td>
-            </tr>
+            @php $colors = ['pendiente'=>'yellow','enviado'=>'blue','aceptado'=>'green','rechazado'=>'red']; $c = $colors[$r->estado_sunat] ?? 'slate'; @endphp
+            <div class="p-3 hover:bg-slate-800/40 transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="font-mono text-xs font-black text-slate-100">{{ $r->identificador }}</span>
+                    <span class="px-2 py-0.5 bg-{{ $c }}-500/20 text-{{ $c }}-400 border border-{{ $c }}-500/30 rounded-md text-[10px] font-black uppercase">
+                        {{ ucfirst($r->estado_sunat) }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                    <span>Fecha: <strong class="text-slate-200">{{ $r->fecha_resumen->format('d/m/Y') }}</strong></span>
+                    <span class="font-bold text-emerald-400 font-mono">{{ $moneda }}{{ number_format($r->total_general, 2) }}</span>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-800/60 font-mono">
+                    <span>{{ $r->cantidad_comprobantes }} boletas</span>
+                    <span>Ticket: {{ $r->ticket_sunat ?: '—' }}</span>
+                </div>
+            </div>
         @empty
-            <tr><td colspan="6" class="text-center py-12 text-slate-400">
-                <i class="fas fa-calendar-day text-5xl mb-2"></i>
-                <p>No hay resúmenes diarios generados</p>
-            </td></tr>
+            <div class="text-center py-10 text-slate-500 text-xs">
+                <i class="fas fa-calendar-day text-3xl mb-2 block text-slate-600"></i>
+                No hay resúmenes diarios generados
+            </div>
         @endforelse
-        </tbody>
-    </table>
+    </div>
+
+    <!-- 💻 VISTA ESCRITORIO (TABLA >= md) -->
+    <div class="hidden md:block overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-slate-800 text-xs uppercase text-slate-400">
+                <tr>
+                    <th class="text-left py-3 px-4">Identificador</th>
+                    <th class="text-left py-3 px-4">Fecha resumen</th>
+                    <th class="text-right py-3 px-4">Boletas</th>
+                    <th class="text-right py-3 px-4">Total</th>
+                    <th class="text-center py-3 px-4">Estado SUNAT</th>
+                    <th class="text-left py-3 px-4">Ticket SUNAT</th>
+                </tr>
+            </thead>
+            <tbody>
+            @forelse($resumenes as $r)
+                <tr class="border-b border-slate-800 hover:bg-slate-800">
+                    <td class="py-3 px-4 font-mono text-xs font-bold">{{ $r->identificador }}</td>
+                    <td class="py-3 px-4 text-sm">{{ $r->fecha_resumen->format('d/m/Y') }}</td>
+                    <td class="py-3 px-4 text-right font-semibold">{{ $r->cantidad_comprobantes }}</td>
+                    <td class="py-3 px-4 text-right font-bold text-emerald-600">{{ $moneda }}{{ number_format($r->total_general, 2) }}</td>
+                    <td class="py-3 px-4 text-center">
+                        @php $colors = ['pendiente'=>'yellow','enviado'=>'blue','aceptado'=>'green','rechazado'=>'red']; $c = $colors[$r->estado_sunat] ?? 'slate'; @endphp
+                        <span class="px-2 py-1 bg-{{ $c }}-100 text-{{ $c }}-700 rounded-full text-xs font-semibold">{{ ucfirst($r->estado_sunat) }}</span>
+                    </td>
+                    <td class="py-3 px-4 text-xs font-mono">{{ $r->ticket_sunat ?: '—' }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="6" class="text-center py-12 text-slate-400">
+                    <i class="fas fa-calendar-day text-5xl mb-2"></i>
+                    <p>No hay resúmenes diarios generados</p>
+                </td></tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
     <div class="p-4">{{ $resumenes->links() }}</div>
 </div>
 @endsection

@@ -125,7 +125,31 @@
             <span class="text-xs text-slate-400">Ordenado por Ganancia Neta Generada</span>
         </div>
 
-        <div class="overflow-x-auto">
+        <!-- 📱 VISTA MÓVIL (LISTA MINIMALISTA DE TOP RENTABLES < md) -->
+        <div class="md:hidden divide-y divide-slate-800">
+            @forelse($topRentables as $idx => $p)
+                <div class="py-2.5 flex items-center justify-between gap-2 hover:bg-slate-800/40 transition">
+                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                        <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            {{ $idx + 1 }}
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <h5 class="font-bold text-slate-100 text-xs truncate">{{ $p->nombre }}</h5>
+                            <span class="text-[10px] text-slate-400 font-mono">{{ number_format($p->cantidad_vendida, 0) }} unids vendidas</span>
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0 font-mono">
+                        <span class="font-black text-emerald-400 text-xs sm:text-sm block">+S/ {{ number_format($p->ganancia_soles, 2) }}</span>
+                        <span class="text-[10px] text-slate-500 block">Venta: S/ {{ number_format($p->total_ingreso, 2) }}</span>
+                    </div>
+                </div>
+            @empty
+                <p class="text-center py-6 text-slate-500 text-xs">No hay ventas registradas en este periodo.</p>
+            @endforelse
+        </div>
+
+        <!-- 💻 VISTA ESCRITORIO (TABLA >= md) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                     <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[11px]">

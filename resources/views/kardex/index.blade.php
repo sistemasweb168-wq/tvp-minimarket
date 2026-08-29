@@ -38,9 +38,22 @@
         </div>
     </div>
 
-    <!-- Barra de Filtros & Acción -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 mb-5 shadow-md flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
-        <form method="GET" action="{{ route('kardex.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 flex-1">
+    <!-- Barra de Filtros & Acción (Collapsible en móvil) -->
+    <div x-data="{ showFiltros: false }" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-5 mb-4 sm:mb-5 shadow-md">
+        <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4">
+            <div class="flex items-center justify-between gap-2">
+                <button type="button" @click="showFiltros = !showFiltros" class="md:hidden flex-1 px-3.5 py-2 bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-filter text-amber-400"></i>
+                    <span x-text="showFiltros ? 'Ocultar Filtros' : 'Filtrar Movimientos'"></span>
+                </button>
+                <button type="button" @click="modalMerma = true" class="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition flex-shrink-0">
+                    <i class="fas fa-wine-glass-crack"></i>
+                    <span class="sm:inline">Registrar Merma</span>
+                </button>
+            </div>
+        </div>
+
+        <form method="GET" action="{{ route('kardex.index') }}" :class="showFiltros ? 'block' : 'hidden md:grid'" class="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mt-3 pt-3 border-t border-slate-800">
             <div>
                 <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Producto</label>
                 <select name="producto_id" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs sm:text-sm outline-none focus:border-amber-500">
@@ -79,18 +92,72 @@
                 </button>
             </div>
         </form>
-
-        <div class="flex items-end">
-            <button type="button" @click="modalMerma = true" class="w-full sm:w-auto px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition">
-                <i class="fas fa-wine-glass-crack"></i>
-                <span>Registrar Merma / Rotura</span>
-            </button>
-        </div>
     </div>
 
-    <!-- Tabla del Kardex -->
+    <!-- Contenedor de Movimientos (Tarjetas en Móvil / Tabla en Desktop) -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-md overflow-hidden">
-        <div class="overflow-x-auto">
+        
+        <!-- 📱 VISTA MÓVIL (LISTA MINIMALISTA CON LÍNEAS FINAS < md) -->
+        <div class="md:hidden divide-y divide-slate-800">
+            @forelse($movimientos as $m)
+                @php
+                    $esResta = in_array($m->tipo, ['salida', 'merma']);
+                @endphp
+                <div class="p-3 hover:bg-slate-800/40 transition">
+                    <!-- Fila 1: Producto y Cantidad -->
+                    <div class="flex items-start justify-between gap-2 mb-1">
+                        <div class="min-w-0 flex-1">
+                            <h4 class="font-bold text-slate-100 text-xs leading-snug line-clamp-1">
+                                {{ $m->producto->nombre ?? 'Producto Eliminado' }}
+                            </h4>
+                            <span class="text-[10px] text-slate-500 font-mono">{{ $m->producto->codigo ?? '' }}</span>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="font-black font-mono text-sm {{ $esResta ? 'text-rose-400' : 'text-emerald-400' }}">
+                                {{ $esResta ? '-' : '+' }}{{ number_format($m->cantidad, 0) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Fila 2: Badge de Tipo y Motivo -->
+                    <div class="flex items-center gap-1.5 flex-wrap my-1">
+                        @if($m->tipo === 'entrada')
+                            <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                <i class="fas fa-arrow-down mr-0.5"></i> Entrada
+                            </span>
+                        @elseif($m->tipo === 'salida')
+                            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                <i class="fas fa-arrow-up mr-0.5"></i> Salida
+                            </span>
+                        @elseif($m->tipo === 'merma')
+                            <span class="px-2 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                <i class="fas fa-wine-glass-crack mr-0.5"></i> Merma
+                            </span>
+                        @else
+                            <span class="px-2 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-md text-[9px] font-black uppercase tracking-wider">
+                                <i class="fas fa-sync-alt mr-0.5"></i> {{ ucfirst($m->tipo) }}
+                            </span>
+                        @endif
+
+                        <span class="text-[11px] text-slate-300 font-medium truncate max-w-[200px]">{{ $m->motivo }}</span>
+                    </div>
+
+                    <!-- Fila 3: Fecha, Stock result y Usuario -->
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 mt-1 pt-1 border-t border-slate-800/60">
+                        <span><i class="far fa-clock mr-1"></i>{{ $m->fecha ? $m->fecha->format('d/m/Y H:i') : $m->created_at->format('d/m/Y H:i') }}</span>
+                        <span class="font-mono">Stock: <strong class="text-slate-300">{{ number_format($m->stock_anterior, 0) }}</strong> → <strong class="text-amber-400">{{ number_format($m->stock_nuevo, 0) }}</strong></span>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-10 text-slate-500 text-xs">
+                    <i class="fas fa-clipboard-list text-3xl mb-2 block text-slate-600"></i>
+                    No hay movimientos registrados
+                </div>
+            @endforelse
+        </div>
+
+        <!-- 💻 VISTA ESCRITORIO (TABLA COMPLETA >= md) -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                     <tr class="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[11px]">

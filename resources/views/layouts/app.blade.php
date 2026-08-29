@@ -280,7 +280,7 @@
     <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-20 lg:hidden" style="display:none;"></div>
 
     <!-- Main -->
-    <div class="flex-1 lg:ml-16 min-w-0 transition-all duration-300">
+    <div class="flex-1 lg:ml-16 min-w-0 transition-all duration-300 overflow-x-hidden">
         <!-- Topbar -->
         
 @php
@@ -294,7 +294,7 @@
                     <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-slate-400 hover:text-white flex-shrink-0">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <h2 class="text-base sm:text-lg font-semibold text-slate-800 truncate">@yield('header', 'Dashboard')</h2>
+                    <h2 class="text-sm sm:text-lg font-bold text-white truncate max-w-[200px] sm:max-w-none">@yield('header', 'Dashboard')</h2>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                     <div class="hidden md:flex items-center gap-2 text-sm text-slate-600">
