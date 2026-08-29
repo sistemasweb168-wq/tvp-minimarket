@@ -74,6 +74,18 @@
                 <p class="text-xs sm:text-sm text-slate-400">
                     Abierto: <strong>{{ $turnoActivo->fecha_apertura->format('d/m/Y H:i') }}</strong> • Cajero: <strong class="text-slate-200">{{ $turnoActivo->user->name }}</strong>
                 </p>
+                @php
+                    $cancTurno = $turnoActivo->cancelacionesPos ?? collect();
+                    $cantCanc = $cancTurno->count();
+                    $totalCanc = $cancTurno->sum('total_afectado');
+                @endphp
+                @if($cantCanc > 0)
+                    <div class="mt-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-[11px] font-bold">
+                            <i class="fas fa-shield-halved"></i> Auditoría: {{ $cantCanc }} producto(s) borrado(s) en POS ({{ $moneda }} {{ number_format($totalCanc, 2) }})
+                        </span>
+                    </div>
+                @endif
             </div>
             
             <div class="flex flex-wrap gap-2 w-full sm:w-auto">

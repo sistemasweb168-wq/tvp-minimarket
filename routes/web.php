@@ -19,6 +19,7 @@ use App\Http\Controllers\FacturacionElectronicaController;
 use App\Http\Controllers\SunatApiController;
 use App\Http\Controllers\KardexController;
 use App\Http\Controllers\EnvaseGarantiaController;
+use App\Http\Controllers\AuditoriaPosController;
 
 // Autenticación
 Route::get('/', function() {
@@ -65,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('pos', [VentaController::class, 'pos'])->name('ventas.pos')->middleware('permission:pos');
     Route::resource('ventas', VentaController::class)->only(['index', 'store', 'show'])->middleware('permission:ventas');
     Route::post('ventas/{venta}/anular', [VentaController::class, 'anular'])->name('ventas.anular')->middleware('permission:ventas.anular');
+    Route::post('api/pos/auditoria-cancelacion', [AuditoriaPosController::class, 'registrar'])->name('api.pos.auditoria-cancelacion');
 
     // Compras
     Route::resource('compras', CompraController::class)->except(['edit', 'update', 'destroy']);

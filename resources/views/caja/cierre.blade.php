@@ -427,7 +427,79 @@
                         <tr>
                             <td colspan="5" class="py-6 text-center text-slate-500 text-xs">
                                 <i class="fas fa-check-circle text-emerald-500 text-xl mb-1 block"></i>
-                                No se registraron egresos ni gastos durante este turno.
+    <!-- TABLA: AUDITORÍA ANTI-ROBO (ÍTEMS BORRADOS Y CANCELACIONES EN POS) -->
+    @php
+        $cancelaciones = $turno->cancelacionesPos ?? collect();
+        $totalCancelado = $cancelaciones->sum('total_afectado');
+        $cantCancelaciones = $cancelaciones->count();
+    @endphp
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-shield-halved text-rose-500"></i> Auditoría de Seguridad: Ítems Eliminados y Cancelaciones en POS
+                </h3>
+                <p class="text-xs text-slate-400">Registro de productos que fueron escaneados y luego eliminados del carrito antes de cobrar.</p>
+            </div>
+            @if($cantCancelaciones > 0)
+                <span class="px-3 py-1 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-black font-mono">
+                    {{ $cantCancelaciones }} evento(s) • {{ $moneda }} {{ number_format($totalCancelado, 2) }} cancelados
+                </span>
+            @else
+                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold">
+                    ✓ Sin cancelaciones sospechosas
+                </span>
+            @endif
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-slate-800/80 text-slate-400 uppercase text-[11px] border-b border-slate-700">
+                    <tr>
+                        <th class="py-3 px-4">Hora</th>
+                        <th class="py-3 px-4">Cajero</th>
+                        <th class="py-3 px-4">Producto Cancelado</th>
+                        <th class="py-3 px-4 text-center">Tipo Evento</th>
+                        <th class="py-3 px-4 text-center">Cant.</th>
+                        <th class="py-3 px-4 text-right">Monto Afectado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800 text-slate-200">
+                    @forelse($cancelaciones as $canc)
+                        <tr>
+                            <td class="py-3 px-4 font-mono text-slate-400">
+                                {{ $canc->created_at ? $canc->created_at->format('H:i:s') : '—' }}
+                            </td>
+                            <td class="py-3 px-4 font-semibold text-slate-300">
+                                {{ $canc->user->name ?? 'Cajero' }}
+                            </td>
+                            <td class="py-3 px-4">
+                                <p class="font-bold text-white">{{ $canc->producto_nombre }}</p>
+                                <span class="text-[10px] text-slate-500 italic">{{ $canc->motivo }}</span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                @if($canc->tipo_evento === 'item_eliminado')
+                                    <span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded text-[10px] font-bold">
+                                        Ítem Borrado
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 bg-rose-500/20 text-rose-300 rounded text-[10px] font-bold">
+                                        Carrito Vaciado
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-4 text-center font-mono font-bold text-slate-300">
+                                {{ number_format($canc->cantidad, 0) }}
+                            </td>
+                            <td class="py-3 px-4 text-right font-mono font-bold text-rose-400">
+                                {{ $moneda }} {{ number_format($canc->total_afectado, 2) }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-6 text-center text-slate-500 text-xs">
+                                <i class="fas fa-check-shield text-emerald-500 text-xl mb-1 block"></i>
+                                Todo limpio: No se registraron cancelaciones ni eliminaciones de productos en este turno.
                             </td>
                         </tr>
                     @endforelse

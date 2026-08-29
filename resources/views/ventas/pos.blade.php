@@ -1022,12 +1022,26 @@ function pos() {
         },
 
         quitarItem(idx) { 
+            const itemEliminado = this.carrito[idx];
+            if (itemEliminado) {
+                // Registrar auditoría anti-robo en segundo plano
+                this.enviarAuditoriaCancelacion({
+                    tipo_evento: 'item_eliminado',
+                    producto_id: itemEliminado.id,
+                    producto_nombre: itemEliminado.nombre,
+                    cantidad: itemEliminado.cantidad,
+                    precio_unitario: itemEliminado.precio_unitario,
+                    total_afectado: (itemEliminado.cantidad * itemEliminado.precio_unitario),
+                    motivo: 'Eliminación manual de producto en carrito POS'
+                });
+            }
             this.carrito.splice(idx, 1);
             AudioPOS.beep(600, 'triangle', 0.05);
             this.recalcularPrecios();
         },
 
         vaciarCarrito() {
+            if (this.carrito.length === 0) return;
             AudioPOS.warning();
             Swal.fire({
                 title: '¿Vaciar el carrito?',
@@ -1041,11 +1055,37 @@ function pos() {
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
+                    const itemsParaAuditoria = this.carrito.map(it => ({
+                        producto_id: it.id,
+                        producto_nombre: it.nombre,
+                        cantidad: it.cantidad,
+                        precio_unitario: it.precio_unitario,
+                        total_afectado: (it.cantidad * it.precio_unitario)
+                    }));
+
+                    this.enviarAuditoriaCancelacion({
+                        tipo_evento: 'carrito_vaciado',
+                        items: itemsParaAuditoria,
+                        motivo: 'Vaciado completo de carrito / Venta cancelada'
+                    });
+
                     this.carrito = [];
-            this.recalcularPrecios();
+                    this.recalcularPrecios();
                     Toast.fire({ icon: 'info', title: 'Carrito vaciado' });
                 }
             });
+        },
+
+        enviarAuditoriaCancelacion(payload) {
+            fetch('/api/pos/auditoria-cancelacion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }).catch(err => console.warn('Error silencioso en auditoría POS:', err));
         },
 
                 recalcularPrecios() {

@@ -12,7 +12,7 @@ class CajaController extends Controller
 {
     public function index()
     {
-        $turnoActivo = TurnoCaja::with(['caja', 'user', 'movimientos', 'ventas'])
+        $turnoActivo = TurnoCaja::with(['caja', 'user', 'movimientos', 'ventas', 'cancelacionesPos'])
             ->where('user_id', auth()->id())
             ->where('estado', 'abierto')
             ->first();
@@ -115,7 +115,7 @@ class CajaController extends Controller
 
     public function cierre(TurnoCaja $turno)
     {
-        $turno->load(['caja', 'user', 'movimientos.user', 'ventas']);
+        $turno->load(['caja', 'user', 'movimientos.user', 'ventas', 'cancelacionesPos.user']);
         $empresa = \App\Models\Empresa::first();
         return view('caja.cierre', compact('turno', 'empresa'));
     }

@@ -59,6 +59,11 @@ class TurnoCaja extends Model
         return $this->hasMany(EnvaseGarantia::class);
     }
 
+    public function cancelacionesPos()
+    {
+        return $this->hasMany(AuditoriaCancelacionPos::class, 'turno_caja_id');
+    }
+
     /* ─── Scopes ──────────────────────────────────────────────── */
 
     public function scopeAbierto($q)             { return $q->where('estado', 'abierto'); }
