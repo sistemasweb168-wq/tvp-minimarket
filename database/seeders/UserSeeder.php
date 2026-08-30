@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Administrador del Sistema',
             'username' => 'admin',
-            'email' => 'admin@tpvminimarket.com',
+            'email' => 'admin@mikitos.com',
             'password' => Hash::make('admin123'),
             'role_id' => $admin->id,
             'telefono' => '999-888-777',
@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Gerente Demo',
             'username' => 'gerente',
-            'email' => 'gerente@tpvminimarket.com',
+            'email' => 'gerente@mikitos.com',
             'password' => Hash::make('gerente123'),
             'role_id' => $gerente->id,
             'activo' => true,
@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'Cajero Demo',
             'username' => 'cajero',
-            'email' => 'cajero@tpvminimarket.com',
+            'email' => 'cajero@mikitos.com',
             'password' => Hash::make('cajero123'),
             'role_id' => $cajero->id,
             'activo' => true,
