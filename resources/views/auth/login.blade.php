@@ -54,7 +54,7 @@
     </style>
 </head>
 <body class="h-screen w-screen text-slate-100 antialiased relative flex flex-col justify-between overflow-hidden bg-slate-950 select-none" 
-      x-data="{ showPass: false, userVal: 'admin', passVal: 'admin123' }">
+      x-data="{ showPass: false, userVal: '', passVal: '' }">
 
     <!-- ============================================================== -->
     <!-- 🖼️ FONDO DE PANTALLA COMPLETO CON MAXIMA NITIDEZ              -->
@@ -172,35 +172,11 @@
                 </div>
 
                 <!-- Botón de Ingreso -->
-                <button type="submit" class="btn-gold w-full text-slate-950 font-black py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 mt-1.5 cursor-pointer shadow-lg active:scale-95">
+                <button type="submit" class="btn-gold w-full text-slate-950 font-black py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 mt-3 cursor-pointer shadow-lg active:scale-95">
                     <i class="fas fa-sign-in-alt"></i>
                     <span>INGRESAR AL SISTEMA</span>
                 </button>
             </form>
-
-            <!-- Accesos Rápidos de Demostración -->
-            <div class="mt-4 pt-3 border-t border-white/15">
-                <p class="text-[9px] font-bold uppercase tracking-wider text-slate-300 mb-1.5 text-center">
-                    Accesos Rápidos:
-                </p>
-                <div class="grid grid-cols-3 gap-1.5">
-                    <button type="button" @click="userVal='admin'; passVal='admin123'" 
-                            class="p-1.5 rounded-xl bg-black/40 hover:bg-amber-500/25 border border-white/15 hover:border-amber-400/50 transition text-center group cursor-pointer">
-                        <i class="fas fa-user-shield text-amber-400 text-xs mb-0.5 group-hover:scale-110 transition"></i>
-                        <p class="text-[10px] font-bold text-white">Admin</p>
-                    </button>
-                    <button type="button" @click="userVal='gerente'; passVal='gerente123'" 
-                            class="p-1.5 rounded-xl bg-black/40 hover:bg-amber-500/25 border border-white/15 hover:border-amber-400/50 transition text-center group cursor-pointer">
-                        <i class="fas fa-user-tie text-blue-400 text-xs mb-0.5 group-hover:scale-110 transition"></i>
-                        <p class="text-[10px] font-bold text-white">Gerente</p>
-                    </button>
-                    <button type="button" @click="userVal='cajero'; passVal='cajero123'" 
-                            class="p-1.5 rounded-xl bg-black/40 hover:bg-amber-500/25 border border-white/15 hover:border-amber-400/50 transition text-center group cursor-pointer">
-                        <i class="fas fa-cash-register text-emerald-400 text-xs mb-0.5 group-hover:scale-110 transition"></i>
-                        <p class="text-[10px] font-bold text-white">Cajero</p>
-                    </button>
-                </div>
-            </div>
 
         </div>
     </main>
