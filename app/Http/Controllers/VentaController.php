@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use App\Models\Producto;
@@ -105,24 +106,26 @@ class VentaController extends Controller
         $tasaImpuesto = $empresa ? $empresa->impuesto / 100 : 0;
         $impuestoIncluido = $empresa ? $empresa->impuesto_incluido : true;
 
-        // ── Validar stock suficiente antes de procesar ───────────────
-        foreach ($data['items'] as $item) {
-            $producto = Producto::find($item['producto_id']);
-            if (!$producto) continue;
-
-            if ($producto->controla_stock && $producto->tipo_producto !== 'combo') {
-                $stockDisponible = floatval($producto->getRawOriginal('stock') ?? $producto->stock ?? 0);
-                if ($stockDisponible < $item['cantidad']) {
-                    return response()->json([
-                        'error' => "Stock insuficiente para \"{$producto->nombre}\". Disponible: {$stockDisponible}, Solicitado: {$item['cantidad']}",
-                    ], 400);
-                }
-            }
-        }
-
         DB::beginTransaction();
 
         try {
+            // Validar stock con bloqueo de fila para evitar race conditions
+            // (Si dos cajeros venden el mismo producto al mismo tiempo, solo uno pasará)
+            foreach ($data['items'] as $item) {
+                $producto = Producto::lockForUpdate()->find($item['producto_id']);
+                if (!$producto) continue;
+
+                if ($producto->controla_stock && $producto->tipo_producto !== 'combo') {
+                    $stockDisponible = floatval($producto->getRawOriginal('stock') ?? $producto->stock ?? 0);
+                    if ($stockDisponible < $item['cantidad']) {
+                        DB::rollBack();
+                        return response()->json([
+                            'error' => "Stock insuficiente para \"{$producto->nombre}\". Disponible: {$stockDisponible}, Solicitado: {$item['cantidad']}",
+                        ], 400);
+                    }
+                }
+            }
+
             // Resolver o auto-crear cliente si se enviaron datos desde el modal
             $clienteId = $data['cliente_id'] ?? null;
             if (!$clienteId && !empty($request->cliente_documento)) {
@@ -355,13 +358,17 @@ class VentaController extends Controller
             }
 
             DB::commit();
-            $redirectUrl = (!empty($cpeInfo['redirect'])) ? $cpeInfo['redirect'] : route('ventas.ticket', $venta->id);
+
+            // Generar URL firmada para el ticket (válida 30 días)
+            $ticketUrl = URL::temporarySignedRoute('ventas.ticket', now()->addDays(30), ['venta' => $venta->id]);
+            $redirectUrl = (!empty($cpeInfo['redirect'])) ? $cpeInfo['redirect'] : $ticketUrl;
 
             return response()->json(array_merge([
                 'success' => true,
                 'venta_id' => $venta->id,
                 'numero_ticket' => $numeroTicket,
                 'redirect' => $redirectUrl,
+                'ticket_url' => $ticketUrl,
             ], $cpeInfo ?? []));
 
         } catch (\Exception $e) {
@@ -462,6 +469,37 @@ class VentaController extends Controller
             }
 
             $venta->update(['estado' => 'anulada']);
+
+            // Revertir totales del turno de caja para que el cierre cuadre correctamente
+            if ($venta->turno_caja_id) {
+                $turno = \App\Models\TurnoCaja::find($venta->turno_caja_id);
+                if ($turno) {
+                    $turno->decrement('total_ventas', $venta->total);
+                    $turno->decrement('cantidad_ventas');
+
+                    // Revertir método de pago
+                    $formaPago = $venta->forma_pago;
+                    if ($formaPago === 'mixto') {
+                        $dp = is_array($venta->detalle_pago) ? $venta->detalle_pago : (json_decode($venta->detalle_pago, true) ?? []);
+                        $montoEf  = floatval($dp['monto_efectivo'] ?? $dp['monto_1'] ?? 0);
+                        $montoDig = floatval($dp['monto_digital'] ?? $dp['monto_2'] ?? 0);
+                        $metodoDig = $dp['metodo_digital'] ?? $dp['metodo_2'] ?? 'yape';
+                        if ($montoEf > 0) $turno->decrement('total_efectivo', $montoEf);
+                        if ($metodoDig === 'tarjeta') {
+                            $turno->decrement('total_tarjeta', $montoDig);
+                        } else {
+                            $turno->decrement('total_otros', $montoDig);
+                        }
+                    } elseif ($formaPago === 'efectivo') {
+                        $turno->decrement('total_efectivo', $venta->total);
+                    } elseif ($formaPago === 'tarjeta') {
+                        $turno->decrement('total_tarjeta', $venta->total);
+                    } else {
+                        $turno->decrement('total_otros', $venta->total);
+                    }
+                }
+            }
+
             DB::commit();
 
             return back()->with('success', 'Venta anulada correctamente');

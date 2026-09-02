@@ -37,9 +37,10 @@ Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Comprobantes Digitales Públicos (Para clientes desde WhatsApp)
-Route::get('ventas/{venta}/ticket', [VentaController::class, 'ticket'])->name('ventas.ticket');
-Route::get('ventas/{venta}/ticket-pdf', [VentaController::class, 'ticketPdf'])->name('ventas.ticket-pdf');
-Route::get('ventas/{venta}/pdf', [VentaController::class, 'pdf'])->name('ventas.pdf');
+// Protegidos con signed URLs - solo quien tenga el enlace firmado puede ver el ticket
+Route::get('ventas/{venta}/ticket', [VentaController::class, 'ticket'])->name('ventas.ticket')->middleware('signed');
+Route::get('ventas/{venta}/ticket-pdf', [VentaController::class, 'ticketPdf'])->name('ventas.ticket-pdf')->middleware('signed');
+Route::get('ventas/{venta}/pdf', [VentaController::class, 'pdf'])->name('ventas.pdf')->middleware('signed');
 
 Route::middleware('auth')->group(function () {
     // Dashboard
@@ -53,14 +54,14 @@ Route::middleware('auth')->group(function () {
     Route::get('api/productos/buscar', [ProductoController::class, 'buscarApi'])->name('api.productos.buscar');
 
     // Categorías
-    Route::resource('categorias', CategoriaController::class)->except(['create', 'show', 'edit']);
+    Route::resource('categorias', CategoriaController::class)->except(['create', 'show', 'edit'])->middleware('permission:productos');
 
     // Clientes
-    Route::resource('clientes', ClienteController::class);
+    Route::resource('clientes', ClienteController::class)->middleware('permission:clientes');
     Route::get('api/clientes/buscar', [ClienteController::class, 'buscarApi'])->name('api.clientes.buscar');
 
     // Proveedores
-    Route::resource('proveedores', ProveedorController::class);
+    Route::resource('proveedores', ProveedorController::class)->middleware('permission:compras');
 
     // Ventas - POS
     Route::get('pos', [VentaController::class, 'pos'])->name('ventas.pos')->middleware('permission:pos');
@@ -69,38 +70,38 @@ Route::middleware('auth')->group(function () {
     Route::post('api/pos/auditoria-cancelacion', [AuditoriaPosController::class, 'registrar'])->name('api.pos.auditoria-cancelacion');
 
     // Compras
-    Route::resource('compras', CompraController::class)->except(['edit', 'update', 'destroy']);
+    Route::resource('compras', CompraController::class)->except(['edit', 'update', 'destroy'])->middleware('permission:compras');
 
     // Caja
-    Route::get('caja', [CajaController::class, 'index'])->name('caja.index');
-    Route::post('caja/abrir', [CajaController::class, 'abrirTurno'])->name('caja.abrir');
-    Route::post('caja/turno/{turno}/cerrar', [CajaController::class, 'cerrarTurno'])->name('caja.cerrar');
-    Route::get('caja/turno/{turno}/cierre', [CajaController::class, 'cierre'])->name('caja.cierre');
-    Route::get('caja/turno/{turno}/ticket', [CajaController::class, 'ticket'])->name('caja.ticket');
-    Route::post('caja/turno/{turno}/movimiento', [CajaController::class, 'movimiento'])->name('caja.movimiento');
-    Route::post('caja/store', [CajaController::class, 'storeCaja'])->name('caja.store');
+    Route::get('caja', [CajaController::class, 'index'])->name('caja.index')->middleware('permission:caja');
+    Route::post('caja/abrir', [CajaController::class, 'abrirTurno'])->name('caja.abrir')->middleware('permission:caja');
+    Route::post('caja/turno/{turno}/cerrar', [CajaController::class, 'cerrarTurno'])->name('caja.cerrar')->middleware('permission:caja');
+    Route::get('caja/turno/{turno}/cierre', [CajaController::class, 'cierre'])->name('caja.cierre')->middleware('permission:caja');
+    Route::get('caja/turno/{turno}/ticket', [CajaController::class, 'ticket'])->name('caja.ticket')->middleware('permission:caja');
+    Route::post('caja/turno/{turno}/movimiento', [CajaController::class, 'movimiento'])->name('caja.movimiento')->middleware('permission:caja');
+    Route::post('caja/store', [CajaController::class, 'storeCaja'])->name('caja.store')->middleware('permission:caja');
 
     // Reportes
-    Route::get('reportes', [ReporteController::class, 'index'])->name('reportes.index');
-    Route::get('reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas');
-    Route::get('reportes/productos', [ReporteController::class, 'productos'])->name('reportes.productos');
-    Route::get('reportes/inventario', [ReporteController::class, 'inventario'])->name('reportes.inventario');
-    Route::get('reportes/vencimientos', [ReporteController::class, 'vencimientos'])->name('reportes.vencimientos');
-    Route::get('reportes/utilidades', [ReporteController::class, 'utilidades'])->name('reportes.utilidades');
+    Route::get('reportes', [ReporteController::class, 'index'])->name('reportes.index')->middleware('permission:reportes');
+    Route::get('reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas')->middleware('permission:reportes');
+    Route::get('reportes/productos', [ReporteController::class, 'productos'])->name('reportes.productos')->middleware('permission:reportes');
+    Route::get('reportes/inventario', [ReporteController::class, 'inventario'])->name('reportes.inventario')->middleware('permission:reportes');
+    Route::get('reportes/vencimientos', [ReporteController::class, 'vencimientos'])->name('reportes.vencimientos')->middleware('permission:reportes');
+    Route::get('reportes/utilidades', [ReporteController::class, 'utilidades'])->name('reportes.utilidades')->middleware('permission:reportes');
 
     // Kardex & Mermas / Roturas
     Route::get('kardex', [KardexController::class, 'index'])->name('kardex.index')->middleware('permission:productos');
     Route::post('kardex/merma', [KardexController::class, 'registrarMerma'])->name('kardex.merma')->middleware('permission:productos');
 
     // Control de Envases Retornables & Garantías
-    Route::get('envases', [EnvaseGarantiaController::class, 'index'])->name('envases.index');
-    Route::post('envases', [EnvaseGarantiaController::class, 'store'])->name('envases.store');
-    Route::put('envases/{envase}', [EnvaseGarantiaController::class, 'update'])->name('envases.update');
-    Route::delete('envases/{envase}', [EnvaseGarantiaController::class, 'destroy'])->name('envases.destroy');
-    Route::post('envases/{envase}/devolver', [EnvaseGarantiaController::class, 'devolver'])->name('envases.devolver');
+    Route::get('envases', [EnvaseGarantiaController::class, 'index'])->name('envases.index')->middleware('permission:caja');
+    Route::post('envases', [EnvaseGarantiaController::class, 'store'])->name('envases.store')->middleware('permission:caja');
+    Route::put('envases/{envase}', [EnvaseGarantiaController::class, 'update'])->name('envases.update')->middleware('permission:caja');
+    Route::delete('envases/{envase}', [EnvaseGarantiaController::class, 'destroy'])->name('envases.destroy')->middleware('permission:caja');
+    Route::post('envases/{envase}/devolver', [EnvaseGarantiaController::class, 'devolver'])->name('envases.devolver')->middleware('permission:caja');
 
     // Promociones
-    Route::resource('promociones', PromocionController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('promociones', PromocionController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('permission:productos');
 
     // API SUNAT (ubigeos, validación documentos, consulta RENIEC/SUNAT)
     Route::get('api/sunat/ubigeos', [SunatApiController::class, 'buscarUbigeo'])->name('api.sunat.ubigeos');

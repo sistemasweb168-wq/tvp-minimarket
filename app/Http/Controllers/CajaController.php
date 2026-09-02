@@ -166,7 +166,7 @@ class CajaController extends Controller
     public function storeCaja(Request $request)
     {
         $data = $request->validate([
-            'nombre' => 'required|string|max:100',
+            'nombre' => 'required|string|max:100|unique:cajas,nombre',
             'descripcion' => 'nullable|string',
         ]);
         $data['activo'] = true;

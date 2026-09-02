@@ -16,11 +16,18 @@ class BackupController extends Controller
         return view('backup.index', compact('backups'));
     }
 
+    /** Ruta segura fuera del directorio público (no accesible desde internet) */
+    private function backupDir(): string
+    {
+        $dir = storage_path('app/backups');
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        return $dir;
+    }
+
     public function crear(Request $request)
     {
         try {
-            $directorio = public_path('backups');
-            if (!is_dir($directorio)) mkdir($directorio, 0755, true);
+            $directorio = $this->backupDir();
 
             $nombreArchivo = 'backup_' . date('Y-m-d_His') . '.sql';
             $rutaArchivo = $directorio . DIRECTORY_SEPARATOR . $nombreArchivo;
@@ -37,7 +44,7 @@ class BackupController extends Controller
                 'observaciones' => $request->observaciones,
             ]);
 
-            return back()->with('success', 'Copia de seguridad creada: ' . $nombreArchivo);
+            return back()->with('success', 'Copia de seguridad creada correctamente: ' . $nombreArchivo);
         } catch (\Exception $e) {
             return back()->with('error', 'Error al crear backup: ' . $e->getMessage());
         }
@@ -45,7 +52,7 @@ class BackupController extends Controller
 
     public function descargar(Backup $backup)
     {
-        $ruta = public_path('backups/' . $backup->archivo);
+        $ruta = $this->backupDir() . DIRECTORY_SEPARATOR . $backup->archivo;
         if (!file_exists($ruta)) {
             return back()->with('error', 'El archivo no existe');
         }
@@ -58,7 +65,7 @@ class BackupController extends Controller
 
         try {
             $backup = Backup::findOrFail($request->backup_id);
-            $ruta = public_path('backups/' . $backup->archivo);
+            $ruta = $this->backupDir() . DIRECTORY_SEPARATOR . $backup->archivo;
 
             if (!file_exists($ruta)) {
                 return back()->with('error', 'Archivo de backup no encontrado');
@@ -90,7 +97,7 @@ class BackupController extends Controller
 
     public function eliminar(Backup $backup)
     {
-        $ruta = public_path('backups/' . $backup->archivo);
+        $ruta = $this->backupDir() . DIRECTORY_SEPARATOR . $backup->archivo;
         if (file_exists($ruta)) @unlink($ruta);
         $backup->delete();
         return back()->with('success', 'Backup eliminado');
@@ -109,8 +116,7 @@ class BackupController extends Controller
 
         try {
             // Crear backup automático antes de resetear
-            $directorio = public_path('backups');
-            if (!is_dir($directorio)) mkdir($directorio, 0755, true);
+            $directorio = $this->backupDir();
             $nombreArchivo = 'backup_pre_reset_' . date('Y-m-d_His') . '.sql';
             file_put_contents($directorio . DIRECTORY_SEPARATOR . $nombreArchivo, $this->generarSqlBackup());
 
@@ -136,10 +142,9 @@ class BackupController extends Controller
                 'puntos_fidelidad',
                 'auditoria_cancelaciones_pos',
 
-                // 3. Compras y proveedores
+                // 3. Compras (se borran las compras pero NO los proveedores)
                 'compra_detalles',
                 'compras',
-                'proveedores',
 
                 // 4. Inventario, mermas, combos y envases
                 'movimientos_inventario',
