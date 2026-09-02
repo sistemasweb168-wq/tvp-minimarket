@@ -21,12 +21,51 @@ class ProductoController extends Controller
     public function importarExcel(Request $request)
     {
         $request->validate([
-            'archivo_excel' => 'required|mimes:xlsx,xls,csv|max:5120',
+            'archivo_excel' => 'required|file|max:10240',
         ]);
 
         try {
+            $archivo = $request->file('archivo_excel');
+            $extension = strtolower($archivo->getClientOriginalExtension());
+            $contenido = file_get_contents($archivo->getRealPath());
+
+            // Si el archivo es texto plano delimitado por tabulaciones o comas (común en exportaciones .xls de POS)
+            if (str_contains($contenido, "\t") && !str_starts_with($contenido, "PK") && !str_starts_with($contenido, "\xD0\xCF\x11\xE0")) {
+                // Decodificar si viene en ISO-8859-1 / Windows-1252
+                if (!mb_check_encoding($contenido, 'UTF-8')) {
+                    $contenido = mb_convert_encoding($contenido, 'UTF-8', 'ISO-8859-1, Windows-1252, auto');
+                }
+
+                $lines = explode("\n", str_replace("\r", "", $contenido));
+                $header = null;
+                $importados = 0;
+                $import = new ProductosImport();
+
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if (empty($line)) continue;
+                    $cols = explode("\t", $line);
+
+                    if (!$header) {
+                        $header = array_map(fn($h) => strtolower(trim($h)), $cols);
+                        continue;
+                    }
+
+                    $row = [];
+                    foreach ($header as $i => $hName) {
+                        $row[$hName] = $cols[$i] ?? '';
+                    }
+
+                    $res = $import->model($row);
+                    if ($res) $importados++;
+                }
+
+                return redirect()->route('productos.index')->with('success', "✅ Se importaron {$importados} producto(s) correctamente.");
+            }
+
+            // Importación estándar con PhpSpreadsheet
             $import = new ProductosImport();
-            $import->import($request->file('archivo_excel'));
+            $import->import($archivo);
 
             $msg = "✅ Se importaron {$import->importados} producto(s) correctamente.";
 

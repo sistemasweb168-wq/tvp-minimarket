@@ -40,20 +40,66 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
 
     public function model(array $row): ?Producto
     {
-        $nombre = trim($row['nombre_producto'] ?? '');
-        if (empty($nombre)) return null; // omitir filas completamente vacías
+        // Normalizar claves a minúsculas y sin acentos
+        $normalizedRow = [];
+        foreach ($row as $k => $v) {
+            $kNorm = strtolower(trim($k));
+            $kNorm = str_replace(['á','é','í','ó','ú','ñ',' '], ['a','e','i','o','u','n','_'], $kNorm);
+            $normalizedRow[$kNorm] = $v;
+        }
+
+        $nombre = trim(
+            $normalizedRow['nombre_producto'] 
+            ?? $normalizedRow['descripcion'] 
+            ?? $normalizedRow['nombre'] 
+            ?? $normalizedRow['producto'] 
+            ?? ''
+        );
+
+        if (empty($nombre)) return null;
+
+        // Limpieza de números y monedas (S/., s/., $, etc.)
+        $cleanNum = function($val, $default = 0.0) {
+            if ($val === null || $val === '') return $default;
+            $v = trim((string)$val);
+            $v = preg_replace('/^[sS]\/?\.?\s*/', '', $v);
+            $v = preg_replace('/[^\d.,]/', '', $v);
+            $v = str_replace(',', '.', $v);
+            if (substr_count($v, '.') > 1) {
+                $parts = explode('.', $v);
+                $v = implode('', array_slice($parts, 0, -1)) . '.' . end($parts);
+            }
+            return is_numeric($v) ? floatval($v) : $default;
+        };
 
         // Buscar o crear categoría
-        $categoriaNombre = trim($row['categoria'] ?? 'Sin Categoría');
+        $catName = trim(
+            $normalizedRow['categoria'] 
+            ?? $normalizedRow['departamento'] 
+            ?? $normalizedRow['categoria_id'] 
+            ?? 'GENERAL'
+        );
         $categoria = Categoria::firstOrCreate(
-            ['nombre' => $categoriaNombre],
+            ['nombre' => mb_strtoupper($catName ?: 'GENERAL')],
             ['activo' => 1]
         );
 
-        $codigo = trim($row['codigo_barras'] ?? '');
+        $codigo = trim(
+            $normalizedRow['codigo_barras'] 
+            ?? $normalizedRow['codigo'] 
+            ?? $normalizedRow['codigo_interno'] 
+            ?? ''
+        );
         if (empty($codigo)) {
             $codigo = 'AUTO-' . strtoupper(Str::random(8));
         }
+
+        $precioCompra  = $cleanNum($normalizedRow['precio_compra'] ?? $normalizedRow['precio_costo'] ?? $normalizedRow['costo'] ?? 0);
+        $precioVenta   = $cleanNum($normalizedRow['precio_venta'] ?? $normalizedRow['precio'] ?? $normalizedRow['p_venta'] ?? 0);
+        $precioMayoreo = $cleanNum($normalizedRow['precio_por_mayor'] ?? $normalizedRow['precio_mayoreo'] ?? $normalizedRow['mayoreo'] ?? 0);
+        $cantMayoreo   = intval($cleanNum($normalizedRow['cantidad_al_por_mayor'] ?? $normalizedRow['cant_mayoreo'] ?? 0));
+        $stock         = $cleanNum($normalizedRow['stock_inicial'] ?? $normalizedRow['inventario'] ?? $normalizedRow['stock'] ?? 0);
+        $stockMinimo   = $cleanNum($normalizedRow['stock_minimo'] ?? $normalizedRow['inv_minimo'] ?? 0);
 
         $this->importados++;
 
@@ -61,15 +107,16 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
             ['codigo' => $codigo],
             [
                 'nombre'          => mb_strtoupper($nombre),
-                'precio_compra'   => floatval($row['precio_compra']   ?? 0),
-                'precio_venta'    => floatval($row['precio_venta']    ?? 0),
-                'precio_mayoreo'  => floatval($row['precio_por_mayor'] ?? 0),
-                'cantidad_mayoreo'=> intval($row['cantidad_al_por_mayor'] ?? 0),
-                'stock'           => floatval($row['stock_inicial']    ?? 0),
-                'stock_minimo'    => floatval($row['stock_minimo']     ?? 5),
+                'precio_compra'   => $precioCompra,
+                'precio_venta'    => $precioVenta,
+                'precio_mayoreo'  => $precioMayoreo,
+                'cantidad_mayoreo'=> $cantMayoreo,
+                'stock'           => $stock,
+                'stock_minimo'    => $stockMinimo,
                 'categoria_id'    => $categoria->id,
-                'codigo_interno'  => trim($row['codigo_interno']       ?? ''),
-                'unidad_medida'   => strtoupper(trim($row['unidad_medida'] ?? 'UND')),
+                'codigo_interno'  => trim($normalizedRow['codigo_interno'] ?? $codigo),
+                'codigo_barras'   => $codigo,
+                'unidad_medida'   => strtoupper(trim($normalizedRow['unidad_medida'] ?? 'UND')),
                 'controla_stock'  => 1,
                 'activo'          => 1,
             ]
@@ -78,14 +125,7 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation, SkipsO
 
     public function rules(): array
     {
-        return [
-            'nombre_producto' => 'required|string|max:255',
-            'precio_venta'    => 'required|numeric|min:0',
-            'precio_compra'   => 'nullable|numeric|min:0',
-            'stock_inicial'   => 'nullable|numeric|min:0',
-            'stock_minimo'    => 'nullable|numeric|min:0',
-            'precio_por_mayor'=> 'nullable|numeric|min:0',
-        ];
+        return []; // Validación personalizada dentro de model() para máxima compatibilidad
     }
 
     public function customValidationMessages(): array
