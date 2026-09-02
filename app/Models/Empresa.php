@@ -42,10 +42,16 @@ class Empresa extends Model
             if (file_exists(public_path('img/' . $this->logo))) {
                 return asset('img/' . $this->logo);
             }
-            return asset('uploads/empresa/' . $this->logo);
+            if (file_exists(public_path('images/' . $this->logo))) {
+                return asset('images/' . $this->logo);
+            }
+            return null;
         }
         if (file_exists(public_path('img/logo.png'))) {
             return asset('img/logo.png');
+        }
+        if (file_exists(public_path('img/logo.svg'))) {
+            return asset('img/logo.svg');
         }
         return null;
     }
