@@ -219,7 +219,7 @@
                 @foreach($venta->detalles ?? [] as $d)
                     <tr>
                         <td>
-                            {{ $d->producto?->nombre ?? $d->descripcion ?? 'Producto' }}
+                            {{ $d->descripcion ?? $d->producto?->nombre ?? 'Producto' }}
                             @if(($d->descuento ?? 0) > 0)
                                 <br><small style="color: #000;">(Desc. -S/ {{ number_format($d->descuento, 2) }})</small>
                             @endif

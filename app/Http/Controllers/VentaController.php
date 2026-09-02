@@ -73,7 +73,9 @@ class VentaController extends Controller
             ? \App\Models\MetodoPago::activo()->get()
             : collect();
 
-        return view('ventas.pos', compact('productos', 'categorias', 'clientes', 'turnoActivo', 'metodosPago'));
+        $artComun = Producto::where('codigo', 'ART-COMUN')->first();
+
+        return view('ventas.pos', compact('productos', 'categorias', 'clientes', 'turnoActivo', 'metodosPago', 'artComun'));
     }
 
     public function store(Request $request)
@@ -93,6 +95,7 @@ class VentaController extends Controller
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|numeric|min:0.001',
             'items.*.precio_unitario' => 'required|numeric|min:0',
+            'items.*.nombre' => 'nullable|string|max:255',
         ]);
 
         $turnoActivo = TurnoCaja::where('user_id', auth()->id())
@@ -231,7 +234,7 @@ class VentaController extends Controller
                     'venta_id' => $venta->id,
                     'producto_id' => $producto->id,
                     'codigo' => $producto->codigo,
-                    'descripcion' => $producto->nombre,
+                    'descripcion' => $item['nombre'] ?? $producto->nombre,
                     'cantidad' => $item['cantidad'],
                     'precio_unitario' => $item['precio_unitario'],
                     'precio_compra' => $producto->precio_compra ?? 0,

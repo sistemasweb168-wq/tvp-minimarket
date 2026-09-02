@@ -119,7 +119,7 @@
         <tbody>
             @foreach($venta->detalles ?? [] as $d)
                 <tr>
-                    <td>{{ $d->producto?->nombre ?? $d->descripcion ?? 'Producto' }}</td>
+                    <td>{{ $d->descripcion ?? $d->producto?->nombre ?? 'Producto' }}</td>
                     <td style="text-align: center;">{{ number_format($d->cantidad ?? 1, 0) }}</td>
                     <td style="text-align: right;">{{ number_format($d->precio_unitario ?? 0, 2) }}</td>
                     <td style="text-align: right; font-weight: bold;">{{ number_format($d->subtotal ?? 0, 2) }}</td>

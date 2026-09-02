@@ -54,6 +54,11 @@
                         <i class="fas fa-times"></i>
                     </button>
 
+                    <button type="button" @click="abrirModalArtComun()" title="Venta Rápida / Artículo Común"
+                            class="px-4 py-2.5 sm:py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 rounded-xl transition text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-sm flex-shrink-0">
+                        <i class="fas fa-tags text-sm sm:text-base"></i>
+                        <span class="hidden md:inline">Art. Común</span>
+                    </button>
                     <!-- Toggle Sonido -->
                     <!-- Botón Registrar Gasto Rápido -->
                     <button type="button" @click="modalGasto = true" title="Registrar Salida de Dinero / Gasto de Caja"
@@ -170,7 +175,7 @@
 
             <!-- Lista de Items en Carrito -->
             <div class="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-48">
-                <template x-for="(item, idx) in carrito" :key="item.producto_id">
+                <template x-for="(item, idx) in carrito" :key="idx">
                     <div class="bg-slate-50 hover:bg-slate-100/70 transition rounded-xl p-3 border border-slate-200/60">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex-1 pr-2">
@@ -693,6 +698,46 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
+            
+            <!-- MODAL ART. COMÚN (VENTA RÁPIDA) -->
+            <div x-show="modalArtComun" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div @click.outside="modalArtComun = false" class="bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-700 overflow-hidden transform transition-all">
+                    <div class="px-5 py-4 bg-emerald-500/20 border-b border-emerald-500/30 flex justify-between items-center">
+                        <h3 class="text-emerald-400 font-bold text-base flex items-center gap-2">
+                            <i class="fas fa-tags"></i> Venta Rápida / Art. Común
+                        </h3>
+                        <button type="button" @click="modalArtComun = false" class="text-slate-400 hover:text-white transition">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-5 space-y-4">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Descripción (Opcional)</label>
+                            <input type="text" x-model="artComunDesc" @keydown.enter="$refs.precioArtComun.focus()" placeholder="Ej. Abarrotes, Galleta, etc." class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-emerald-500 outline-none transition">
+                        </div>
+                        
+                        <div class="flex gap-3 items-end">
+                            <div class="w-24">
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Cantidad</label>
+                                <input type="number" x-model.number="artComunCant" step="0.01" min="0.01" class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white rounded-xl text-sm focus:border-emerald-500 outline-none text-center transition">
+                            </div>
+                            <div class="flex-1 relative">
+                                <label class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">Precio x Und.</label>
+                                <div class="absolute left-3 top-[34px] text-emerald-400 font-bold text-sm">{{ $moneda }}</div>
+                                <input type="number" x-ref="precioArtComun" x-model.number="artComunPrecio" @keydown.enter.prevent="agregarArtComun()" step="0.01" min="0" class="w-full pl-8 pr-3 py-2.5 bg-slate-800 border border-emerald-500/50 text-emerald-300 rounded-xl text-lg font-black focus:border-emerald-400 outline-none transition" autofocus>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-2 flex gap-2">
+                            <button type="button" @click="modalArtComun = false" class="flex-1 py-3 rounded-xl border border-slate-700 text-slate-300 font-bold hover:bg-slate-800 transition">Cancelar (Esc)</button>
+                            <button type="button" @click="agregarArtComun()" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold shadow-lg shadow-emerald-500/20 transition flex justify-center items-center gap-2">
+                                <i class="fas fa-check"></i> Agregar (Enter)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <form action="{{ route('caja.movimiento', $turnoActivo->id) }}" method="POST" class="space-y-3.5">
                 @csrf
@@ -861,6 +906,12 @@ function pos() {
         formaPago: 'efectivo',
         // Multi-pago y Gastos
         modalGasto: false,
+        modalArtComun: false,
+        artComunDesc: '',
+        artComunCant: 1,
+        artComunPrecio: 0,
+        artComunObj: @json($artComun),
+        
         montoEfectivo: 0,
         montoDigital: 0,
         metodoDigital: 'yape',
@@ -970,9 +1021,51 @@ function pos() {
             if (this.productosFiltrados.length > 0) this.agregarProducto(this.productosFiltrados[0]);
         },
 
+        abrirModalArtComun() {
+            if (!this.artComunObj) {
+                Toast.fire({ icon: 'error', title: 'Producto "Art. Común" no configurado en la base de datos.' });
+                return;
+            }
+            this.artComunDesc = '';
+            this.artComunCant = 1;
+            this.artComunPrecio = '';
+            this.modalArtComun = true;
+            setTimeout(() => { this.$refs.precioArtComun.focus(); }, 100);
+        },
+
+        agregarArtComun() {
+            if (this.artComunPrecio === '' || this.artComunPrecio < 0) {
+                Toast.fire({ icon: 'warning', title: 'Ingrese un precio válido.' });
+                return;
+            }
+            if (this.artComunCant <= 0) {
+                Toast.fire({ icon: 'warning', title: 'Ingrese una cantidad válida.' });
+                return;
+            }
+            
+            let nombreComun = this.artComunDesc.trim() !== '' ? this.artComunDesc.trim() : this.artComunObj.nombre;
+            
+            this.carrito.push({
+                producto_id: this.artComunObj.id,
+                codigo: this.artComunObj.codigo,
+                nombre: nombreComun,
+                cantidad: parseFloat(this.artComunCant),
+                precio_unitario: parseFloat(this.artComunPrecio),
+                precio_normal: parseFloat(this.artComunPrecio),
+                precio_mayoreo: 0,
+                cantidad_mayoreo: 0,
+                stock: 9999, // Art comun no usa stock real
+                es_comun: true
+            });
+            
+            AudioPOS.beep(950, 'sine', 0.05);
+            this.modalArtComun = false;
+            this.recalcularPrecios();
+        },
+
         agregarProducto(p) {
             const stockActual = parseFloat(p.stock);
-            const existing = this.carrito.find(i => i.producto_id === p.id);
+            const existing = this.carrito.find(i => i.producto_id === p.id && !i.es_comun);
             const cantidadDeseada = existing ? existing.cantidad + 1 : 1;
 
             if (stockActual < cantidadDeseada) {
@@ -1294,6 +1387,7 @@ function pos() {
                     producto_id: i.producto_id,
                     cantidad: i.cantidad,
                     precio_unitario: i.precio_unitario,
+                    nombre: i.nombre
                 })),
             };
 
