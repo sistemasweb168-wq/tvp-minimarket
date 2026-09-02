@@ -123,14 +123,42 @@ class BackupController extends Controller
                 'observaciones' => 'Generado automáticamente antes de resetear el sistema',
             ]);
 
-            // Resetear datos transaccionales
+            // Resetear todos los datos transaccionales, de prueba, facturación, resúmenes y envases
             $tablasResetear = [
-                'venta_detalles', 'ventas',
-                'compra_detalles', 'compras',
-                'movimientos_inventario', 'movimientos_caja',
-                'turnos_caja', 'puntos_fidelidad',
-                'productos', 'clientes', 'proveedores',
-                'categorias', 'promociones',
+                // 1. Facturación electrónica y comprobantes SUNAT
+                'comprobantes_electronicos',
+                'resumenes_diarios',
+                'comunicaciones_baja',
+
+                // 2. Ventas y POS
+                'venta_detalles',
+                'ventas',
+                'puntos_fidelidad',
+                'auditoria_cancelaciones_pos',
+
+                // 3. Compras y proveedores
+                'compra_detalles',
+                'compras',
+                'proveedores',
+
+                // 4. Inventario, mermas, combos y envases
+                'movimientos_inventario',
+                'envases_garantias',
+                'combo_productos',
+                'promociones',
+                'productos',
+                'categorias',
+
+                // 5. Cajas y turnos
+                'movimientos_caja',
+                'turnos_caja',
+
+                // 6. Clientes
+                'clientes',
+
+                // 7. Logs y sesiones temporales
+                'actividad_log',
+                'password_reset_tokens',
             ];
 
             DB::statement('SET FOREIGN_KEY_CHECKS=0');
@@ -139,10 +167,41 @@ class BackupController extends Controller
                     DB::table($tabla)->truncate();
                 }
             }
+
+            // Resetear correlativos de series (Boletas B001, Facturas F001, Tickets T001, Notas) a 0
+            if (Schema::hasTable('series_documentos')) {
+                DB::table('series_documentos')->update(['correlativo_actual' => 0]);
+            }
+
+            // Asegurar que exista Caja Principal
+            if (Schema::hasTable('cajas') && DB::table('cajas')->count() === 0) {
+                DB::table('cajas')->insert([
+                    'nombre' => 'Caja Principal',
+                    'descripcion' => 'Caja principal del negocio',
+                    'activo' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Crear cliente genérico predeterminado
+            if (Schema::hasTable('clientes') && DB::table('clientes')->count() === 0) {
+                DB::table('clientes')->insert([
+                    'codigo' => 'CLI-000001',
+                    'tipo_documento' => 'DNI',
+                    'documento' => '00000000',
+                    'nombres' => 'Clientes',
+                    'apellidos' => 'Varios',
+                    'activo' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
             return redirect()->route('dashboard')
-                ->with('success', 'Sistema reseteado. Se ha conservado: usuarios, configuración y empresa.');
+                ->with('success', 'Sistema reseteado a 0 para Producción. Se conservaron intactos: Usuarios, Datos de Empresa y Logo.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error al resetear: ' . $e->getMessage());
         }
