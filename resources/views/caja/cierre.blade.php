@@ -427,6 +427,15 @@
                         <tr>
                             <td colspan="5" class="py-6 text-center text-slate-500 text-xs">
                                 <i class="fas fa-check-circle text-emerald-500 text-xl mb-1 block"></i>
+                                No se registraron egresos ni gastos en este turno.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- TABLA: AUDITORÍA ANTI-ROBO (ÍTEMS BORRADOS Y CANCELACIONES EN POS) -->
     @php
         $cancelaciones = $turno->cancelacionesPos ?? collect();
