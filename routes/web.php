@@ -93,6 +93,11 @@ Route::middleware('auth')->group(function () {
     Route::get('kardex', [KardexController::class, 'index'])->name('kardex.index')->middleware('permission:productos');
     Route::post('kardex/merma', [KardexController::class, 'registrarMerma'])->name('kardex.merma')->middleware('permission:productos');
 
+    // Kardex Valorizado (Read Only)
+    Route::get('kardex-valorizado', [App\Http\Controllers\KardexValorizadoController::class, 'index'])->name('kardex-valorizado.index')->middleware('permission:reportes');
+    Route::get('kardex-valorizado/exportar', [App\Http\Controllers\KardexValorizadoController::class, 'exportar'])->name('kardex-valorizado.exportar')->middleware('permission:reportes');
+    Route::get('kardex-valorizado/{producto}', [App\Http\Controllers\KardexValorizadoController::class, 'show'])->name('kardex-valorizado.show')->middleware('permission:reportes');
+
     // Control de Envases Retornables & Garantías
     Route::get('envases', [EnvaseGarantiaController::class, 'index'])->name('envases.index')->middleware('permission:caja');
     Route::post('envases', [EnvaseGarantiaController::class, 'store'])->name('envases.store')->middleware('permission:caja');

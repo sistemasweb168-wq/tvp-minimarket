@@ -206,6 +206,11 @@
                 <i class="fas fa-clipboard-list w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Kardex & Mermas</span>
             </a>
 @endif
+            @if(auth()->user()->hasPermission('reportes') || auth()->user()->isAdmin())
+<a href="{{ route('kardex-valorizado.index') }}" class="sidebar-link flex items-center px-5 py-3 text-slate-300 hover:bg-slate-800 transition {{ request()->routeIs('kardex-valorizado.*') ? 'active' : '' }}">
+                <i class="fas fa-file-invoice-dollar w-5"></i><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Kardex Valorizado</span>
+            </a>
+@endif
 
             @if(auth()->user()->hasPermission('clientes') || auth()->user()->hasPermission('proveedores') || auth()->user()->isAdmin())
             <p class="px-5 mt-4 mb-2 text-xs uppercase text-slate-500 font-semibold"><span class="whitespace-nowrap ml-3" x-show="isHovered || sidebarOpen" style="display: none;">Contactos</span></p>
